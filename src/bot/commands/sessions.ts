@@ -141,7 +141,8 @@ export async function sessionsCommand(ctx: CommandContext<Context>) {
     }
 
     const pageSize = config.bot.sessionsListLimit;
-    const currentProject = getCurrentProject();
+    const chatId = ctx.chat?.id ?? 0;
+    const currentProject = getCurrentProject(chatId);
 
     if (!currentProject) {
       await ctx.reply(t("sessions.project_not_selected"));
@@ -194,11 +195,13 @@ export async function handleSessionSelect(ctx: Context): Promise<boolean> {
     return true;
   }
 
+  const chatId = ctx.chat?.id ?? 0;
+
   try {
-    const currentProject = getCurrentProject();
+    const currentProject = getCurrentProject(chatId);
 
     if (!currentProject) {
-      clearAllInteractionState("session_select_project_missing");
+      clearAllInteractionState(chatId, "session_select_project_missing");
       await ctx.answerCallbackQuery();
       await ctx.reply(t("sessions.select_project_first"));
       return true;
@@ -250,9 +253,9 @@ export async function handleSessionSelect(ctx: Context): Promise<boolean> {
       title: session.title,
       directory: currentProject.worktree,
     };
-    setCurrentSession(sessionInfo);
+    setCurrentSession(chatId, sessionInfo);
     summaryAggregator.clear();
-    clearAllInteractionState("session_switched");
+    clearAllInteractionState(chatId, "session_switched");
 
     await ctx.answerCallbackQuery();
 
@@ -270,32 +273,32 @@ export async function handleSessionSelect(ctx: Context): Promise<boolean> {
     }
 
     // Initialize pinned message manager if not already
-    if (!pinnedMessageManager.isInitialized() && ctx.chat) {
-      pinnedMessageManager.initialize(ctx.api, ctx.chat.id);
-    }
-
-    // Initialize keyboard manager if not already
     if (ctx.chat) {
-      keyboardManager.initialize(ctx.api, ctx.chat.id);
-    }
+      if (!pinnedMessageManager.isInitialized(ctx.chat.id)) {
+        pinnedMessageManager.initialize(ctx.api, ctx.chat.id);
+      }
 
-    try {
+      // Initialize keyboard manager if not already
+      keyboardManager.initialize(ctx.api, ctx.chat.id);
+
       // Create new pinned message for this session
-      await pinnedMessageManager.onSessionChange(session.id, session.title);
+      await pinnedMessageManager.onSessionChange(ctx.chat.id, session.id, session.title);
       // Load context from session history (for existing sessions)
       // Wait for it to complete so keyboard has correct context
-      await pinnedMessageManager.loadContextFromHistory(session.id, currentProject.worktree);
-    } catch (err) {
-      logger.error("[Bot] Error initializing pinned message:", err);
+      await pinnedMessageManager.loadContextFromHistory(
+        ctx.chat.id,
+        session.id,
+        currentProject.worktree,
+      );
     }
 
     if (ctx.chat) {
       const chatId = ctx.chat.id;
 
       // Update keyboard with loaded context (callback executes async via setImmediate, so update manually)
-      const contextInfo = pinnedMessageManager.getContextInfo();
+      const contextInfo = pinnedMessageManager.getContextInfo(chatId);
       if (contextInfo) {
-        keyboardManager.updateContext(contextInfo.tokensUsed, contextInfo.tokensLimit);
+        keyboardManager.updateContext(chatId, contextInfo.tokensUsed, contextInfo.tokensLimit);
       }
 
       // Delete loading message
@@ -308,7 +311,7 @@ export async function handleSessionSelect(ctx: Context): Promise<boolean> {
       }
 
       // Send session selection confirmation with updated keyboard
-      const keyboard = keyboardManager.getKeyboard();
+      const keyboard = keyboardManager.getKeyboard(chatId);
       try {
         await ctx.api.sendMessage(chatId, t("sessions.selected", { title: session.title }), {
           reply_markup: keyboard,
@@ -334,7 +337,7 @@ export async function handleSessionSelect(ctx: Context): Promise<boolean> {
 
     await ctx.deleteMessage();
   } catch (error) {
-    clearAllInteractionState("session_select_error");
+    clearAllInteractionState(chatId, "session_select_error");
     logger.error("[Sessions] Error selecting session:", error);
     await ctx.answerCallbackQuery();
     await ctx.reply(t("sessions.select_error"));

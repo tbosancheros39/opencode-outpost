@@ -1,0 +1,471 @@
+
+> @grinev/opencode-telegram-bot@0.13.2 test
+> vitest run
+
+
+ RUN  v3.2.4 /media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot
+
+stderr | tests/process/manager.test.ts > process/manager > returns error when process fails to start
+[2026-04-07T20:30:28.884Z] [ERROR] [ProcessManager] Failed to start process: Error: Failed to start OpenCode server process. Ensure 'opencode' is installed and available in PATH.
+    at ProcessManager.start (/media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/src/process/manager.ts:82:15)
+    at /media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/tests/process/manager.test.ts:139:43
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)
+    at runTest (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+
+stderr | tests/opencode/events.test.ts > opencode/events > throws when subscribe result has no stream
+[2026-04-07T20:30:28.920Z] [ERROR] Event stream fatal error: Error: No stream returned from event subscription
+    at Module.subscribeToEvents (/media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/src/opencode/events.ts:77:17)
+[2026-04-07T20:30:28.922Z] [ERROR] Event stream error: Error: No stream returned from event subscription
+    at Module.subscribeToEvents (/media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/src/opencode/events.ts:77:17)
+
+ ❯ tests/users/access.test.ts (10 tests | 5 failed) 336ms
+   × getUserProjectRestriction > returns restriction for Fatima 321ms
+     → expected undefined to be defined
+   ✓ getUserProjectRestriction > returns undefined for unrestricted users 1ms
+   × getUserSystemPrompt > returns a Bosnian system prompt for Fatima 1ms
+     → expected undefined to be defined
+   ✓ getUserSystemPrompt > returns undefined for unrestricted users 1ms
+   × getUserModelVariant > returns 'high' variant for Fatima 3ms
+     → expected undefined to be 'high' // Object.is equality
+   ✓ getUserModelVariant > returns undefined for unrestricted users 1ms
+   × filterProjectsForUser > filters to only Fatima's project for Fatima 4ms
+     → expected [ …(2) ] to have a length of 1 but got 2
+   ✓ filterProjectsForUser > excludes Fatima's project for unrestricted users 1ms
+   × createFallbackProjectInfo > creates fallback project for Fatima 1ms
+     → expected undefined to be defined
+   ✓ createFallbackProjectInfo > returns undefined for unrestricted users 1ms
+ ✓ tests/monitoring/opencode-watchdog.test.ts (10 tests) 739ms
+   ✓ opencode-watchdog > isWatchdogRunning returns false initially  486ms
+ ✓ tests/config.test.ts (14 tests) 867ms
+   ✓ config boolean env parsing > uses false defaults for hide service message flags  497ms
+stderr | tests/bot/streaming/response-streamer.test.ts > bot/streaming/response-streamer > marks a stream as broken after fatal edit error and cleans up partial messages on complete
+[2026-04-07T20:30:29.235Z] [ERROR] [ResponseStreamer] Stream marked as broken: session=s1, message=m1, reason=immediate, error=400: Bad Request: message can't be edited Error: 400: Bad Request: message can't be edited
+    at /media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/tests/bot/streaming/response-streamer.test.ts:152:26
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)
+    at runTest (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runFiles (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1787:3)
+
+stderr | tests/bot/streaming/response-streamer.test.ts > bot/streaming/response-streamer > falls back cleanly when fatal send error happens before any partial is visible
+[2026-04-07T20:30:29.239Z] [ERROR] [ResponseStreamer] Stream marked as broken: session=s1, message=m1, reason=immediate, error=403: Forbidden: bot was blocked by the user Error: 403: Forbidden: bot was blocked by the user
+    at /media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/tests/bot/streaming/response-streamer.test.ts:189:26
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)
+    at runTest (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runFiles (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1787:3)
+
+ ✓ tests/bot/streaming/response-streamer.test.ts (11 tests) 857ms
+ ✓ tests/scheduled-task/next-run.test.ts (4 tests) 394ms
+ ✓ tests/utils/error-format.test.ts (3 tests) 203ms
+ ✓ tests/bot/streaming/tool-call-streamer.test.ts (8 tests) 973ms
+ ✓ tests/summary/tool-message-batcher.test.ts (12 tests) 478ms
+ ✓ tests/process/manager.test.ts (7 tests) 1306ms
+   ✓ process/manager > stops running process on Windows and clears state  1006ms
+ ✓ tests/cli/args.test.ts (8 tests) 265ms
+stderr | tests/opencode/events.test.ts > opencode/events > reconnects after non-fatal stream error
+[2026-04-07T20:30:29.940Z] [ERROR] Event stream error for D:/repo, reconnecting in 1000ms (attempt=1) Error: transient stream failure
+    at /media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/tests/opencode/events.test.ts:149:30
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)
+    at runTest (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runFiles (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1787:3)
+
+ ✓ tests/bot/utils/finalize-assistant-response.test.ts (2 tests) 326ms
+   ✓ bot/utils/finalize-assistant-response > uses the non-streaming send path when response streaming is disabled  321ms
+ ✓ tests/bot/utils/thinking-message.test.ts (3 tests) 330ms
+   ✓ bot/utils/thinking-message > sends thinking immediately when response streaming is enabled  326ms
+ ✓ tests/bot/middleware/interaction-guard.test.ts (20 tests) 339ms
+   ✓ interactionGuardMiddleware > passes through when there is no active interaction  302ms
+ ✓ tests/model/types.test.ts (3 tests) 328ms
+   ✓ model/types > formats model for button without truncation  324ms
+ ✓ tests/scheduled-task/display.test.ts (11 tests) 373ms
+   ✓ scheduled-task/display > formats one-time tasks with a compact date badge  360ms
+ ✓ tests/scheduled-task/runtime.test.ts (2 tests) 476ms
+   ✓ scheduled-task/runtime > queues scheduled task result while foreground session is busy and flushes later  374ms
+ ✓ tests/bot/utils/commands.test.ts (3 tests) 311ms
+   ✓ bot/utils/commands > extracts command name from slash command  307ms
+ ✓ tests/question/manager.test.ts (6 tests) 284ms
+ ✓ tests/model/manager.test.ts (17 tests) 332ms
+ ✓ tests/opencode/events.test.ts (6 tests) 2360ms
+   ✓ opencode/events > subscribes to stream and forwards events to callback  309ms
+   ✓ opencode/events > reconnects when stream ends unexpectedly  1008ms
+   ✓ opencode/events > reconnects after non-fatal stream error  1019ms
+ ✓ tests/scheduled-task/store.test.ts (2 tests) 284ms
+ ✓ tests/rename/manager.test.ts (4 tests) 316ms
+   ✓ renameManager > starts waiting for rename and tracks state  302ms
+ ✓ tests/interaction/guard.test.ts (24 tests) 325ms
+ ✓ tests/scheduled-task/schedule-parser.test.ts (3 tests) 413ms
+   ✓ scheduled-task/schedule-parser > parses recurring schedule JSON and removes temporary session  405ms
+ ✓ tests/bot/handlers/inline-query.test.ts (21 tests) 361ms
+   ✓ detectInlineCommand > detects summarise: prefix  313ms
+ ✓ tests/bot/commands/help.test.ts (1 test) 321ms
+   ✓ bot/commands/help > returns full commands list from centralized definitions  320ms
+ ✓ tests/bot/utils/file-download.test.ts (15 tests) 333ms
+   ✓ bot/utils/file-download > toDataUri > converts buffer to base64 data URI with correct MIME type  315ms
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > starts scheduled task creation flow
+[2026-04-07T20:30:31.853Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > starts scheduled task creation flow
+[2026-04-07T20:30:31.859Z] [INFO] [TaskCreationManager] Started task creation flow for project=D:\Projects\Repo
+[2026-04-07T20:30:31.862Z] [INFO] [InteractionManager] Started interaction: kind=task, expectedInput=text, allowedCommands=/help,/status,/abort
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > starts scheduled task creation flow
+[2026-04-07T20:30:31.872Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > does not start flow when task limit is reached
+[2026-04-07T20:30:31.874Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > does not start flow when task limit is reached
+[2026-04-07T20:30:31.874Z] [INFO] [InteractionManager] Cleared interaction: reason=manual, kind=task, expectedInput=text
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > does not start flow when task limit is reached
+[2026-04-07T20:30:31.879Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > parses schedule and switches flow to prompt input
+[2026-04-07T20:30:31.880Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > parses schedule and switches flow to prompt input
+[2026-04-07T20:30:31.880Z] [INFO] [TaskCreationManager] Started task creation flow for project=D:\Projects\Repo
+[2026-04-07T20:30:31.881Z] [INFO] [InteractionManager] Started interaction: kind=task, expectedInput=text, allowedCommands=/help,/status,/abort
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > parses schedule and switches flow to prompt input
+[2026-04-07T20:30:31.884Z] [INFO] [TaskCreationManager] Schedule parsing started
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > parses schedule and switches flow to prompt input
+[2026-04-07T20:30:31.912Z] [INFO] [TaskCreationManager] Parsed schedule and switched flow to prompt input
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > parses schedule and switches flow to prompt input
+[2026-04-07T20:30:31.916Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > saves scheduled task after receiving prompt text
+[2026-04-07T20:30:31.916Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > saves scheduled task after receiving prompt text
+[2026-04-07T20:30:31.917Z] [INFO] [InteractionManager] Cleared interaction: reason=manual, kind=task, expectedInput=mixed
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > saves scheduled task after receiving prompt text
+[2026-04-07T20:30:31.917Z] [INFO] [TaskCreationManager] Started task creation flow for project=D:\Projects\Repo
+[2026-04-07T20:30:31.917Z] [INFO] [InteractionManager] Started interaction: kind=task, expectedInput=text, allowedCommands=/help,/status,/abort
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > saves scheduled task after receiving prompt text
+[2026-04-07T20:30:31.918Z] [INFO] [TaskCreationManager] Schedule parsing started
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > saves scheduled task after receiving prompt text
+[2026-04-07T20:30:31.919Z] [INFO] [TaskCreationManager] Parsed schedule and switched flow to prompt input
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > saves scheduled task after receiving prompt text
+[2026-04-07T20:30:31.920Z] [INFO] [InteractionManager] Cleared interaction: reason=task_completed, kind=task, expectedInput=mixed
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > saves scheduled task after receiving prompt text
+[2026-04-07T20:30:31.923Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > stops task save when limit is reached before final step
+[2026-04-07T20:30:31.924Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > stops task save when limit is reached before final step
+[2026-04-07T20:30:31.925Z] [INFO] [TaskCreationManager] Started task creation flow for project=D:\Projects\Repo
+[2026-04-07T20:30:31.925Z] [INFO] [InteractionManager] Started interaction: kind=task, expectedInput=text, allowedCommands=/help,/status,/abort
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > stops task save when limit is reached before final step
+[2026-04-07T20:30:31.926Z] [INFO] [TaskCreationManager] Schedule parsing started
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > stops task save when limit is reached before final step
+[2026-04-07T20:30:31.927Z] [INFO] [TaskCreationManager] Parsed schedule and switched flow to prompt input
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > stops task save when limit is reached before final step
+[2026-04-07T20:30:31.928Z] [INFO] [InteractionManager] Cleared interaction: reason=task_limit_reached_before_save, kind=task, expectedInput=mixed
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > stops task save when limit is reached before final step
+[2026-04-07T20:30:31.929Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > restarts schedule step when retry button is pressed
+[2026-04-07T20:30:31.930Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > restarts schedule step when retry button is pressed
+[2026-04-07T20:30:31.932Z] [INFO] [TaskCreationManager] Started task creation flow for project=D:\Projects\Repo
+[2026-04-07T20:30:31.932Z] [INFO] [InteractionManager] Started interaction: kind=task, expectedInput=text, allowedCommands=/help,/status,/abort
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > restarts schedule step when retry button is pressed
+[2026-04-07T20:30:31.935Z] [INFO] [TaskCreationManager] Schedule parsing started
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > restarts schedule step when retry button is pressed
+[2026-04-07T20:30:31.935Z] [INFO] [TaskCreationManager] Parsed schedule and switched flow to prompt input
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > restarts schedule step when retry button is pressed
+[2026-04-07T20:30:31.936Z] [INFO] [TaskCreationManager] Reset task creation flow back to schedule input
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > restarts schedule step when retry button is pressed
+[2026-04-07T20:30:31.938Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > cancels task flow from schedule message
+[2026-04-07T20:30:31.939Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > cancels task flow from schedule message
+[2026-04-07T20:30:31.939Z] [INFO] [InteractionManager] Cleared interaction: reason=manual, kind=task, expectedInput=text
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > cancels task flow from schedule message
+[2026-04-07T20:30:31.940Z] [INFO] [TaskCreationManager] Started task creation flow for project=D:\Projects\Repo
+[2026-04-07T20:30:31.940Z] [INFO] [InteractionManager] Started interaction: kind=task, expectedInput=text, allowedCommands=/help,/status,/abort
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > cancels task flow from schedule message
+[2026-04-07T20:30:31.940Z] [INFO] [InteractionManager] Cleared interaction: reason=task_cancelled, kind=task, expectedInput=text
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > cancels task flow from schedule message
+[2026-04-07T20:30:31.945Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > rejects schedules more frequent than every 5 minutes
+[2026-04-07T20:30:31.946Z] [INFO] Event listener stopped
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > rejects schedules more frequent than every 5 minutes
+[2026-04-07T20:30:31.946Z] [INFO] [TaskCreationManager] Started task creation flow for project=D:\Projects\Repo
+[2026-04-07T20:30:31.946Z] [INFO] [InteractionManager] Started interaction: kind=task, expectedInput=text, allowedCommands=/help,/status,/abort
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > rejects schedules more frequent than every 5 minutes
+[2026-04-07T20:30:31.946Z] [INFO] [TaskCreationManager] Schedule parsing started
+
+ ✓ tests/runtime/mode.test.ts (7 tests) 346ms
+   ✓ runtime/mode > uses default mode when no override is provided  336ms
+stderr | tests/bot/commands/task.test.ts > bot/commands/task > rejects schedules more frequent than every 5 minutes
+[2026-04-07T20:30:31.947Z] [WARN] [TaskCommand] Failed to parse task schedule: Recurring schedule is too frequent. The minimum allowed interval is once every 5 minutes.
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > rejects schedules more frequent than every 5 minutes
+[2026-04-07T20:30:31.950Z] [INFO] [TaskCreationManager] Reset task creation flow back to schedule input
+
+stdout | tests/bot/commands/task.test.ts > bot/commands/task > rejects schedules more frequent than every 5 minutes
+[2026-04-07T20:30:31.952Z] [INFO] Event listener stopped
+
+ ✓ tests/bot/commands/task.test.ts (8 tests) 361ms
+ ✓ tests/agent/types.test.ts (3 tests) 341ms
+   ✓ agent/types > returns mapped emoji for known agents  337ms
+ ✓ tests/session/cache-manager.test.ts (4 tests) 344ms
+   ✓ session/cache-manager > warms up cache from latest sessions with initial limit  322ms
+ ✓ tests/i18n/index.test.ts (5 tests) 335ms
+   ✓ i18n/index locale helpers > resolves exact and regional locale values  321ms
+ ✓ tests/runtime/paths.test.ts (3 tests) 392ms
+   ✓ runtime/paths > uses process cwd in sources mode  386ms
+ ✓ tests/runtime/bootstrap.test.ts (6 tests) 408ms
+   ✓ runtime/bootstrap > validates required runtime env values  395ms
+ ✓ tests/interaction/manager.test.ts (5 tests) 300ms
+ ✓ tests/bot/utils/telegram-text.test.ts (3 tests) 337ms
+   ✓ bot/utils/telegram-text > sends raw messages by default  331ms
+ ✓ tests/bot/handlers/inline-menu.test.ts (7 tests) 234ms
+ ✓ tests/bot/utils/send-with-markdown-fallback.test.ts (7 tests) 290ms
+ ✓ tests/monitoring/journal-monitor.test.ts (13 tests) 297ms
+ ✓ tests/bot/middleware/unknown-command.test.ts (4 tests) 314ms
+   ✓ unknownCommandMiddleware > replies for unknown slash command in idle flow  307ms
+ ✓ tests/bot/commands/tasklist.test.ts (6 tests) 290ms
+ ✓ tests/bot/utils/keyboard.test.ts (3 tests) 244ms
+ ✓ tests/bot/message-patterns.test.ts (5 tests) 244ms
+ ✓ tests/interaction/cleanup.test.ts (2 tests) 289ms
+ ✓ tests/stt/client.test.ts (10 tests) 391ms
+   ✓ isSttConfigured > returns false when both apiUrl and apiKey are empty  364ms
+ ✓ tests/bot/commands/start.test.ts (1 test) 228ms
+ ✓ tests/project/manager.test.ts (3 tests) 263ms
+ ✓ tests/model/capabilities.test.ts (8 tests) 270ms
+ ✓ tests/summary/formatter.test.ts (15 tests) 247ms
+stderr | tests/bot/commands/export.test.ts > bot/commands/export > handles API errors gracefully
+[2026-04-07T20:30:34.112Z] [ERROR] [Bot] Export command error: Error: API Error
+    at /media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/tests/bot/commands/export.test.ts:195:14
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)
+    at runTest (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+
+ ✓ tests/bot/commands/export.test.ts (4 tests) 225ms
+ ✓ tests/bot/commands/messages.test.ts (8 tests) 238ms
+ ✓ tests/bot/commands/mcps.test.ts (8 tests) 209ms
+ ✓ tests/bot/commands/rename.test.ts (6 tests) 217ms
+ ✓ tests/bot/commands/skills.test.ts (6 tests) 208ms
+ ✓ tests/bot/commands/commands.test.ts (21 tests) 89ms
+ ✓ tests/bot/commands/abort.test.ts (3 tests) 92ms
+ ✓ tests/summary/aggregator.test.ts (18 tests) 171ms
+ ✓ tests/bot/commands/projects.command.test.ts (1 test) 54ms
+stderr | tests/bot/handlers/permission.test.ts > bot/handlers/permission > clears states when permission message cannot be sent
+[2026-04-07T20:30:34.937Z] [ERROR] [PermissionHandler] Failed to send permission message: Error: send failed
+    at /media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/tests/bot/handlers/permission.test.ts:287:46
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)
+    at runTest (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+
+ ✓ tests/bot/handlers/permission.test.ts (7 tests) 90ms
+stderr | tests/bot/commands/sessions.test.ts > bot/commands/sessions > keeps active menu and interaction state when page load fails
+[2026-04-07T20:30:34.936Z] [ERROR] [Sessions] Error loading sessions page: Error: session list failed
+    at /media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/tests/bot/commands/sessions.test.ts:259:14
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)
+    at runTest (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runFiles (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1787:3)
+
+stderr | tests/bot/commands/sessions.test.ts > bot/commands/sessions > keeps generic selection error flow when session details fetch fails
+[2026-04-07T20:30:34.952Z] [ERROR] [Sessions] Error selecting session: Error: session get failed
+    at /media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/tests/bot/commands/sessions.test.ts:286:14
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)
+    at runTest (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runFiles (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1787:3)
+
+ ✓ tests/bot/commands/sessions.test.ts (7 tests) 118ms
+ ✓ tests/bot/handlers/question.test.ts (5 tests) 45ms
+ ✓ tests/bot/commands/new.test.ts (1 test) 27ms
+stderr | tests/bot/commands/projects.handle-project-select.test.ts > bot/commands/projects handleProjectSelect > uses callback feedback and does not send chat reply on projects:page:* load error
+[2026-04-07T20:30:35.432Z] [ERROR] [Bot] Error switching projects page: Error: failed to load page
+    at /media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/tests/bot/commands/projects.handle-project-select.test.ts:47:27
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)
+    at runTest (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+
+stderr | tests/bot/commands/projects.handle-project-select.test.ts > bot/commands/projects handleProjectSelect > keeps project:* selection error behavior with state cleanup and chat error reply
+[2026-04-07T20:30:35.444Z] [ERROR] [Bot] Error selecting project: Error: Project with id abc not found
+    at Module.handleProjectSelect (/media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/src/bot/commands/projects.ts:265:13)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/tests/bot/commands/projects.handle-project-select.test.ts:70:21
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:752:20
+
+ ✓ tests/bot/commands/projects.test.ts (13 tests) 26ms
+ ✓ tests/bot/commands/projects.handle-project-select.test.ts (3 tests) 29ms
+stderr | tests/bot/handlers/document.test.ts > bot/handlers/document > error handling > shows download error when file download fails
+[2026-04-07T20:30:35.651Z] [ERROR] [Document] Error handling document message: Error: Network error
+    at /media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/tests/bot/handlers/document.test.ts:296:49
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:155:11
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:752:26
+    at file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)
+    at runTest (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1574:12)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+    at runSuite (file:///media/ext4_storage/workspace/OpenCodeTelegramBot/opencode-telegram-bot/node_modules/@vitest/runner/dist/chunk-hooks.js:1729:8)
+
+ ✓ tests/bot/handlers/document.test.ts (13 tests) 32ms
+ ✓ tests/bot/handlers/voice.test.ts (3 tests) 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/users/access.test.ts > getUserProjectRestriction > returns restriction for Fatima
+AssertionError: expected undefined to be defined
+ ❯ tests/users/access.test.ts:16:25
+     14|   it("returns restriction for Fatima", () => {
+     15|     const restriction = getUserProjectRestriction(FATIMA_ID);
+     16|     expect(restriction).toBeDefined();
+       |                         ^
+     17|     expect(restriction?.projectName).toBe("Fatima");
+     18|     expect(restriction?.projectPath).toContain("Fatima");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/users/access.test.ts > getUserSystemPrompt > returns a Bosnian system prompt for Fatima
+AssertionError: expected undefined to be defined
+ ❯ tests/users/access.test.ts:30:20
+     28|   it("returns a Bosnian system prompt for Fatima", () => {
+     29|     const prompt = getUserSystemPrompt(FATIMA_ID);
+     30|     expect(prompt).toBeDefined();
+       |                    ^
+     31|     expect(typeof prompt).toBe("string");
+     32|     expect(prompt!.length).toBeGreaterThan(20);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  tests/users/access.test.ts > getUserModelVariant > returns 'high' variant for Fatima
+AssertionError: expected undefined to be 'high' // Object.is equality
+
+[32m- Expected:[39m 
+"high"
+
+[31m+ Received:[39m 
+undefined
+
+ ❯ tests/users/access.test.ts:44:44
+     42| describe("getUserModelVariant", () => {
+     43|   it("returns 'high' variant for Fatima", () => {
+     44|     expect(getUserModelVariant(FATIMA_ID)).toBe("high");
+       |                                            ^
+     45|   });
+     46| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  tests/users/access.test.ts > filterProjectsForUser > filters to only Fatima's project for Fatima
+AssertionError: expected [ …(2) ] to have a length of 1 but got 2
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 2[39m
+
+ ❯ tests/users/access.test.ts:62:22
+     60|   it("filters to only Fatima's project for Fatima", () => {
+     61|     const filtered = filterProjectsForUser(FATIMA_ID, projects);
+     62|     expect(filtered).toHaveLength(1);
+       |                      ^
+     63|     expect(filtered[0].id).toBe("p1");
+     64|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  tests/users/access.test.ts > createFallbackProjectInfo > creates fallback project for Fatima
+AssertionError: expected undefined to be defined
+ ❯ tests/users/access.test.ts:76:22
+     74|   it("creates fallback project for Fatima", () => {
+     75|     const fallback = createFallbackProjectInfo(FATIMA_ID);
+     76|     expect(fallback).toBeDefined();
+       |                      ^
+     77|     expect(fallback?.name).toBe("Fatima");
+     78|     expect(fallback?.id).toContain(String(FATIMA_ID));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed | 65 passed (66)
+      Tests  5 failed | 480 passed (485)
+   Start at  22:30:27
+   Duration  7.90s (transform 2.59s, setup 1.18s, collect 10.52s, tests 22.88s, environment 18ms, prepare 6.58s)
+

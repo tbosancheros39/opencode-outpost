@@ -5,13 +5,9 @@ import { getCurrentAgent, setCurrentAgent } from "../settings/manager.js";
 import { logger } from "../utils/logger.js";
 import type { AgentInfo } from "./types.js";
 
-/**
- * Get list of available agents from OpenCode API
- * @returns Array of available agents (filtered by mode and hidden flag)
- */
-export async function getAvailableAgents(): Promise<AgentInfo[]> {
+export async function getAvailableAgents(chatId: number): Promise<AgentInfo[]> {
   try {
-    const project = getCurrentProject();
+    const project = getCurrentProject(chatId);
     const { data: agents, error } = await opencodeClient.app.agents(
       project ? { directory: project.worktree } : undefined,
     );
@@ -25,7 +21,6 @@ export async function getAvailableAgents(): Promise<AgentInfo[]> {
       return [];
     }
 
-    // Filter out hidden agents and subagents (only show primary and all)
     const filtered = agents.filter(
       (agent) => !agent.hidden && (agent.mode === "primary" || agent.mode === "all"),
     );
@@ -40,18 +35,12 @@ export async function getAvailableAgents(): Promise<AgentInfo[]> {
 
 const DEFAULT_AGENT = "build";
 
-/**
- * Get current agent from last session message or settings.
- * Falls back to "build" if nothing is stored.
- * @returns Current agent name
- */
-export async function fetchCurrentAgent(): Promise<string> {
-  const storedAgent = getCurrentAgent();
-  const session = getCurrentSession();
-  const project = getCurrentProject();
+export async function fetchCurrentAgent(chatId: number): Promise<string> {
+  const storedAgent = getCurrentAgent(chatId);
+  const session = getCurrentSession(chatId);
+  const project = getCurrentProject(chatId);
 
   if (!session || !project) {
-    // No active session, return stored agent from settings
     return storedAgent ?? DEFAULT_AGENT;
   }
 
@@ -70,8 +59,6 @@ export async function fetchCurrentAgent(): Promise<string> {
     const lastAgent = messages[0].info.agent;
     logger.debug(`[AgentManager] Current agent from session: ${lastAgent}`);
 
-    // If user explicitly selected an agent in bot settings, prefer it.
-    // Session messages may contain stale agent until next prompt is sent.
     if (storedAgent && lastAgent !== storedAgent) {
       logger.debug(
         `[AgentManager] Using stored agent "${storedAgent}" instead of session agent "${lastAgent}"`,
@@ -79,9 +66,8 @@ export async function fetchCurrentAgent(): Promise<string> {
       return storedAgent;
     }
 
-    // No stored agent yet: sync from session history
     if (lastAgent && lastAgent !== storedAgent) {
-      setCurrentAgent(lastAgent);
+      setCurrentAgent(chatId, lastAgent);
     }
 
     return lastAgent || storedAgent || DEFAULT_AGENT;
@@ -91,19 +77,11 @@ export async function fetchCurrentAgent(): Promise<string> {
   }
 }
 
-/**
- * Select agent and persist to settings
- * @param agentName Name of the agent to select
- */
-export function selectAgent(agentName: string): void {
+export function selectAgent(chatId: number, agentName: string): void {
   logger.info(`[AgentManager] Selected agent: ${agentName}`);
-  setCurrentAgent(agentName);
+  setCurrentAgent(chatId, agentName);
 }
 
-/**
- * Get stored agent from settings (synchronous)
- * @returns Current agent name or default "build"
- */
-export function getStoredAgent(): string {
-  return getCurrentAgent() ?? "build";
+export function getStoredAgent(chatId: number): string {
+  return getCurrentAgent(chatId) ?? "build";
 }

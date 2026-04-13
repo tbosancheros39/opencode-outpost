@@ -16,13 +16,13 @@ interface AbortCurrentOperationOptions {
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
-function abortLocalStreaming(): void {
+function abortLocalStreaming(chatId: number): void {
   stopEventListening();
   summaryAggregator.clear();
-  clearAllInteractionState("abort_command");
+  clearAllInteractionState(chatId, "abort_command");
 }
 
-async function pollSessionStatus(
+export async function pollSessionStatus(
   sessionId: string,
   directory: string,
   maxWaitMs: number = 5000,
@@ -64,33 +64,32 @@ async function pollSessionStatus(
 export async function abortCurrentOperation(
   ctx: Context,
   options: AbortCurrentOperationOptions = {},
-): Promise<void> {
+): Promise<boolean> {
   const notifyUser = options.notifyUser ?? true;
+  const chatId = ctx.chat?.id ?? null;
 
   try {
-    abortLocalStreaming();
+    if (!chatId) {
+      logger.warn("[Abort] Chat context is missing");
+      return false;
+    }
 
-    const currentSession = getCurrentSession();
+    abortLocalStreaming(chatId);
+
+    const currentSession = getCurrentSession(chatId);
 
     if (!currentSession) {
       if (notifyUser) {
         await ctx.reply(t("stop.no_active_session"));
       }
-      return;
+      return false;
     }
 
     let waitingMessageId: number | null = null;
-    let chatId: number | null = null;
 
     if (notifyUser) {
       const waitingMessage = await ctx.reply(t("stop.in_progress"));
       waitingMessageId = waitingMessage.message_id;
-      chatId = ctx.chat?.id ?? null;
-
-      if (!chatId) {
-        logger.warn("[Abort] Chat context is missing while aborting active session");
-        return;
-      }
     }
 
     const controller = new AbortController();
@@ -112,14 +111,14 @@ export async function abortCurrentOperation(
         if (notifyUser && chatId !== null && waitingMessageId !== null) {
           await ctx.api.editMessageText(chatId, waitingMessageId, t("stop.warn_unconfirmed"));
         }
-        return;
+        return false;
       }
 
       if (abortResult !== true) {
         if (notifyUser && chatId !== null && waitingMessageId !== null) {
           await ctx.api.editMessageText(chatId, waitingMessageId, t("stop.warn_maybe_finished"));
         }
-        return;
+        return false;
       }
 
       const finalStatus = await pollSessionStatus(
@@ -133,10 +132,12 @@ export async function abortCurrentOperation(
         if (notifyUser && chatId !== null && waitingMessageId !== null) {
           await ctx.api.editMessageText(chatId, waitingMessageId, t("stop.success"));
         }
+        return true;
       } else {
         if (notifyUser && chatId !== null && waitingMessageId !== null) {
           await ctx.api.editMessageText(chatId, waitingMessageId, t("stop.warn_still_busy"));
         }
+        return false;
       }
     } catch (error) {
       clearTimeout(timeoutId);
@@ -151,10 +152,12 @@ export async function abortCurrentOperation(
           await ctx.api.editMessageText(chatId, waitingMessageId, t("stop.warn_local_only"));
         }
       }
+      return false;
     }
   } catch (error) {
     logger.error("[Abort] Unexpected error:", error);
     await ctx.reply(t("stop.error"));
+    return false;
   }
 }
 
