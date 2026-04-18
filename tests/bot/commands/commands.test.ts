@@ -117,7 +117,7 @@ vi.mock("../../../src/utils/safe-background-task.js", () => ({
 
 function createCommandContext(messageId: number): Context {
   return {
-    chat: { id: 777 },
+    chat: { id: 12345 },
     reply: vi.fn().mockResolvedValue({ message_id: messageId }),
     answerCallbackQuery: vi.fn().mockResolvedValue(undefined),
     deleteMessage: vi.fn().mockResolvedValue(undefined),
@@ -131,7 +131,7 @@ function createCommandContext(messageId: number): Context {
 
 function createCallbackContext(data: string, messageId: number): Context {
   return {
-    chat: { id: 777 },
+    chat: { id: 12345 },
     callbackQuery: {
       data,
       message: {
@@ -151,7 +151,7 @@ function createCallbackContext(data: string, messageId: number): Context {
 
 function createTextContext(text: string): Context {
   return {
-    chat: { id: 777 },
+    chat: { id: 12345 },
     message: { text } as Context["message"],
     reply: vi.fn().mockResolvedValue({ message_id: 903 }),
     answerCallbackQuery: vi.fn().mockResolvedValue(undefined),
@@ -233,7 +233,7 @@ describe("bot/commands/commands", () => {
     expect(options.reply_markup.inline_keyboard[1]?.[0]?.callback_data).toBe("commands:select:1");
     expect(options.reply_markup.inline_keyboard[2]?.[0]?.callback_data).toBe("commands:cancel");
 
-    const state = interactionManager.getSnapshot();
+    const state = interactionManager.getSnapshot(12345);
     expect(state?.kind).toBe("custom");
     expect(state?.expectedInput).toBe("callback");
     expect(state?.metadata.flow).toBe("commands");
@@ -242,7 +242,7 @@ describe("bot/commands/commands", () => {
   });
 
   it("transitions to confirmation step after selecting command", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "custom",
       expectedInput: "callback",
       metadata: {
@@ -267,7 +267,7 @@ describe("bot/commands/commands", () => {
       expect.objectContaining({ reply_markup: expect.any(Object) }),
     );
 
-    const state = interactionManager.getSnapshot();
+    const state = interactionManager.getSnapshot(12345);
     expect(state?.kind).toBe("custom");
     expect(state?.expectedInput).toBe("mixed");
     expect(state?.metadata.stage).toBe("confirm");
@@ -275,7 +275,7 @@ describe("bot/commands/commands", () => {
   });
 
   it("executes selected command from callback", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "custom",
       expectedInput: "mixed",
       metadata: {
@@ -292,7 +292,7 @@ describe("bot/commands/commands", () => {
     await Promise.resolve();
 
     expect(handled).toBe(true);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
     expect(ctx.deleteMessage).toHaveBeenCalledTimes(1);
     expect(ctx.reply).toHaveBeenCalledWith(`${t("commands.executing_prefix")}\n/poem`, {
       entities: [{ type: "code", offset: t("commands.executing_prefix").length + 1, length: 5 }],
@@ -311,7 +311,7 @@ describe("bot/commands/commands", () => {
   });
 
   it("executes selected command with arguments from text message", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "custom",
       expectedInput: "mixed",
       metadata: {
@@ -328,8 +328,8 @@ describe("bot/commands/commands", () => {
     await Promise.resolve();
 
     expect(handled).toBe(true);
-    expect(interactionManager.getSnapshot()).toBeNull();
-    expect(ctx.api.deleteMessage).toHaveBeenCalledWith(777, 500);
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
+    expect(ctx.api.deleteMessage).toHaveBeenCalledWith(12345, 500);
     expect(ctx.reply).toHaveBeenCalledWith(
       `${t("commands.executing_prefix")}\n/poem about spring`,
       {
@@ -348,7 +348,7 @@ describe("bot/commands/commands", () => {
   });
 
   it("handles stale callback as inactive", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "custom",
       expectedInput: "callback",
       metadata: {
@@ -368,7 +368,7 @@ describe("bot/commands/commands", () => {
       text: t("commands.inactive_callback"),
       show_alert: true,
     });
-    expect(interactionManager.getSnapshot()?.kind).toBe("custom");
+    expect(interactionManager.getSnapshot(12345)?.kind).toBe("custom");
   });
 
   it("shows next-page button when commands exceed page size", async () => {
@@ -428,7 +428,7 @@ describe("bot/commands/commands", () => {
     expect(options.reply_markup.inline_keyboard[1]?.[0]?.callback_data).toBe("commands:select:1");
     expect(options.reply_markup.inline_keyboard[2]?.[0]?.callback_data).toBe("commands:cancel");
 
-    const state = interactionManager.getSnapshot();
+    const state = interactionManager.getSnapshot(12345);
     expect(state?.kind).toBe("custom");
     expect(state?.metadata.flow).toBe("commands");
     expect(state?.metadata.stage).toBe("list");
@@ -444,7 +444,7 @@ describe("bot/commands/commands", () => {
       description: `Command ${i + 1} description`,
     }));
 
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "custom",
       expectedInput: "callback",
       metadata: {
@@ -487,7 +487,7 @@ describe("bot/commands/commands", () => {
       description: `Command ${i + 1} description`,
     }));
 
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "custom",
       expectedInput: "callback",
       metadata: {
@@ -516,7 +516,7 @@ describe("bot/commands/commands", () => {
       description: `Command ${i + 1} description`,
     }));
 
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "custom",
       expectedInput: "callback",
       metadata: {
@@ -538,7 +538,7 @@ describe("bot/commands/commands", () => {
       expect.objectContaining({ reply_markup: expect.any(Object) }),
     );
 
-    const state = interactionManager.getSnapshot();
+    const state = interactionManager.getSnapshot(12345);
     expect(state?.kind).toBe("custom");
     expect(state?.metadata.stage).toBe("confirm");
     expect(state?.metadata.commandName).toBe("cmd13");

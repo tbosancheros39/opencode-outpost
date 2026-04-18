@@ -42,13 +42,14 @@ vi.mock("../../../src/pinned/manager.js", () => ({
 
 function createRenameCommandContext(messageId: number): Context {
   return {
+    chat: { id: 12345 },
     reply: vi.fn().mockResolvedValue({ message_id: messageId }),
   } as unknown as Context;
 }
 
 function createRenameTextContext(text: string): Context {
   return {
-    chat: { id: 101 },
+    chat: { id: 12345 },
     message: { text } as Context["message"],
     api: {
       deleteMessage: vi.fn().mockResolvedValue(true),
@@ -59,6 +60,7 @@ function createRenameTextContext(text: string): Context {
 
 function createRenameCallbackContext(messageId: number): Context {
   return {
+    chat: { id: 12345 },
     callbackQuery: {
       data: "rename:cancel",
       message: {
@@ -72,8 +74,8 @@ function createRenameCallbackContext(messageId: number): Context {
 
 describe("bot/commands/rename", () => {
   beforeEach(() => {
-    renameManager.clear();
-    interactionManager.clear("test_setup");
+    renameManager.clear(12345);
+    interactionManager.clear(12345, "test_setup");
 
     mocked.currentSession = {
       id: "session-1",
@@ -95,10 +97,10 @@ describe("bot/commands/rename", () => {
 
     await renameCommand(ctx as never);
 
-    expect(renameManager.isWaitingForName()).toBe(true);
-    expect(renameManager.getMessageId()).toBe(555);
+    expect(renameManager.isWaitingForName(12345)).toBe(true);
+    expect(renameManager.getMessageId(12345)).toBe(555);
 
-    const interactionState = interactionManager.getSnapshot();
+    const interactionState = interactionManager.getSnapshot(12345);
     expect(interactionState?.kind).toBe("rename");
     expect(interactionState?.expectedInput).toBe("text");
     expect(interactionState?.metadata.sessionId).toBe("session-1");
@@ -106,9 +108,9 @@ describe("bot/commands/rename", () => {
   });
 
   it("renames session on valid text and clears states", async () => {
-    renameManager.startWaiting("session-1", "D:/repo", "Old title");
-    renameManager.setMessageId(555);
-    interactionManager.start({
+    renameManager.startWaiting(12345, "session-1", "D:/repo", "Old title");
+    renameManager.setMessageId(12345, 555);
+    interactionManager.start(12345, {
       kind: "rename",
       expectedInput: "text",
       metadata: { sessionId: "session-1", messageId: 555 },
@@ -123,21 +125,21 @@ describe("bot/commands/rename", () => {
       directory: "D:/repo",
       title: "New title",
     });
-    expect(mocked.setCurrentSessionMock).toHaveBeenCalledWith({
+    expect(mocked.setCurrentSessionMock).toHaveBeenCalledWith(12345, {
       id: "session-1",
       title: "New title",
       directory: "D:/repo",
     });
-    expect(ctx.api.deleteMessage).toHaveBeenCalledWith(101, 555);
+    expect(ctx.api.deleteMessage).toHaveBeenCalledWith(12345, 555);
     expect(ctx.reply).toHaveBeenCalledWith(t("rename.success", { title: "New title" }));
-    expect(renameManager.isWaitingForName()).toBe(false);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(renameManager.isWaitingForName(12345)).toBe(false);
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
   });
 
   it("keeps rename flow active on empty title", async () => {
-    renameManager.startWaiting("session-1", "D:/repo", "Old title");
-    renameManager.setMessageId(555);
-    interactionManager.start({
+    renameManager.startWaiting(12345, "session-1", "D:/repo", "Old title");
+    renameManager.setMessageId(12345, 555);
+    interactionManager.start(12345, {
       kind: "rename",
       expectedInput: "text",
       metadata: { sessionId: "session-1", messageId: 555 },
@@ -149,14 +151,14 @@ describe("bot/commands/rename", () => {
     expect(handled).toBe(true);
     expect(ctx.reply).toHaveBeenCalledWith(t("rename.empty_title"));
     expect(mocked.updateSessionMock).not.toHaveBeenCalled();
-    expect(renameManager.isWaitingForName()).toBe(true);
-    expect(interactionManager.getSnapshot()?.kind).toBe("rename");
+    expect(renameManager.isWaitingForName(12345)).toBe(true);
+    expect(interactionManager.getSnapshot(12345)?.kind).toBe("rename");
   });
 
   it("rejects stale rename cancel callback", async () => {
-    renameManager.startWaiting("session-1", "D:/repo", "Old title");
-    renameManager.setMessageId(555);
-    interactionManager.start({
+    renameManager.startWaiting(12345, "session-1", "D:/repo", "Old title");
+    renameManager.setMessageId(12345, 555);
+    interactionManager.start(12345, {
       kind: "rename",
       expectedInput: "text",
       metadata: { sessionId: "session-1", messageId: 555 },
@@ -170,14 +172,14 @@ describe("bot/commands/rename", () => {
       text: t("rename.inactive_callback"),
       show_alert: true,
     });
-    expect(renameManager.isWaitingForName()).toBe(true);
-    expect(interactionManager.getSnapshot()?.kind).toBe("rename");
+    expect(renameManager.isWaitingForName(12345)).toBe(true);
+    expect(interactionManager.getSnapshot(12345)?.kind).toBe("rename");
   });
 
   it("cancels active rename and clears states", async () => {
-    renameManager.startWaiting("session-1", "D:/repo", "Old title");
-    renameManager.setMessageId(555);
-    interactionManager.start({
+    renameManager.startWaiting(12345, "session-1", "D:/repo", "Old title");
+    renameManager.setMessageId(12345, 555);
+    interactionManager.start(12345, {
       kind: "rename",
       expectedInput: "text",
       metadata: { sessionId: "session-1", messageId: 555 },
@@ -189,13 +191,13 @@ describe("bot/commands/rename", () => {
     expect(handled).toBe(true);
     expect(ctx.answerCallbackQuery).toHaveBeenCalled();
     expect(ctx.editMessageText).toHaveBeenCalledWith(t("rename.cancelled"));
-    expect(renameManager.isWaitingForName()).toBe(false);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(renameManager.isWaitingForName(12345)).toBe(false);
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
   });
 
   it("clears stale rename manager state when interaction is missing", async () => {
-    renameManager.startWaiting("session-1", "D:/repo", "Old title");
-    renameManager.setMessageId(555);
+    renameManager.startWaiting(12345, "session-1", "D:/repo", "Old title");
+    renameManager.setMessageId(12345, 555);
 
     const ctx = createRenameTextContext("New title");
     const handled = await handleRenameTextAnswer(ctx);
@@ -203,6 +205,6 @@ describe("bot/commands/rename", () => {
     expect(handled).toBe(true);
     expect(ctx.reply).toHaveBeenCalledWith(t("rename.inactive"));
     expect(mocked.updateSessionMock).not.toHaveBeenCalled();
-    expect(renameManager.isWaitingForName()).toBe(false);
+    expect(renameManager.isWaitingForName(12345)).toBe(false);
   });
 });

@@ -20,7 +20,7 @@ function cloneTask(task: ScheduledTask): ScheduledTask {
 vi.mock("../../src/config.js", () => ({
   config: {
     telegram: {
-      allowedUserId: 777,
+      allowedUserIds: [777],
     },
     bot: {
       messageFormatMode: "markdown",
@@ -54,17 +54,17 @@ vi.mock("../../src/bot/utils/telegram-text.js", () => ({
 }));
 
 vi.mock("../../src/scheduled-task/store.js", () => ({
-  listScheduledTasks: vi.fn(() => mocked.tasks.map((task) => cloneTask(task))),
-  getScheduledTask: vi.fn((taskId: string) => {
+  listScheduledTasks: vi.fn((_chatId: number) => mocked.tasks.map((task) => cloneTask(task))),
+  getScheduledTask: vi.fn((taskId: string, _chatId?: number) => {
     const task = mocked.tasks.find((item) => item.id === taskId);
     return task ? cloneTask(task) : null;
   }),
-  replaceScheduledTasks: vi.fn(async (tasks: ScheduledTask[]) => {
+  replaceScheduledTasks: vi.fn(async (_chatId: number, tasks: ScheduledTask[]) => {
     mocked.tasks = tasks.map((task) => cloneTask(task));
     mocked.replaceScheduledTasksMock(tasks);
   }),
   updateScheduledTask: vi.fn(
-    async (taskId: string, updater: (task: ScheduledTask) => ScheduledTask) => {
+    async (_chatId: number, taskId: string, updater: (task: ScheduledTask) => ScheduledTask) => {
       const index = mocked.tasks.findIndex((task) => task.id === taskId);
       if (index < 0) {
         return null;
@@ -75,7 +75,7 @@ vi.mock("../../src/scheduled-task/store.js", () => ({
       return cloneTask(nextTask);
     },
   ),
-  removeScheduledTask: vi.fn(async (taskId: string) => {
+  removeScheduledTask: vi.fn(async (taskId: string, _chatId?: number) => {
     const nextTasks = mocked.tasks.filter((task) => task.id !== taskId);
     const removed = nextTasks.length !== mocked.tasks.length;
     mocked.tasks = nextTasks;

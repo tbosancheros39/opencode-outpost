@@ -96,7 +96,7 @@ function createSession(index: number): SessionStub {
 
 function createCommandContext(): Context {
   return {
-    chat: { id: 111 },
+    chat: { id: 12345 },
     reply: vi.fn().mockResolvedValue({ message_id: 456 }),
     answerCallbackQuery: vi.fn().mockResolvedValue(undefined),
     deleteMessage: vi.fn().mockResolvedValue(undefined),
@@ -110,7 +110,7 @@ function createCommandContext(): Context {
 
 function createCallbackContext(data: string, messageId: number): Context {
   return {
-    chat: { id: 111 },
+    chat: { id: 12345 },
     callbackQuery: {
       data,
       message: {
@@ -199,7 +199,7 @@ describe("bot/commands/sessions", () => {
     const pageTwoData = Array.from({ length: 12 }, (_, index) => createSession(index));
     mocked.sessionListMock.mockResolvedValueOnce({ data: pageTwoData, error: null });
 
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       metadata: {
@@ -234,7 +234,7 @@ describe("bot/commands/sessions", () => {
   it("returns page-empty callback message when requested page has no sessions", async () => {
     mocked.sessionListMock.mockResolvedValueOnce({ data: [], error: null });
 
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       metadata: {
@@ -259,7 +259,7 @@ describe("bot/commands/sessions", () => {
       error: new Error("session list failed"),
     });
 
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       metadata: {
@@ -286,7 +286,7 @@ describe("bot/commands/sessions", () => {
       error: new Error("session get failed"),
     });
 
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       metadata: {
@@ -299,7 +299,7 @@ describe("bot/commands/sessions", () => {
     const handled = await handleSessionSelect(ctx);
 
     expect(handled).toBe(true);
-    expect(mocked.clearInteractionMock).toHaveBeenCalledWith("session_select_error");
+    expect(mocked.clearInteractionMock).toHaveBeenCalledWith(12345, "session_select_error");
     expect(ctx.answerCallbackQuery).toHaveBeenCalled();
     expect(ctx.reply).toHaveBeenCalledWith(t("sessions.select_error"));
   });
@@ -307,7 +307,7 @@ describe("bot/commands/sessions", () => {
   it("blocks session selection callback while foreground session is busy", async () => {
     foregroundSessionState.markBusy("session-1");
 
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       metadata: {

@@ -115,6 +115,7 @@ describe("process/manager", () => {
         }),
       );
       expect(setServerProcessMock).toHaveBeenCalledWith(
+        0,
         expect.objectContaining({
           pid: 456,
           startTime: expect.any(String),

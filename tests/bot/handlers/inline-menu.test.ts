@@ -11,7 +11,7 @@ import { t } from "../../../src/i18n/index.js";
 
 function createReplyContext(messageId: number = 1): Context {
   return {
-    chat: { id: 100 },
+    chat: { id: 12345 },
     reply: vi.fn().mockResolvedValue({ message_id: messageId }),
     answerCallbackQuery: vi.fn().mockResolvedValue(undefined),
     deleteMessage: vi.fn().mockResolvedValue(undefined),
@@ -20,6 +20,7 @@ function createReplyContext(messageId: number = 1): Context {
 
 function createCallbackContext(data: string, messageId: number): Context {
   return {
+    chat: { id: 12345 },
     callbackQuery: {
       data,
       message: {
@@ -85,7 +86,7 @@ describe("bot/handlers/inline-menu", () => {
 
     expect(getCallbackData(lastRow[0])).toBe("inline:cancel:model");
 
-    const state = interactionManager.getSnapshot();
+    const state = interactionManager.getSnapshot(12345);
     expect(state?.kind).toBe("inline");
     expect(state?.expectedInput).toBe("callback");
     expect(state?.metadata.menuKind).toBe("model");
@@ -93,7 +94,7 @@ describe("bot/handlers/inline-menu", () => {
   });
 
   it("accepts callback from active inline menu", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       metadata: {
@@ -111,7 +112,7 @@ describe("bot/handlers/inline-menu", () => {
   });
 
   it("rejects stale callback when menu kind does not match", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       metadata: {
@@ -132,7 +133,7 @@ describe("bot/handlers/inline-menu", () => {
   });
 
   it("handles unified inline cancel callback and clears state", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       metadata: {
@@ -146,13 +147,13 @@ describe("bot/handlers/inline-menu", () => {
     const handled = await handleInlineMenuCancel(ctx);
 
     expect(handled).toBe(true);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
     expect(ctx.answerCallbackQuery).toHaveBeenCalledWith({ text: t("inline.cancelled_callback") });
     expect(ctx.deleteMessage).toHaveBeenCalledTimes(1);
   });
 
   it("supports legacy compact cancel callback", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       metadata: {
@@ -166,6 +167,6 @@ describe("bot/handlers/inline-menu", () => {
     const handled = await handleInlineMenuCancel(ctx);
 
     expect(handled).toBe(true);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
   });
 });

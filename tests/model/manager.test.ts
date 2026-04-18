@@ -20,7 +20,7 @@ const {
 
   const getCurrentModelMock = vi.fn(() => currentModel);
   const setCurrentModelMock = vi.fn(
-    (modelInfo: { providerID: string; modelID: string; variant?: string }) => {
+    (_chatId: number, modelInfo: { providerID: string; modelID: string; variant?: string }) => {
       currentModel = modelInfo;
     },
   );
@@ -429,7 +429,7 @@ describe("model/manager", () => {
     it("falls back to env default when stored model is unavailable", async () => {
       setCurrentModelState({ providerID: "openai", modelID: "retired", variant: "high" });
 
-      await reconcileStoredModelSelection();
+      await reconcileStoredModelSelection(0);
 
       expect(getCurrentModelState()).toEqual({
         providerID: "opencode",
@@ -442,7 +442,7 @@ describe("model/manager", () => {
     it("keeps stored model when it is available", async () => {
       setCurrentModelState({ providerID: "openai", modelID: "gpt-4o", variant: "high" });
 
-      await reconcileStoredModelSelection();
+      await reconcileStoredModelSelection(0);
 
       expect(getCurrentModelState()).toEqual({
         providerID: "openai",

@@ -26,6 +26,7 @@ vi.mock("../../../src/interaction/cleanup.js", () => ({
 
 function createCallbackContext(data: string): Context {
   return {
+    chat: { id: 12345 },
     callbackQuery: { data } as Context["callbackQuery"],
     answerCallbackQuery: vi.fn().mockResolvedValue(undefined),
     editMessageText: vi.fn().mockResolvedValue(undefined),
@@ -70,7 +71,7 @@ describe("bot/commands/projects handleProjectSelect", () => {
     const handled = await handleProjectSelect(ctx);
 
     expect(handled).toBe(true);
-    expect(mocked.clearAllInteractionStateMock).toHaveBeenCalledWith("project_select_error");
+    expect(mocked.clearAllInteractionStateMock).toHaveBeenCalledWith(12345, "project_select_error");
     expect(ctx.answerCallbackQuery).toHaveBeenCalledWith();
     expect(ctx.reply).toHaveBeenCalledWith(t("projects.select_error"));
   });

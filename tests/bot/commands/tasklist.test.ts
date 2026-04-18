@@ -51,14 +51,14 @@ function createTask(id: string, overrides: Partial<Record<string, unknown>> = {}
 
 function createCommandContext(messageId: number = 100): Context {
   return {
-    chat: { id: 777 },
+    chat: { id: 12345 },
     reply: vi.fn().mockResolvedValue({ message_id: messageId }),
   } as unknown as Context;
 }
 
 function createCallbackContext(data: string, messageId: number): Context {
   return {
-    chat: { id: 777 },
+    chat: { id: 12345 },
     callbackQuery: {
       data,
       message: {
@@ -89,7 +89,7 @@ describe("bot/commands/tasklist", () => {
     await taskListCommand(ctx as never);
 
     expect(ctx.reply).toHaveBeenCalledWith(t("tasklist.empty"));
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
   });
 
   it("shows tasks from all projects in one list", async () => {
@@ -125,7 +125,7 @@ describe("bot/commands/tasklist", () => {
     expect(options.reply_markup.inline_keyboard[1]?.[0]?.text).toContain("Check weather forecast");
     expect(options.reply_markup.inline_keyboard[2]?.[0]?.callback_data).toBe("tasklist:cancel");
 
-    expect(interactionManager.getSnapshot()).toMatchObject({
+    expect(interactionManager.getSnapshot(12345)).toMatchObject({
       kind: "custom",
       expectedInput: "callback",
       metadata: {
@@ -137,7 +137,7 @@ describe("bot/commands/tasklist", () => {
   });
 
   it("opens task details without showing original schedule text", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "custom",
       expectedInput: "callback",
       metadata: {
@@ -171,7 +171,7 @@ describe("bot/commands/tasklist", () => {
     expect(text).toContain("Cron: 0 * * * *");
     expect(text).not.toContain("every hour please");
 
-    expect(interactionManager.getSnapshot()).toMatchObject({
+    expect(interactionManager.getSnapshot(12345)).toMatchObject({
       kind: "custom",
       metadata: {
         flow: "tasklist",
@@ -182,7 +182,7 @@ describe("bot/commands/tasklist", () => {
   });
 
   it("cancels task details interaction and removes message", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "custom",
       expectedInput: "callback",
       metadata: {
@@ -197,7 +197,7 @@ describe("bot/commands/tasklist", () => {
     const handled = await handleTaskListCallback(ctx);
 
     expect(handled).toBe(true);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
     expect(ctx.answerCallbackQuery).toHaveBeenCalledWith({
       text: t("tasklist.cancelled_callback"),
     });
@@ -205,7 +205,7 @@ describe("bot/commands/tasklist", () => {
   });
 
   it("deletes selected task and clears runtime scheduling", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "custom",
       expectedInput: "callback",
       metadata: {
@@ -222,7 +222,7 @@ describe("bot/commands/tasklist", () => {
     expect(handled).toBe(true);
     expect(mocked.removeScheduledTaskMock).toHaveBeenCalledWith("task-2");
     expect(mocked.runtimeRemoveTaskMock).toHaveBeenCalledWith("task-2");
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
     expect(ctx.answerCallbackQuery).toHaveBeenCalledWith({
       text: t("tasklist.deleted_callback"),
     });
@@ -230,7 +230,7 @@ describe("bot/commands/tasklist", () => {
   });
 
   it("shows inactive alert for stale callbacks", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "custom",
       expectedInput: "callback",
       metadata: {

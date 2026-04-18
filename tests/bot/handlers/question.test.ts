@@ -10,6 +10,8 @@ import {
 import type { Question } from "../../../src/question/types.js";
 import { t } from "../../../src/i18n/index.js";
 
+const TEST_CHAT_ID = 123;
+
 const QUESTION_ONE: Question = {
   header: "Q1",
   question: "Pick one",
@@ -81,19 +83,19 @@ function createTextContext(text: string, api: Context["api"]): Context {
 
 describe("bot/handlers/question", () => {
   beforeEach(() => {
-    questionManager.clear();
-    interactionManager.clear("test_setup");
+    questionManager.clear(TEST_CHAT_ID);
+    interactionManager.clear(TEST_CHAT_ID, "test_setup");
   });
 
   it("starts question interaction in callback mode when showing question", async () => {
     const api = createApi([100]);
 
-    questionManager.startQuestions([QUESTION_ONE], "req-1");
-    await showCurrentQuestion(api, 123);
+    questionManager.startQuestions(TEST_CHAT_ID, [QUESTION_ONE], "req-1");
+    await showCurrentQuestion(api, TEST_CHAT_ID);
 
-    expect(questionManager.getActiveMessageId()).toBe(100);
+    expect(questionManager.getActiveMessageId(TEST_CHAT_ID)).toBe(100);
 
-    const state = interactionManager.getSnapshot();
+    const state = interactionManager.getSnapshot(TEST_CHAT_ID);
     expect(state?.kind).toBe("question");
     expect(state?.expectedInput).toBe("callback");
     expect(state?.metadata.requestID).toBe("req-1");
@@ -104,31 +106,31 @@ describe("bot/handlers/question", () => {
   it("switches to mixed mode on custom callback and accepts custom text", async () => {
     const api = createApi([101, 102]);
 
-    questionManager.startQuestions([QUESTION_ONE, QUESTION_TWO], "req-2");
-    await showCurrentQuestion(api, 123);
+    questionManager.startQuestions(TEST_CHAT_ID, [QUESTION_ONE, QUESTION_TWO], "req-2");
+    await showCurrentQuestion(api, TEST_CHAT_ID);
 
     const customCtx = createCallbackContext("question:custom:0", 101, api);
     await handleQuestionCallback(customCtx);
 
-    expect(questionManager.isWaitingForCustomInput(0)).toBe(true);
-    expect(interactionManager.getSnapshot()?.expectedInput).toBe("mixed");
+    expect(questionManager.isWaitingForCustomInput(TEST_CHAT_ID, 0)).toBe(true);
+    expect(interactionManager.getSnapshot(TEST_CHAT_ID)?.expectedInput).toBe("mixed");
 
     const textCtx = createTextContext("My custom answer", api);
     await handleQuestionTextAnswer(textCtx);
 
-    expect(questionManager.getCustomAnswer(0)).toBe("My custom answer");
-    expect(questionManager.getCurrentIndex()).toBe(1);
-    expect(questionManager.getActiveMessageId()).toBe(102);
-    expect(interactionManager.getSnapshot()?.expectedInput).toBe("callback");
+    expect(questionManager.getCustomAnswer(TEST_CHAT_ID, 0)).toBe("My custom answer");
+    expect(questionManager.getCurrentIndex(TEST_CHAT_ID)).toBe(1);
+    expect(questionManager.getActiveMessageId(TEST_CHAT_ID)).toBe(102);
+    expect(interactionManager.getSnapshot(TEST_CHAT_ID)?.expectedInput).toBe("callback");
 
-    expect(api.deleteMessage).toHaveBeenCalledWith(123, 101);
+    expect(api.deleteMessage).toHaveBeenCalledWith(TEST_CHAT_ID, 101);
   });
 
   it("rejects stale callback from old question message", async () => {
     const api = createApi([200]);
 
-    questionManager.startQuestions([QUESTION_ONE], "req-3");
-    await showCurrentQuestion(api, 123);
+    questionManager.startQuestions(TEST_CHAT_ID, [QUESTION_ONE], "req-3");
+    await showCurrentQuestion(api, TEST_CHAT_ID);
 
     const staleCtx = createCallbackContext("question:select:0:0", 199, api);
     const handled = await handleQuestionCallback(staleCtx);
@@ -138,30 +140,30 @@ describe("bot/handlers/question", () => {
       text: t("question.inactive_callback"),
       show_alert: true,
     });
-    expect(questionManager.getSelectedOptions(0)).toEqual(new Set<number>());
+    expect(questionManager.getSelectedOptions(TEST_CHAT_ID, 0)).toEqual(new Set<number>());
   });
 
   it("cancels poll and clears question interaction", async () => {
     const api = createApi([300]);
 
-    questionManager.startQuestions([QUESTION_ONE], "req-4");
-    await showCurrentQuestion(api, 123);
+    questionManager.startQuestions(TEST_CHAT_ID, [QUESTION_ONE], "req-4");
+    await showCurrentQuestion(api, TEST_CHAT_ID);
 
     const cancelCtx = createCallbackContext("question:cancel:0", 300, api);
     const handled = await handleQuestionCallback(cancelCtx);
 
     expect(handled).toBe(true);
     expect(cancelCtx.editMessageText).toHaveBeenCalledWith(t("question.cancelled"));
-    expect(questionManager.isActive()).toBe(false);
-    expect(questionManager.getTotalQuestions()).toBe(0);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(questionManager.isActive(TEST_CHAT_ID)).toBe(false);
+    expect(questionManager.getTotalQuestions(TEST_CHAT_ID)).toBe(0);
+    expect(interactionManager.getSnapshot(TEST_CHAT_ID)).toBeNull();
   });
 
   it("requires at least one selected option on multiple submit", async () => {
     const api = createApi([400]);
 
-    questionManager.startQuestions([MULTIPLE_QUESTION], "req-5");
-    await showCurrentQuestion(api, 123);
+    questionManager.startQuestions(TEST_CHAT_ID, [MULTIPLE_QUESTION], "req-5");
+    await showCurrentQuestion(api, TEST_CHAT_ID);
 
     const submitCtx = createCallbackContext("question:submit:0", 400, api);
     const handled = await handleQuestionCallback(submitCtx);
@@ -171,6 +173,6 @@ describe("bot/handlers/question", () => {
       text: t("question.select_one_required_callback"),
       show_alert: true,
     });
-    expect(questionManager.isActive()).toBe(true);
+    expect(questionManager.isActive(TEST_CHAT_ID)).toBe(true);
   });
 });

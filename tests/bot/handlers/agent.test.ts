@@ -25,7 +25,7 @@ describe("bot/handlers/agent", () => {
 
     const keyboard = await buildAgentSelectionMenu("reviewer");
 
-    expect(keyboard.inline_keyboard[0]?.[0]?.text).toBe("✅ 🤖 Reviewer");
+    expect(keyboard.inline_keyboard[0]?.[0]?.text).toBe("✅ 🤖 REVIEWER");
     expect(keyboard.inline_keyboard[1]?.[0]?.text).toBe("🛠️ Build");
   });
 });

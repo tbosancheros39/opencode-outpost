@@ -38,11 +38,11 @@ describe("summary/formatter", () => {
     expect(parts[0].endsWith("\n```")).toBe(true);
   });
 
-  it("formats markdown summaries for Telegram MarkdownV2 mode", () => {
+  it("returns raw text chunks for markdown mode", () => {
     const text = "Check out this **amazing** library with *great* features!";
     const parts = formatSummaryWithMode(text, "markdown");
 
-    expect(parts).toEqual(["Check out this *amazing* library with _great_ features\\!"]);
+    expect(parts).toEqual([text]);
   });
 
   it("does not wrap long markdown summaries in code blocks", () => {
@@ -69,7 +69,7 @@ describe("summary/formatter", () => {
     expect(parts[0].endsWith("\n```")).toBe(true);
   });
 
-  it("adapts headings, quotes, tables and horizontal rules for Telegram", () => {
+  it("returns raw text for markdown mode without rendering", () => {
     const text = [
       "# Main heading",
       "",
@@ -86,33 +86,31 @@ describe("summary/formatter", () => {
     const parts = formatSummaryWithMode(text, "markdown");
 
     expect(parts).toHaveLength(1);
-    expect(parts[0]).toContain("*Main heading*");
-    expect(parts[0]).toContain("> This is a quote\\.");
-    expect(parts[0]).toContain("> Quote continues on next line\\.");
-    expect(parts[0]).toContain("\\| Header 1 \\| Header 2 \\|");
-    expect(parts[0]).toContain("\\| Cell A \\| Cell B \\|");
-    expect(parts[0]).not.toContain("```\nHeader 1");
-    expect(parts[0]).toContain("──────────");
+    expect(parts[0]).toContain("# Main heading");
+    expect(parts[0]).toContain("> This is a quote.");
+    expect(parts[0]).toContain("| Header 1 | Header 2 |");
+    expect(parts[0]).toContain("| Cell A | Cell B |");
+    expect(parts[0]).toContain("---");
   });
 
-  it("escapes table pipes for MarkdownV2 outside code blocks", () => {
+  it("returns raw text for markdown tables without pipe escaping", () => {
     const text = ["| A | B |", "", "```ts", 'const row = "| raw |";', "```"].join("\n");
 
     const parts = formatSummaryWithMode(text, "markdown");
 
     expect(parts).toHaveLength(1);
-    expect(parts[0]).toContain("\\| A \\| B \\|");
+    expect(parts[0]).toContain("| A | B |");
     expect(parts[0]).toContain('const row = "| raw |";');
   });
 
-  it("renders markdown checklists as visual checkboxes", () => {
+  it("returns raw text for markdown checklists without conversion", () => {
     const text = ["- [ ] Open task", "- [x] Done task", "1. [ ] Numbered task"].join("\n");
     const parts = formatSummaryWithMode(text, "markdown");
 
     expect(parts).toHaveLength(1);
-    expect(parts[0]).toContain("🔲 Open task");
-    expect(parts[0]).toContain("✅ Done task");
-    expect(parts[0]).toContain("🔲 Numbered task");
+    expect(parts[0]).toContain("- [ ] Open task");
+    expect(parts[0]).toContain("- [x] Done task");
+    expect(parts[0]).toContain("1. [ ] Numbered task");
   });
 
   it("formats todowrite tool metadata", () => {

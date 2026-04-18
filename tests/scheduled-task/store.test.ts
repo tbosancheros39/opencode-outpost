@@ -11,6 +11,8 @@ import {
 } from "../../src/scheduled-task/store.js";
 import type { ScheduledTask } from "../../src/scheduled-task/types.js";
 
+const TEST_CHAT_ID = 123456;
+
 function createScheduledTask(overrides: Partial<ScheduledTask> = {}): ScheduledTask {
   return {
     id: "task-1",
@@ -57,9 +59,9 @@ describe("scheduled-task/store", () => {
   it("persists scheduled tasks to settings.json", async () => {
     const task = createScheduledTask();
 
-    await addScheduledTask(task);
+    await addScheduledTask(TEST_CHAT_ID, task);
 
-    expect(listScheduledTasks()).toEqual([task]);
+    expect(listScheduledTasks(TEST_CHAT_ID)).toEqual([task]);
 
     const settingsPath = path.join(tempHome, "settings.json");
     const settingsFile = JSON.parse(await readFile(settingsPath, "utf-8")) as {
@@ -81,11 +83,11 @@ describe("scheduled-task/store", () => {
       nextRunAt: "2026-03-16T12:00:00.000Z",
     });
 
-    await addScheduledTask(firstTask);
-    await addScheduledTask(secondTask);
+    await addScheduledTask(TEST_CHAT_ID, firstTask);
+    await addScheduledTask(TEST_CHAT_ID, secondTask);
 
-    await removeScheduledTask("task-1");
+    await removeScheduledTask("task-1", TEST_CHAT_ID);
 
-    expect(listScheduledTasks()).toEqual([secondTask]);
+    expect(listScheduledTasks(TEST_CHAT_ID)).toEqual([secondTask]);
   });
 });

@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { editBotText, sendBotText } from "../../../src/bot/utils/telegram-text.js";
 
+vi.mock("../../../src/telegram/render/index.js", () => ({
+  renderMarkdown: vi.fn((text: string) => [{ text, parseMode: "MarkdownV2" as const }]),
+}));
+
 describe("bot/utils/telegram-text", () => {
   it("sends raw messages by default", async () => {
     const sendMessage = vi.fn().mockResolvedValue(undefined);
@@ -36,9 +40,10 @@ describe("bot/utils/telegram-text", () => {
 
   it("edits raw messages by default", async () => {
     const editMessageText = vi.fn().mockResolvedValue(undefined);
+    const sendMessage = vi.fn().mockResolvedValue(undefined);
 
     await editBotText({
-      api: { editMessageText },
+      api: { editMessageText, sendMessage },
       chatId: 100,
       messageId: 200,
       text: "updated",

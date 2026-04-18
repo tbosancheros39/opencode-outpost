@@ -7,7 +7,7 @@ import { t } from "../../../src/i18n/index.js";
 
 function createTextContext(text: string): Context {
   return {
-    chat: { id: 1 },
+    chat: { id: 12345 },
     message: { text } as Context["message"],
     reply: vi.fn().mockResolvedValue(undefined),
     answerCallbackQuery: vi.fn().mockResolvedValue(undefined),
@@ -16,6 +16,7 @@ function createTextContext(text: string): Context {
 
 function createCallbackContext(data: string): Context {
   return {
+    chat: { id: 12345 },
     callbackQuery: { data } as Context["callbackQuery"],
     reply: vi.fn().mockResolvedValue(undefined),
     answerCallbackQuery: vi.fn().mockResolvedValue(undefined),
@@ -24,7 +25,7 @@ function createCallbackContext(data: string): Context {
 
 function createVoiceContext(): Context {
   return {
-    chat: { id: 1 },
+    chat: { id: 12345 },
     message: { voice: { file_id: "voice-file-id" } } as Context["message"],
     reply: vi.fn().mockResolvedValue(undefined),
     answerCallbackQuery: vi.fn().mockResolvedValue(undefined),
@@ -33,7 +34,7 @@ function createVoiceContext(): Context {
 
 describe("interactionGuardMiddleware", () => {
   beforeEach(() => {
-    interactionManager.clear("test_setup");
+    interactionManager.clear(1, "test_setup");
     foregroundSessionState.__resetForTests();
   });
 
@@ -48,7 +49,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("blocks text and replies when callback is expected", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
     });
@@ -63,7 +64,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("blocks callback and answers callback query when text is expected", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "rename",
       expectedInput: "text",
     });
@@ -81,7 +82,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("allows command from allowed list", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       allowedCommands: ["/status"],
@@ -97,7 +98,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("always allows /start even when command list is restricted", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       allowedCommands: ["/status"],
@@ -113,7 +114,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("blocks disallowed command", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       allowedCommands: ["/status"],
@@ -129,7 +130,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("shows permission-specific message for blocked text", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "permission",
       expectedInput: "callback",
     });
@@ -144,7 +145,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("shows permission-specific message for disallowed command", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "permission",
       expectedInput: "callback",
       allowedCommands: ["/status"],
@@ -160,7 +161,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("shows rename-specific message for disallowed command", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "rename",
       expectedInput: "text",
       allowedCommands: ["/status"],
@@ -176,7 +177,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("blocks voice input while rename interaction expects text", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "rename",
       expectedInput: "text",
     });
@@ -191,7 +192,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("shows question-specific message for blocked text", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "question",
       expectedInput: "callback",
     });
@@ -206,7 +207,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("shows question-specific message for disallowed command", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "question",
       expectedInput: "callback",
       allowedCommands: ["/status"],
@@ -222,7 +223,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("allows task cancel callback while text is expected", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "task",
       expectedInput: "text",
     });
@@ -237,7 +238,7 @@ describe("interactionGuardMiddleware", () => {
   });
 
   it("shows task-specific message for disallowed command", async () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "task",
       expectedInput: "text",
       allowedCommands: ["/status"],
@@ -306,7 +307,7 @@ describe("interactionGuardMiddleware", () => {
 
   it("allows active question callback while busy", async () => {
     foregroundSessionState.markBusy("session-1");
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "question",
       expectedInput: "mixed",
     });
@@ -322,7 +323,7 @@ describe("interactionGuardMiddleware", () => {
 
   it("allows active permission callback while busy", async () => {
     foregroundSessionState.markBusy("session-1");
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "permission",
       expectedInput: "callback",
     });

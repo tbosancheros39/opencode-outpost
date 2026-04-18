@@ -31,38 +31,38 @@ describe("interaction/cleanup", () => {
   });
 
   it("clears all interaction-related managers", () => {
-    questionManager.startQuestions([TEST_QUESTION], "req-1");
-    permissionManager.startPermission(TEST_PERMISSION, 101);
-    renameManager.startWaiting("session-1", "D:/repo", "Old title");
-    interactionManager.start({
+    questionManager.startQuestions(12345, [TEST_QUESTION], "req-1");
+    permissionManager.startPermission(12345, TEST_PERMISSION, 101);
+    renameManager.startWaiting(12345, "session-1", "D:/repo", "Old title");
+    interactionManager.start(12345, {
       kind: "rename",
       expectedInput: "text",
       metadata: { sessionId: "session-1" },
     });
 
-    clearAllInteractionState("test_cleanup");
+    clearAllInteractionState(12345, "test_cleanup");
 
-    expect(questionManager.isActive()).toBe(false);
-    expect(permissionManager.isActive()).toBe(false);
-    expect(renameManager.isWaitingForName()).toBe(false);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(questionManager.isActive(12345)).toBe(false);
+    expect(permissionManager.isActive(12345)).toBe(false);
+    expect(renameManager.isWaitingForName(12345)).toBe(false);
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
   });
 
   it("allows starting new interaction after cleanup", () => {
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "inline",
       expectedInput: "callback",
       metadata: { menuKind: "model", messageId: 1 },
     });
 
-    clearAllInteractionState("first_cleanup");
+    clearAllInteractionState(12345, "first_cleanup");
 
-    interactionManager.start({
+    interactionManager.start(12345, {
       kind: "question",
       expectedInput: "callback",
       metadata: { questionIndex: 0 },
     });
 
-    expect(interactionManager.getSnapshot()?.kind).toBe("question");
+    expect(interactionManager.getSnapshot(12345)?.kind).toBe("question");
   });
 });

@@ -5,7 +5,7 @@ describe("runtime/bootstrap", () => {
   it("validates required runtime env values", () => {
     const result = validateRuntimeEnvValues({
       TELEGRAM_BOT_TOKEN: "123456:abcdef",
-      TELEGRAM_ALLOWED_USER_ID: "123456789",
+      TELEGRAM_ALLOWED_USER_IDS: "123456789",
       OPENCODE_MODEL_PROVIDER: "opencode",
       OPENCODE_MODEL_ID: "big-pickle",
     });
@@ -16,7 +16,7 @@ describe("runtime/bootstrap", () => {
   it("fails validation when required model values are missing", () => {
     const result = validateRuntimeEnvValues({
       TELEGRAM_BOT_TOKEN: "123456:abcdef",
-      TELEGRAM_ALLOWED_USER_ID: "123456789",
+      TELEGRAM_ALLOWED_USER_IDS: "123456789",
     });
 
     expect(result.isValid).toBe(false);
@@ -26,13 +26,13 @@ describe("runtime/bootstrap", () => {
   it("fails validation for invalid user id", () => {
     const result = validateRuntimeEnvValues({
       TELEGRAM_BOT_TOKEN: "123456:abcdef",
-      TELEGRAM_ALLOWED_USER_ID: "0",
+      TELEGRAM_ALLOWED_USER_IDS: "0",
       OPENCODE_MODEL_PROVIDER: "opencode",
       OPENCODE_MODEL_ID: "big-pickle",
     });
 
     expect(result.isValid).toBe(false);
-    expect(result.reason).toContain("TELEGRAM_ALLOWED_USER_ID");
+    expect(result.reason).toContain("TELEGRAM_ALLOWED_USER_IDS");
   });
 
   it("updates only wizard keys and preserves custom keys", () => {
@@ -42,7 +42,7 @@ describe("runtime/bootstrap", () => {
       "OPENCODE_SERVER_USERNAME=old-user",
       "OPENCODE_SERVER_PASSWORD=old-password",
       "TELEGRAM_BOT_TOKEN=old",
-      "TELEGRAM_ALLOWED_USER_ID=1",
+      "TELEGRAM_ALLOWED_USER_IDS=1",
       "OPENCODE_API_URL=http://localhost:4096",
       "OPENCODE_MODEL_PROVIDER=old-provider",
       "OPENCODE_MODEL_ID=old-model",
@@ -52,7 +52,7 @@ describe("runtime/bootstrap", () => {
     const updated = buildEnvFileContent(existingContent, {
       BOT_LOCALE: "ru",
       TELEGRAM_BOT_TOKEN: "new-token:value",
-      TELEGRAM_ALLOWED_USER_ID: "777",
+      TELEGRAM_ALLOWED_USER_IDS: "777",
       OPENCODE_SERVER_USERNAME: "new-user",
       OPENCODE_MODEL_PROVIDER: "old-provider",
       OPENCODE_MODEL_ID: "old-model",
@@ -63,7 +63,7 @@ describe("runtime/bootstrap", () => {
     expect(updated).not.toContain("OPENCODE_SERVER_PASSWORD=");
     expect(updated).toContain("BOT_LOCALE=ru");
     expect(updated).toContain("TELEGRAM_BOT_TOKEN=new-token:value");
-    expect(updated).toContain("TELEGRAM_ALLOWED_USER_ID=777");
+    expect(updated).toContain("TELEGRAM_ALLOWED_USER_IDS=777");
     expect(updated).not.toContain("OPENCODE_API_URL=");
     expect(updated).toContain("OPENCODE_MODEL_PROVIDER=old-provider");
     expect(updated).toContain("OPENCODE_MODEL_ID=old-model");
@@ -73,7 +73,7 @@ describe("runtime/bootstrap", () => {
     const updated = buildEnvFileContent("", {
       BOT_LOCALE: "en",
       TELEGRAM_BOT_TOKEN: "token:value",
-      TELEGRAM_ALLOWED_USER_ID: "42",
+      TELEGRAM_ALLOWED_USER_IDS: "42",
       OPENCODE_SERVER_USERNAME: "opencode",
       OPENCODE_SERVER_PASSWORD: "secret",
       OPENCODE_MODEL_PROVIDER: "opencode",
@@ -83,7 +83,7 @@ describe("runtime/bootstrap", () => {
 
     expect(updated).toContain("BOT_LOCALE=en");
     expect(updated).toContain("TELEGRAM_BOT_TOKEN=token:value");
-    expect(updated).toContain("TELEGRAM_ALLOWED_USER_ID=42");
+    expect(updated).toContain("TELEGRAM_ALLOWED_USER_IDS=42");
     expect(updated).toContain("OPENCODE_API_URL=https://localhost:4096");
     expect(updated).toContain("OPENCODE_SERVER_USERNAME=opencode");
     expect(updated).toContain("OPENCODE_SERVER_PASSWORD=secret");
@@ -101,7 +101,7 @@ describe("runtime/bootstrap", () => {
     const updated = buildEnvFileContent(existingContent, {
       BOT_LOCALE: "en",
       TELEGRAM_BOT_TOKEN: "token:value",
-      TELEGRAM_ALLOWED_USER_ID: "42",
+      TELEGRAM_ALLOWED_USER_IDS: "42",
       OPENCODE_SERVER_USERNAME: "opencode",
       OPENCODE_MODEL_PROVIDER: "opencode",
       OPENCODE_MODEL_ID: "big-pickle",

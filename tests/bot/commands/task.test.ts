@@ -133,7 +133,7 @@ function createCallbackContext(data: string, messageId: number): Context {
 
 describe("bot/commands/task", () => {
   beforeEach(() => {
-    interactionManager.clear("test_setup");
+    interactionManager.clear(777, "test_setup");
     taskCreationManager.clear();
 
     mocked.currentProject = {
@@ -170,7 +170,7 @@ describe("bot/commands/task", () => {
       reply_markup: expect.any(Object),
     });
     expect(taskCreationManager.isWaitingForSchedule()).toBe(true);
-    expect(interactionManager.getSnapshot()).toMatchObject({
+    expect(interactionManager.getSnapshot(777)).toMatchObject({
       kind: "task",
       expectedInput: "text",
       metadata: {
@@ -192,7 +192,7 @@ describe("bot/commands/task", () => {
 
     expect(ctx.reply).toHaveBeenCalledWith(t("task.limit_reached", { limit: "1" }));
     expect(taskCreationManager.isActive()).toBe(false);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(interactionManager.getSnapshot(777)).toBeNull();
   });
 
   it("parses schedule and switches flow to prompt input", async () => {
@@ -218,7 +218,7 @@ describe("bot/commands/task", () => {
     expect(previewCall[0]).toContain(t("task.prompt.body"));
     expect(previewCall[1]).toEqual(expect.objectContaining({ reply_markup: expect.any(Object) }));
     expect(taskCreationManager.isWaitingForPrompt()).toBe(true);
-    expect(interactionManager.getSnapshot()).toMatchObject({
+    expect(interactionManager.getSnapshot(777)).toMatchObject({
       kind: "task",
       expectedInput: "mixed",
       metadata: {
@@ -240,6 +240,7 @@ describe("bot/commands/task", () => {
     expect(mocked.addScheduledTaskMock).toHaveBeenCalledTimes(1);
     expect(mocked.registerTaskMock).toHaveBeenCalledTimes(1);
     expect(mocked.addScheduledTaskMock).toHaveBeenCalledWith(
+      777,
       expect.objectContaining({
         projectId: "project-1",
         projectWorktree: "D:\\Projects\\Repo",
@@ -266,7 +267,7 @@ describe("bot/commands/task", () => {
     expect(successCall[0]).toContain("Every day at 17:00");
     expect(successCall[0]).toContain("Cron: 0 17 * * *");
     expect(taskCreationManager.isActive()).toBe(false);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(interactionManager.getSnapshot(777)).toBeNull();
   });
 
   it("stops task save when limit is reached before final step", async () => {
@@ -284,7 +285,7 @@ describe("bot/commands/task", () => {
     expect(mocked.registerTaskMock).not.toHaveBeenCalled();
     expect(ctx.reply).toHaveBeenCalledWith(t("task.limit_reached", { limit: "1" }));
     expect(taskCreationManager.isActive()).toBe(false);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(interactionManager.getSnapshot(777)).toBeNull();
   });
 
   it("restarts schedule step when retry button is pressed", async () => {
@@ -302,7 +303,7 @@ describe("bot/commands/task", () => {
       reply_markup: expect.any(Object),
     });
     expect(taskCreationManager.isWaitingForSchedule()).toBe(true);
-    expect(interactionManager.getSnapshot()).toMatchObject({
+    expect(interactionManager.getSnapshot(777)).toMatchObject({
       kind: "task",
       expectedInput: "text",
       metadata: {
@@ -323,7 +324,7 @@ describe("bot/commands/task", () => {
     });
     expect(ctx.reply).toHaveBeenCalledWith(t("task.cancelled"));
     expect(taskCreationManager.isActive()).toBe(false);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(interactionManager.getSnapshot(777)).toBeNull();
   });
 
   it("rejects schedules more frequent than every 5 minutes", async () => {

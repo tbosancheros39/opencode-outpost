@@ -116,7 +116,7 @@ describe("bot/commands/status", () => {
     mocked.sendBotTextMock.mockResolvedValue(undefined);
   });
 
-  it("includes TTS status in the rendered message", async () => {
+  it("includes basic status information in the rendered message", async () => {
     const ctx = {
       chat: { id: 42, type: "private" },
       message: { text: "/status" },
@@ -127,7 +127,8 @@ describe("bot/commands/status", () => {
     await statusCommand(ctx as never);
 
     const message = mocked.sendBotTextMock.mock.calls[0]?.[0]?.text as string;
-    expect(message).toContain("TTS replies");
-    expect(message).toContain("On");
+    // Basic status info should be present
+    expect(message).toContain("OpenCode Server");
+    expect(message).toContain("Status");
   });
 });

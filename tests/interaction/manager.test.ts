@@ -5,12 +5,14 @@ import {
 } from "../../src/interaction/manager.js";
 
 describe("interactionManager", () => {
+  const TEST_CHAT_ID = 123456789;
+  
   beforeEach(() => {
-    interactionManager.clear("test_setup");
+    interactionManager.clear(TEST_CHAT_ID, "test_setup");
   });
 
   it("starts interaction with defaults", () => {
-    const state = interactionManager.start({
+    const state = interactionManager.start(TEST_CHAT_ID, {
       kind: "question",
       expectedInput: "callback",
       metadata: { requestId: "q-1" },
@@ -22,11 +24,11 @@ describe("interactionManager", () => {
     expect(state.allowedCommands).toEqual([...DEFAULT_ALLOWED_INTERACTION_COMMANDS]);
     expect(state.createdAt).toBeTypeOf("number");
     expect(state.expiresAt).toBeNull();
-    expect(interactionManager.isActive()).toBe(true);
+    expect(interactionManager.isActive(TEST_CHAT_ID)).toBe(true);
   });
 
   it("normalizes and deduplicates allowed commands", () => {
-    const state = interactionManager.start({
+    const state = interactionManager.start(TEST_CHAT_ID, {
       kind: "inline",
       expectedInput: "callback",
       allowedCommands: ["/Help", "status", "/help", " /STATUS@MyBot ", "", " / "],
@@ -36,13 +38,13 @@ describe("interactionManager", () => {
   });
 
   it("transitions active interaction", () => {
-    interactionManager.start({
+    interactionManager.start(TEST_CHAT_ID, {
       kind: "rename",
       expectedInput: "text",
       metadata: { step: 1 },
     });
 
-    const transitioned = interactionManager.transition({
+    const transitioned = interactionManager.transition(TEST_CHAT_ID, {
       kind: "question",
       expectedInput: "mixed",
       allowedCommands: ["/abort"],
@@ -62,27 +64,27 @@ describe("interactionManager", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
 
-    interactionManager.start({
+    interactionManager.start(TEST_CHAT_ID, {
       kind: "permission",
       expectedInput: "callback",
       expiresInMs: 1000,
     });
 
-    expect(interactionManager.isExpired()).toBe(false);
+    expect(interactionManager.isExpired(TEST_CHAT_ID)).toBe(false);
 
     vi.advanceTimersByTime(1000);
-    expect(interactionManager.isExpired()).toBe(true);
+    expect(interactionManager.isExpired(TEST_CHAT_ID)).toBe(true);
   });
 
   it("clears active interaction", () => {
-    interactionManager.start({
+    interactionManager.start(TEST_CHAT_ID, {
       kind: "custom",
       expectedInput: "mixed",
     });
 
-    interactionManager.clear("test");
+    interactionManager.clear(TEST_CHAT_ID, "test");
 
-    expect(interactionManager.isActive()).toBe(false);
-    expect(interactionManager.get()).toBeNull();
+    expect(interactionManager.isActive(TEST_CHAT_ID)).toBe(false);
+    expect(interactionManager.get(TEST_CHAT_ID)).toBeNull();
   });
 });

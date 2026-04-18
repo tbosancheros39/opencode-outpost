@@ -48,10 +48,10 @@ const TEST_PERMISSION: PermissionRequest = {
 };
 
 function activateInteractionState(): void {
-  questionManager.startQuestions([TEST_QUESTION], "req-abort");
-  permissionManager.startPermission(TEST_PERMISSION, 101);
-  renameManager.startWaiting("session-1", "D:/repo", "Old title");
-  interactionManager.start({
+  questionManager.startQuestions(12345, [TEST_QUESTION], "req-abort");
+  permissionManager.startPermission(12345, TEST_PERMISSION, 101);
+  renameManager.startWaiting(12345, "session-1", "D:/repo", "Old title");
+  interactionManager.start(12345, {
     kind: "rename",
     expectedInput: "text",
     metadata: { sessionId: "session-1" },
@@ -60,7 +60,7 @@ function activateInteractionState(): void {
 
 describe("bot/commands/abort", () => {
   beforeEach(() => {
-    clearAllInteractionState("test_setup");
+    clearAllInteractionState(12345, "test_setup");
     mocked.currentSession = null;
     mocked.abortMock.mockReset();
     mocked.statusMock.mockReset();
@@ -71,16 +71,17 @@ describe("bot/commands/abort", () => {
 
     const replyMock = vi.fn().mockResolvedValue(undefined);
     const ctx = {
+      chat: { id: 12345 },
       reply: replyMock,
     } as unknown as Context;
 
     await abortCommand(ctx as never);
 
     expect(replyMock).toHaveBeenCalledWith(t("stop.no_active_session"));
-    expect(questionManager.isActive()).toBe(false);
-    expect(permissionManager.isActive()).toBe(false);
-    expect(renameManager.isWaitingForName()).toBe(false);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(questionManager.isActive(12345)).toBe(false);
+    expect(permissionManager.isActive(12345)).toBe(false);
+    expect(renameManager.isWaitingForName(12345)).toBe(false);
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
     expect(mocked.abortMock).not.toHaveBeenCalled();
   });
 
@@ -105,7 +106,7 @@ describe("bot/commands/abort", () => {
     const editMessageTextMock = vi.fn().mockResolvedValue(undefined);
 
     const ctx = {
-      chat: { id: 777 },
+      chat: { id: 12345 },
       reply: replyMock,
       api: {
         editMessageText: editMessageTextMock,
@@ -116,12 +117,12 @@ describe("bot/commands/abort", () => {
 
     expect(replyMock).toHaveBeenCalledWith(t("stop.in_progress"));
     expect(mocked.abortMock).toHaveBeenCalled();
-    expect(editMessageTextMock).toHaveBeenCalledWith(777, 88, t("stop.success"));
+    expect(editMessageTextMock).toHaveBeenCalledWith(12345, 88, t("stop.success"));
 
-    expect(questionManager.isActive()).toBe(false);
-    expect(permissionManager.isActive()).toBe(false);
-    expect(renameManager.isWaitingForName()).toBe(false);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(questionManager.isActive(12345)).toBe(false);
+    expect(permissionManager.isActive(12345)).toBe(false);
+    expect(renameManager.isWaitingForName(12345)).toBe(false);
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
   });
 
   it("can abort silently without progress messages", async () => {
@@ -145,7 +146,7 @@ describe("bot/commands/abort", () => {
     const editMessageTextMock = vi.fn().mockResolvedValue(undefined);
 
     const ctx = {
-      chat: { id: 777 },
+      chat: { id: 12345 },
       reply: replyMock,
       api: {
         editMessageText: editMessageTextMock,
@@ -158,9 +159,9 @@ describe("bot/commands/abort", () => {
     expect(replyMock).not.toHaveBeenCalled();
     expect(editMessageTextMock).not.toHaveBeenCalled();
 
-    expect(questionManager.isActive()).toBe(false);
-    expect(permissionManager.isActive()).toBe(false);
-    expect(renameManager.isWaitingForName()).toBe(false);
-    expect(interactionManager.getSnapshot()).toBeNull();
+    expect(questionManager.isActive(12345)).toBe(false);
+    expect(permissionManager.isActive(12345)).toBe(false);
+    expect(renameManager.isWaitingForName(12345)).toBe(false);
+    expect(interactionManager.getSnapshot(12345)).toBeNull();
   });
 });

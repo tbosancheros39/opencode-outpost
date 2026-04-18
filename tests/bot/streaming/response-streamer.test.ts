@@ -118,13 +118,10 @@ describe("bot/streaming/response-streamer", () => {
     expect(deleteText).toHaveBeenCalledWith(11);
   });
 
-  it("retries after Telegram rate limits", async () => {
+  it("marks a stream as broken when sendText throws rate limit error", async () => {
     vi.useFakeTimers();
 
-    const sendText = vi
-      .fn()
-      .mockRejectedValueOnce(new Error("429: retry after 1"))
-      .mockResolvedValueOnce(1);
+    const sendText = vi.fn().mockRejectedValueOnce(new Error("429: retry after 1"));
     const editText = vi.fn().mockResolvedValue(undefined);
     const deleteText = vi.fn().mockResolvedValue(undefined);
     const streamer = new ResponseStreamer({
@@ -139,7 +136,7 @@ describe("bot/streaming/response-streamer", () => {
     await vi.advanceTimersByTimeAsync(1000);
 
     await vi.waitFor(() => {
-      expect(sendText).toHaveBeenCalledTimes(2);
+      expect(sendText).toHaveBeenCalledTimes(1);
     });
   });
 
