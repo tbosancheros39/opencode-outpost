@@ -8,10 +8,9 @@
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](https://nodejs.org)
 
 <p align="center">
-  <img src="assets/screencast.gif" width="45%" alt="OpenCode Telegram Bot screencast" />
-  <img src="assets/Screenshot-1.png" width="45%" alt="OpenCode Telegram Bot screenshot 1" />
-  <img src="assets/Screenshot-2.png" width="45%" alt="OpenCode Telegram Bot screenshot 2" />
-  <img src="assets/Screenshot-3.png" width="45%" alt="OpenCode Telegram Bot screenshot 3" />
+  <img src="assets/screenshot1.jpg" width="45%" alt="OpenCode Outpost screenshot 1" />
+  <img src="assets/screenshot2.jpg" width="45%" alt="OpenCode Outpost screenshot 2" />
+  <img src="assets/screenshot3.jpg" width="45%" alt="OpenCode Outpost screenshot 3" />
 </p>
 
 ## Features
