@@ -1,7 +1,7 @@
 import { Context, InlineKeyboard } from "grammy";
-import { selectModel, fetchCurrentModel, getModelSelectionLists } from "../../model/manager.js";
+import { selectModel, fetchCurrentModel, getTelegramModelGroups } from "../../model/manager.js";
 import { formatModelForDisplay } from "../../model/types.js";
-import type { FavoriteModel, ModelInfo, ModelSelectionLists } from "../../model/types.js";
+import type { FavoriteModel, ModelInfo } from "../../model/types.js";
 import { formatVariantForButton } from "../../variant/manager.js";
 import { logger } from "../../utils/logger.js";
 import { createMainKeyboard } from "../utils/keyboard.js";
@@ -15,20 +15,8 @@ import {
 } from "./inline-menu.js";
 import { t } from "../../i18n/index.js";
 
-function buildModelSelectionMenuText(modelLists: ModelSelectionLists): string {
-  const lines = [t("model.menu.select"), t("model.menu.favorites_title")];
-
-  if (modelLists.favorites.length === 0) {
-    lines.push(t("model.menu.favorites_empty"));
-  }
-
-  lines.push(t("model.menu.recent_title"));
-
-  if (modelLists.recent.length === 0) {
-    lines.push(t("model.menu.recent_empty"));
-  }
-
-  return lines.join("\n");
+function buildModelSelectionMenuText(modelCount: number): string {
+  return `${t("model.menu.select")}\n\nShowing ${modelCount} models from GitHub Copilot & OpenCode Zen Free groups`;
 }
 
 /**
@@ -50,48 +38,44 @@ export async function handleModelSelect(ctx: Context): Promise<boolean> {
 
   logger.debug(`[ModelHandler] Received callback: ${callbackQuery.data}`);
 
-  try {
-    if (ctx.chat) {
-      keyboardManager.initialize(ctx.api, ctx.chat.id);
-    }
+  const chatId = ctx.chat?.id;
+  if (!chatId) return false;
 
-    // Parse callback data: "model:providerID:modelID"
+  try {
+    keyboardManager.initialize(ctx.api, chatId);
+
     const parts = callbackQuery.data.split(":");
     if (parts.length < 3) {
       logger.error(`[ModelHandler] Invalid callback data format: ${callbackQuery.data}`);
-      clearActiveInlineMenu("model_select_invalid_callback");
+      clearActiveInlineMenu(chatId, "model_select_invalid_callback");
       await ctx.answerCallbackQuery({ text: t("model.change_error_callback") }).catch(() => {});
       return true;
     }
 
     const providerID = parts[1];
-    const modelID = parts.slice(2).join(":"); // Handle model IDs that may contain ":"
+    const modelID = parts.slice(2).join(":");
 
     const modelInfo: ModelInfo = {
       providerID,
       modelID,
-      variant: "default", // Reset to default when switching models
+      variant: "default",
     };
 
-    // Select model and persist
-    selectModel(modelInfo);
+    selectModel(chatId, modelInfo);
 
-    // Update keyboard manager state (may not be initialized if no session selected)
-    keyboardManager.updateModel(modelInfo);
+    keyboardManager.updateModel(chatId, modelInfo);
 
-    // Refresh context limit for new model
-    await pinnedMessageManager.refreshContextLimit();
+    await pinnedMessageManager.refreshContextLimit(chatId);
 
-    // Update Reply Keyboard with new model and context
-    const currentAgent = getStoredAgent();
+    const currentAgent = getStoredAgent(chatId);
     const contextInfo =
-      pinnedMessageManager.getContextInfo() ??
-      (pinnedMessageManager.getContextLimit() > 0
-        ? { tokensUsed: 0, tokensLimit: pinnedMessageManager.getContextLimit() }
+      pinnedMessageManager.getContextInfo(chatId) ??
+      (pinnedMessageManager.getContextLimit(chatId) > 0
+        ? { tokensUsed: 0, tokensLimit: pinnedMessageManager.getContextLimit(chatId) }
         : null);
 
     if (contextInfo) {
-      keyboardManager.updateContext(contextInfo.tokensUsed, contextInfo.tokensLimit);
+      keyboardManager.updateContext(chatId, contextInfo.tokensUsed, contextInfo.tokensLimit);
     }
 
     const variantName = formatVariantForButton(modelInfo.variant || "default");
@@ -103,20 +87,18 @@ export async function handleModelSelect(ctx: Context): Promise<boolean> {
     );
     const displayName = formatModelForDisplay(modelInfo.providerID, modelInfo.modelID);
 
-    clearActiveInlineMenu("model_selected");
+    clearActiveInlineMenu(chatId, "model_selected");
 
-    // Send confirmation message with updated keyboard
     await ctx.answerCallbackQuery({ text: t("model.changed_callback", { name: displayName }) });
     await ctx.reply(t("model.changed_message", { name: displayName }), {
       reply_markup: keyboard,
     });
 
-    // Delete the inline menu message
     await ctx.deleteMessage().catch(() => {});
 
     return true;
   } catch (err) {
-    clearActiveInlineMenu("model_select_error");
+    clearActiveInlineMenu(chatId, "model_select_error");
     logger.error("[ModelHandler] Error handling model select:", err);
     await ctx.answerCallbackQuery({ text: t("model.change_error_callback") }).catch(() => {});
     return false;
@@ -124,39 +106,35 @@ export async function handleModelSelect(ctx: Context): Promise<boolean> {
 }
 
 /**
- * Build inline keyboard with favorite and recent models
+ * Build inline keyboard with Telegram group models
  * @param currentModel Current model for highlighting
  * @returns InlineKeyboard with model selection buttons
  */
 export async function buildModelSelectionMenu(
   currentModel?: ModelInfo,
-  modelLists?: ModelSelectionLists,
 ): Promise<InlineKeyboard> {
   const keyboard = new InlineKeyboard();
-  const lists = modelLists ?? (await getModelSelectionLists());
-  const favorites = lists.favorites;
-  const recent = lists.recent;
+  const models = await getTelegramModelGroups();
 
-  if (favorites.length === 0 && recent.length === 0) {
-    logger.warn("[ModelHandler] No model choices found in favorites/recent");
+  if (models.length === 0) {
+    logger.warn("[ModelHandler] No models found in Telegram groups");
     return keyboard;
   }
 
-  const addButton = (model: FavoriteModel, prefix: string): void => {
+  const addButton = (model: FavoriteModel, label: string): void => {
     const isActive =
       currentModel &&
       model.providerID === currentModel.providerID &&
       model.modelID === currentModel.modelID;
 
-    // Inline buttons use full model ID without truncation
-    const label = `${prefix} ${model.providerID}/${model.modelID}`;
     const labelWithCheck = isActive ? `✅ ${label}` : label;
-
     keyboard.text(labelWithCheck, `model:${model.providerID}:${model.modelID}`).row();
   };
 
-  favorites.forEach((model) => addButton(model, "⭐"));
-  recent.forEach((model) => addButton(model, "🕘"));
+  for (const model of models) {
+    const groupLabel = model.providerID === "github-copilot" ? "🦊 GitHub Copilot" : "✨ OpenCode Zen";
+    addButton(model, `${groupLabel} ${model.modelID}`);
+  }
 
   return keyboard;
 }
@@ -166,17 +144,18 @@ export async function buildModelSelectionMenu(
  * @param ctx grammY context
  */
 export async function showModelSelectionMenu(ctx: Context): Promise<void> {
+  const chatId = ctx.chat?.id;
+
   try {
-    const currentModel = fetchCurrentModel();
-    const modelLists = await getModelSelectionLists();
-    const keyboard = await buildModelSelectionMenu(currentModel, modelLists);
+    const currentModel = fetchCurrentModel(chatId ?? 0);
+    const keyboard = await buildModelSelectionMenu(currentModel);
 
     if (keyboard.inline_keyboard.length === 0) {
       await ctx.reply(t("model.menu.empty"));
       return;
     }
 
-    const text = buildModelSelectionMenuText(modelLists);
+    const text = buildModelSelectionMenuText(keyboard.inline_keyboard.length);
 
     await replyWithInlineMenu(ctx, {
       menuKind: "model",

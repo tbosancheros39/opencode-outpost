@@ -69,8 +69,8 @@ export async function getAvailableVariants(
  * Get current variant from settings
  * @returns Current variant ID (defaults to "default")
  */
-export function getCurrentVariant(): string {
-  const currentModel = getCurrentModel();
+export function getCurrentVariant(chatId: number): string {
+  const currentModel = getCurrentModel(chatId);
   return currentModel?.variant || "default";
 }
 
@@ -78,8 +78,8 @@ export function getCurrentVariant(): string {
  * Set current variant in settings
  * @param variantId Variant ID to set
  */
-export function setCurrentVariant(variantId: string): void {
-  const currentModel = getCurrentModel();
+export function setCurrentVariant(chatId: number, variantId: string): void {
+  const currentModel = getCurrentModel(chatId);
 
   if (!currentModel) {
     logger.warn("[VariantManager] Cannot set variant: no current model");
@@ -87,7 +87,7 @@ export function setCurrentVariant(variantId: string): void {
   }
 
   currentModel.variant = variantId;
-  setCurrentModel(currentModel);
+  setCurrentModel(chatId, currentModel);
   logger.info(`[VariantManager] Variant set to: ${variantId}`);
 }
 

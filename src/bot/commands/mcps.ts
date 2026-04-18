@@ -119,24 +119,27 @@ function buildMcpsKeyboard(servers: McpServerItem[]): InlineKeyboard {
 
   for (const server of servers) {
     if (server.status === "connected") {
-      keyboard.text(
-        t("mcps.button.disconnect", { name: server.name }),
-        `${MCPS_DISCONNECT_PREFIX}${server.name}`,
-      );
+      keyboard
+        .text(
+          t("mcps.button.disconnect", { name: server.name }),
+          `${MCPS_DISCONNECT_PREFIX}${server.name}`,
+        )
+        .row();
     } else if (
       server.status === "disabled" ||
       server.status === "failed" ||
       server.status === "needs_auth" ||
       server.status === "needs_client_registration"
     ) {
-      keyboard.text(
-        t("mcps.button.connect", { name: server.name }),
-        `${MCPS_CONNECT_PREFIX}${server.name}`,
-      );
+      keyboard
+        .text(
+          t("mcps.button.connect", { name: server.name }),
+          `${MCPS_CONNECT_PREFIX}${server.name}`,
+        )
+        .row();
     }
   }
 
-  keyboard.row();
   keyboard.text(t("mcps.button.cancel"), MCPS_CANCEL);
 
   return keyboard;

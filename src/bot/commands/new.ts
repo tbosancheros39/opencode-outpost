@@ -22,7 +22,9 @@ export async function newCommand(ctx: CommandContext<Context>) {
       return;
     }
 
-    const currentProject = getCurrentProject();
+    if (!ctx.chat) return;
+    const chatId = ctx.chat.id;
+    const currentProject = getCurrentProject(chatId);
 
     if (!currentProject) {
       await ctx.reply(t("new.project_not_selected"));
@@ -48,29 +50,29 @@ export async function newCommand(ctx: CommandContext<Context>) {
       title: session.title,
       directory: currentProject.worktree,
     };
-    setCurrentSession(sessionInfo);
+    setCurrentSession(chatId, sessionInfo);
     summaryAggregator.clear();
-    clearAllInteractionState("session_created");
+    clearAllInteractionState(chatId, "session_created");
     await ingestSessionInfoForCache(session);
 
     // Initialize pinned message manager and create pinned message
-    if (!pinnedMessageManager.isInitialized()) {
-      pinnedMessageManager.initialize(ctx.api, ctx.chat.id);
+    if (!pinnedMessageManager.isInitialized(chatId)) {
+      pinnedMessageManager.initialize(ctx.api, chatId);
     }
 
     // Initialize keyboard manager if not already
-    keyboardManager.initialize(ctx.api, ctx.chat.id);
+    keyboardManager.initialize(ctx.api, chatId);
 
     try {
-      await pinnedMessageManager.onSessionChange(session.id, session.title);
+      await pinnedMessageManager.onSessionChange(chatId, session.id, session.title);
     } catch (err) {
       logger.error("[Bot] Error creating pinned message:", err);
     }
 
     // Get current state for keyboard
-    const currentAgent = getStoredAgent();
-    const currentModel = getStoredModel();
-    const contextInfo = pinnedMessageManager.getContextInfo();
+    const currentAgent = getStoredAgent(chatId);
+    const currentModel = getStoredModel(chatId);
+    const contextInfo = pinnedMessageManager.getContextInfo(chatId);
     const variantName = formatVariantForButton(currentModel.variant || "default");
     const keyboard = createMainKeyboard(
       currentAgent,

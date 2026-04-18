@@ -5,18 +5,18 @@ import { taskCreationManager } from "../scheduled-task/creation-manager.js";
 import { interactionManager } from "./manager.js";
 import { logger } from "../utils/logger.js";
 
-export function clearAllInteractionState(reason: string): void {
-  const questionActive = questionManager.isActive();
-  const permissionActive = permissionManager.isActive();
-  const renameActive = renameManager.isWaitingForName();
+export function clearAllInteractionState(chatId: number, reason: string): void {
+  const questionActive = questionManager.isActive(chatId);
+  const permissionActive = permissionManager.isActive(chatId);
+  const renameActive = renameManager.isWaitingForName(chatId);
   const taskCreationActive = taskCreationManager.isActive();
-  const interactionSnapshot = interactionManager.getSnapshot();
+  const interactionSnapshot = interactionManager.getSnapshot(chatId);
 
-  questionManager.clear();
-  permissionManager.clear();
-  renameManager.clear();
+  questionManager.clear(chatId);
+  permissionManager.clear(chatId);
+  renameManager.clear(chatId);
   taskCreationManager.clear();
-  interactionManager.clear(reason);
+  interactionManager.clear(chatId, reason);
 
   const hasAnyActiveState =
     questionActive ||

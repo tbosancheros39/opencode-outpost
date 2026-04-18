@@ -1,4 +1,5 @@
 import { Bot, Context, InputFile, NextFunction } from "grammy";
+import { sequentialize } from "@grammyjs/runner";
 import { promises as fs } from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
@@ -12,6 +13,19 @@ import { BOT_COMMANDS } from "./commands/definitions.js";
 import { startCommand } from "./commands/start.js";
 import { helpCommand } from "./commands/help.js";
 import { statusCommand } from "./commands/status.js";
+import { shellCommand, handleShellCallback } from "./commands/shell.js";
+import { sandboxCommand } from "./commands/sandbox.js";
+import { costCommand } from "./commands/cost.js";
+import { exportCommand } from "./commands/export.js";
+import { lsCommand } from "./commands/ls.js";
+import { readCommand } from "./commands/read.js";
+import { tasksCommand } from "./commands/tasks.js";
+import { logsCommand } from "./commands/logs.js";
+import { healthCommand } from "./commands/health.js";
+import { journalCommand } from "./commands/journal.js";
+import { handleJournalCallback } from "../monitoring/journal-monitor.js";
+import { initializeSystemMonitoring, startSystemMonitoring } from "../monitoring/system-monitor.js";
+import { initializeTaskTracking, recoverInterruptedTasks } from "../task-queue/tracker.js";
 import {
   AGENT_MODE_BUTTON_TEXT_PATTERN,
   MODEL_BUTTON_TEXT_PATTERN,
@@ -21,6 +35,7 @@ import { sessionsCommand, handleSessionSelect } from "./commands/sessions.js";
 import { newCommand } from "./commands/new.js";
 import { projectsCommand, handleProjectSelect } from "./commands/projects.js";
 import { abortCommand } from "./commands/abort.js";
+import { steerCommand } from "./commands/steer.js";
 import { opencodeStartCommand } from "./commands/opencode-start.js";
 import { opencodeStopCommand } from "./commands/opencode-stop.js";
 import { renameCommand, handleRenameCancel, handleRenameTextAnswer } from "./commands/rename.js";
@@ -31,12 +46,25 @@ import {
   handleCommandsCallback,
   handleCommandTextArguments,
 } from "./commands/commands.js";
+import { messagesCommand, handleMessagesCallback } from "./commands/messages.js";
+import { skillsCommand, handleSkillsCallback } from "./commands/skills.js";
+import { mcpsCommand, handleMcpsCallback } from "./commands/mcps.js";
+import { modelsCommand } from "./commands/models.js";
+import { compactCommand } from "./commands/compact.js";
+import { ttsCommand } from "./commands/tts.js";
 import {
   handleQuestionCallback,
   showCurrentQuestion,
   handleQuestionTextAnswer,
 } from "./handlers/question.js";
-import { handlePermissionCallback, showPermissionRequest } from "./handlers/permission.js";
+import {
+  handleInlineQuery,
+  handleInlineRunCallback,
+  detectInlineCommand,
+  detectInlineCommandWithoutColon,
+  INLINE_COMMANDS,
+} from "./handlers/inline-query.js";
+import { handlePermissionCallback } from "./handlers/permission.js";
 import { handleAgentSelect, showAgentSelectionMenu } from "./handlers/agent.js";
 import { handleModelSelect, showModelSelectionMenu } from "./handlers/model.js";
 import { handleVariantSelect, showVariantSelectionMenu } from "./handlers/variant.js";
@@ -54,11 +82,24 @@ import {
   formatToolInfo,
   getAssistantParseMode,
 } from "../summary/formatter.js";
-import { ToolMessageBatcher } from "../summary/tool-message-batcher.js";
+import { ToolMessageBatcher, shouldDisplayToolMessage } from "../summary/tool-message-batcher.js";
 import { getCurrentSession } from "../session/manager.js";
+import {
+  setAssistantRunState,
+  getAssistantRunState,
+  clearAssistantRunState,
+} from "./assistant-run-state.js";
+import { formatAssistantRunFooter } from "./utils/assistant-run-footer.js";
+import {
+  getCurrentProject,
+  setCurrentProject,
+  getCurrentModel,
+  setCurrentModel,
+} from "../settings/manager.js";
 import { ingestSessionInfoForCache } from "../session/cache-manager.js";
 import { logger } from "../utils/logger.js";
 import { safeBackgroundTask } from "../utils/safe-background-task.js";
+import { withTelegramRateLimitRetry } from "../utils/telegram-rate-limit-retry.js";
 import { pinnedMessageManager } from "../pinned/manager.js";
 import { t } from "../i18n/index.js";
 import { processUserPrompt } from "./handlers/prompt.js";
@@ -67,9 +108,26 @@ import { handleDocumentMessage } from "./handlers/document.js";
 import { downloadTelegramFile, toDataUri } from "./utils/file-download.js";
 import { finalizeAssistantResponse } from "./utils/finalize-assistant-response.js";
 import { deliverThinkingMessage } from "./utils/thinking-message.js";
+import { clearLoadingMessage, hasLoadingMessage } from "./utils/loading-messages.js";
+import { getDraftId, clearDraftId } from "./utils/draft-messages.js";
 import { sendBotText } from "./utils/telegram-text.js";
 import { getModelCapabilities, supportsInput } from "../model/capabilities.js";
 import { getStoredModel } from "../model/manager.js";
+import { sendTtsResponse } from "./utils/send-tts-response.js";
+import {
+  trackChatUser,
+  getUserIdForChat,
+  isSuperUser,
+  isDangerousPermission,
+} from "./utils/user-tracker.js";
+import {
+  getUserProjectRestriction,
+  createFallbackProjectInfo,
+  ensureUserProjectDirectory,
+  getUserModelVariant,
+  isSimpleUser,
+} from "../users/access.js";
+import { opencodeClient } from "../opencode/client.js";
 import type { FilePartInput } from "@opencode-ai/sdk/v2";
 import { foregroundSessionState } from "../scheduled-task/foreground-state.js";
 import { scheduledTaskRuntime } from "../scheduled-task/runtime.js";
@@ -80,25 +138,62 @@ import {
   editMessageWithMarkdownFallback,
   sendMessageWithMarkdownFallback,
 } from "./utils/send-with-markdown-fallback.js";
+import {
+  handleLlmQueryText,
+  handleLlmConfirmCallback,
+  handleLlmCommandRequest,
+} from "./utils/llm-command.js";
+import {
+  startWorker,
+  setTelegramBotApi,
+  initQueue,
+  addTaskJob,
+  type TelegramBotApi,
+} from "../queue/index.js";
+import { randomUUID } from "crypto";
 
 let botInstance: Bot<Context> | null = null;
 let chatIdInstance: number | null = null;
-let commandsInitialized = false;
+const commandsInitializedChats = new Set<number>();
+let draftTimer: NodeJS.Timeout | null = null;
+const sessionCompletionTasks = new Map<string, Promise<void>>();
+
+// Track group chats that requested a hit-and-run answer — bot leaves after response completes
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const chatsToLeaveAfterAnswer = new Set<number>(); // kept for future group-mode use
 
 const TELEGRAM_DOCUMENT_CAPTION_MAX_LENGTH = 1024;
 const RESPONSE_STREAM_THROTTLE_MS = 200;
+const DRAFT_THROTTLE_MS = 150; // Slightly faster than edit throttle, conservative start
 const RESPONSE_STREAM_TEXT_LIMIT = 3800;
 const SESSION_RETRY_PREFIX = "🔁";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const TEMP_DIR = path.join(__dirname, "..", ".tmp");
+const SIMPLE_USER_COMMANDS = [
+  { command: "new", description: "Start new chat" },
+  { command: "abort", description: "Stop response" },
+  { command: "sessions", description: "List sessions" },
+  { command: "skills", description: "Browse skills" },
+  { command: "help", description: "Help" },
+];
 
-function getCurrentReplyKeyboard() {
-  if (!keyboardManager.isInitialized()) {
+function getCurrentReplyKeyboard(chatId: number): ReturnType<typeof keyboardManager.getKeyboard> {
+  const userId = getUserIdForChat(chatId);
+  if (userId != null && isSimpleUser(userId)) {
     return undefined;
   }
 
-  return keyboardManager.getKeyboard();
+  if (!keyboardManager.isInitialized(chatId)) {
+    return undefined;
+  }
+
+  return keyboardManager.getKeyboard(chatId);
+}
+
+function isSimpleModeChat(chatId: number): boolean {
+  const userId = getUserIdForChat(chatId);
+  return userId != null && isSimpleUser(userId);
 }
 
 function prepareDocumentCaption(caption: string): string {
@@ -137,24 +232,30 @@ const toolMessageBatcher = new ToolMessageBatcher({
       return;
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatIdInstance!);
     if (!currentSession || currentSession.id !== sessionId) {
       return;
     }
 
-    const keyboard = getCurrentReplyKeyboard();
+    const keyboard = getCurrentReplyKeyboard(chatIdInstance!);
+    const api = botInstance!.api;
+    const chatId = chatIdInstance!;
 
-    await botInstance.api.sendMessage(chatIdInstance, text, {
-      disable_notification: true,
-      ...(keyboard ? { reply_markup: keyboard } : {}),
-    });
+    await withTelegramRateLimitRetry(
+      () =>
+        api.sendMessage(chatId, text, {
+          disable_notification: true,
+          ...(keyboard ? { reply_markup: keyboard } : {}),
+        }),
+      "toolBatch.send",
+    );
   },
   sendFile: async (sessionId, fileData) => {
     if (!botInstance || !chatIdInstance) {
       return;
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatIdInstance!);
     if (!currentSession || currentSession.id !== sessionId) {
       return;
     }
@@ -169,7 +270,7 @@ const toolMessageBatcher = new ToolMessageBatcher({
       await fs.mkdir(TEMP_DIR, { recursive: true });
       await fs.writeFile(tempFilePath, fileData.buffer);
 
-      const keyboard = getCurrentReplyKeyboard();
+      const keyboard = getCurrentReplyKeyboard(chatIdInstance!);
 
       await botInstance.api.sendDocument(chatIdInstance, new InputFile(tempFilePath), {
         caption: fileData.caption,
@@ -190,13 +291,19 @@ const responseStreamer = new ResponseStreamer({
     }
 
     const parseMode = format === "markdown_v2" ? "MarkdownV2" : undefined;
-    const sentMessage = await sendMessageWithMarkdownFallback({
-      api: botInstance.api,
-      chatId: chatIdInstance,
-      text,
-      options,
-      parseMode,
-    });
+    const api = botInstance.api;
+    const chatId = chatIdInstance;
+    const sentMessage = await withTelegramRateLimitRetry(
+      () =>
+        sendMessageWithMarkdownFallback({
+          api,
+          chatId,
+          text,
+          options,
+          parseMode,
+        }),
+      "responseStream.send",
+    );
 
     return sentMessage.message_id;
   },
@@ -206,16 +313,22 @@ const responseStreamer = new ResponseStreamer({
     }
 
     const parseMode = format === "markdown_v2" ? "MarkdownV2" : undefined;
+    const api = botInstance.api;
+    const chatId = chatIdInstance;
 
     try {
-      await editMessageWithMarkdownFallback({
-        api: botInstance.api,
-        chatId: chatIdInstance,
-        messageId,
-        text,
-        options,
-        parseMode,
-      });
+      await withTelegramRateLimitRetry(
+        () =>
+          editMessageWithMarkdownFallback({
+            api,
+            chatId,
+            messageId,
+            text,
+            options,
+            parseMode,
+          }),
+        "responseStream.edit",
+      );
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
@@ -253,7 +366,7 @@ const toolCallStreamer = new ToolCallStreamer({
       throw new Error("Bot context missing for tool stream send");
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatIdInstance!);
     if (!currentSession || currentSession.id !== sessionId) {
       throw new Error(`Tool stream session mismatch for send: ${sessionId}`);
     }
@@ -269,7 +382,7 @@ const toolCallStreamer = new ToolCallStreamer({
       throw new Error("Bot context missing for tool stream edit");
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatIdInstance!);
     if (!currentSession || currentSession.id !== sessionId) {
       throw new Error(`Tool stream session mismatch for edit: ${sessionId}`);
     }
@@ -291,7 +404,7 @@ const toolCallStreamer = new ToolCallStreamer({
       throw new Error("Bot context missing for tool stream delete");
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatIdInstance!);
     if (!currentSession || currentSession.id !== sessionId) {
       throw new Error(`Tool stream session mismatch for delete: ${sessionId}`);
     }
@@ -312,27 +425,32 @@ const toolCallStreamer = new ToolCallStreamer({
 });
 
 async function ensureCommandsInitialized(ctx: Context, next: NextFunction): Promise<void> {
-  if (commandsInitialized || !ctx.from || ctx.from.id !== config.telegram.allowedUserId) {
+  const chatId = ctx.chat?.id;
+  if (!chatId || !ctx.from || !config.telegram.allowedUserIds.includes(ctx.from.id)) {
     await next();
     return;
   }
 
-  if (!ctx.chat) {
-    logger.warn("[Bot] Cannot initialize commands: chat context is missing");
+  if (commandsInitializedChats.has(chatId)) {
     await next();
     return;
   }
 
   try {
-    await ctx.api.setMyCommands(BOT_COMMANDS, {
+    const userId = ctx.from.id;
+    const commands = isSimpleUser(userId) ? SIMPLE_USER_COMMANDS : BOT_COMMANDS;
+
+    await ctx.api.setMyCommands(commands, {
       scope: {
         type: "chat",
-        chat_id: ctx.chat.id,
+        chat_id: chatId,
       },
     });
 
-    commandsInitialized = true;
-    logger.debug(`[Bot] Commands initialized for authorized user (chat_id=${ctx.chat.id})`);
+    commandsInitializedChats.add(chatId);
+    logger.debug(
+      `[Bot] Commands initialized for chat_id=${chatId}, simple=${isSimpleUser(userId)}`,
+    );
   } catch (err) {
     logger.error("[Bot] Failed to set commands:", err);
   }
@@ -363,9 +481,27 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       return;
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatIdInstance!);
     if (!currentSession || currentSession.id !== sessionId) {
       return;
+    }
+
+    if (hasLoadingMessage(sessionId) && botInstance) {
+      void clearLoadingMessage(sessionId, botInstance.api, "streaming_started");
+    }
+
+    // Send live draft update
+    const draftId = chatIdInstance ? getDraftId(chatIdInstance) : undefined;
+    if (draftId && botInstance && chatIdInstance) {
+      // Debounce draft updates to avoid rate limiting
+      if (draftTimer) clearTimeout(draftTimer);
+      draftTimer = setTimeout(() => {
+        if (!botInstance || !chatIdInstance) return;
+        void botInstance.api.sendMessageDraft(chatIdInstance, draftId, messageText).catch((err) => {
+          // Non-fatal - draft is visual feedback only
+          logger.debug("[Bot] sendMessageDraft error (non-fatal):", err);
+        });
+      }, DRAFT_THROTTLE_MS);
     }
 
     const preparedStreamPayload = prepareStreamingPayload(messageText);
@@ -380,70 +516,109 @@ async function ensureEventSubscription(directory: string): Promise<void> {
   });
 
   summaryAggregator.setOnComplete(async (sessionId, messageId, messageText) => {
-    if (!botInstance || !chatIdInstance) {
-      logger.error("Bot or chat ID not available for sending message");
-      responseStreamer.clearMessage(sessionId, messageId, "bot_context_missing");
-      toolCallStreamer.clearSession(sessionId, "bot_context_missing");
-      foregroundSessionState.markIdle(sessionId);
+    if (sessionCompletionTasks.has(sessionId)) {
+      logger.warn(`[Bot] Re-entrant completion detected for session=${sessionId}, skipping`);
       return;
     }
 
-    const currentSession = getCurrentSession();
-    if (currentSession?.id !== sessionId) {
-      responseStreamer.clearMessage(sessionId, messageId, "session_mismatch");
-      toolCallStreamer.clearSession(sessionId, "session_mismatch");
-      foregroundSessionState.markIdle(sessionId);
-      await scheduledTaskRuntime.flushDeferredDeliveries();
-      return;
-    }
+    const task = (async () => {
+      try {
+        if (!botInstance || !chatIdInstance) {
+          logger.error("Bot or chat ID not available for sending message");
+          responseStreamer.clearMessage(sessionId, messageId, "bot_context_missing");
+          toolCallStreamer.clearSession(sessionId, "bot_context_missing");
+          if (chatIdInstance) {
+            clearDraftId(chatIdInstance);
+          }
+          foregroundSessionState.markIdle(sessionId);
+          return;
+        }
 
-    const botApi = botInstance.api;
-    const chatId = chatIdInstance;
+        const currentSession = getCurrentSession(chatIdInstance!);
+        if (currentSession?.id !== sessionId) {
+          responseStreamer.clearMessage(sessionId, messageId, "session_mismatch");
+          toolCallStreamer.clearSession(sessionId, "session_mismatch");
+          if (chatIdInstance) {
+            clearDraftId(chatIdInstance);
+          }
+          foregroundSessionState.markIdle(sessionId);
+          await scheduledTaskRuntime.flushDeferredDeliveries();
+          return;
+        }
 
-    try {
-      const streamedViaMessages = await finalizeAssistantResponse({
-        responseStreaming: config.bot.responseStreaming,
-        sessionId,
-        messageId,
-        messageText,
-        responseStreamer,
-        flushPendingServiceMessages: () =>
-          Promise.all([
-            toolMessageBatcher.flushSession(sessionId, "assistant_message_completed"),
-            toolCallStreamer.flushSession(sessionId, "assistant_message_completed"),
-          ]).then(() => undefined),
-        prepareStreamingPayload,
-        formatSummary,
-        resolveFormat: () => (getAssistantParseMode() === "MarkdownV2" ? "markdown_v2" : "raw"),
-        getReplyKeyboard: getCurrentReplyKeyboard,
-        sendText: async (text, options, format) => {
-          await sendBotText({
-            api: botApi,
-            chatId,
-            text,
-            options: options as Parameters<typeof sendBotText>[0]["options"],
-            format,
+        const botApi = botInstance.api;
+        const chatId = chatIdInstance;
+
+        const runState = getAssistantRunState(sessionId);
+        if (runState?.agentId && runState?.modelId && runState?.provider) {
+          const elapsed = Date.now() - runState.startedAt;
+          const footer = formatAssistantRunFooter({
+            agent: runState.agentId,
+            providerID: runState.provider,
+            modelID: runState.modelId,
+            elapsedMs: elapsed,
           });
-        },
-      });
+          messageText = `${messageText}\n\n${footer}`;
+        }
 
-      if (streamedViaMessages) {
-        logger.debug(
-          `[Bot] Final assistant message already streamed (session=${sessionId}, message=${messageId})`,
-        );
+        // 1. Send the final assistant message
+        const streamedViaMessages = await finalizeAssistantResponse({
+          responseStreaming: config.bot.responseStreaming,
+          sessionId,
+          messageId,
+          messageText,
+          responseStreamer,
+          flushPendingServiceMessages: () =>
+            Promise.all([
+              toolMessageBatcher.flushSession(sessionId, "assistant_message_completed"),
+              toolCallStreamer.flushSession(sessionId, "assistant_message_completed"),
+            ]).then(() => undefined),
+          prepareStreamingPayload,
+          formatSummary,
+          resolveFormat: () => (getAssistantParseMode() === "MarkdownV2" ? "markdown_v2" : "raw"),
+          getReplyKeyboard: () => getCurrentReplyKeyboard(chatId),
+          sendText: async (text, options, format) => {
+            await sendBotText({
+              api: botApi,
+              chatId,
+              text,
+              options: options as Parameters<typeof sendBotText>[0]["options"],
+              format,
+            });
+          },
+        });
+
+        if (streamedViaMessages) {
+          logger.debug(
+            `[Bot] Final assistant message already streamed (session=${sessionId}, message=${messageId})`,
+          );
+        }
+
+        // TTS: serialized per-chat in the completion chain (not fire-and-forget)
+        // If TTS fails, log and continue — don't let TTS failure block the chain
+        try {
+          await sendTtsResponse(botApi, chatId, messageText);
+        } catch (err) {
+          logger.error("[TTS] Auto-reply error:", err);
+        }
+      } catch (err) {
+        logger.error("Failed to send message to Telegram:", err);
+        logger.error("[Bot] CRITICAL: Stopping event processing due to error");
+        summaryAggregator.clear();
+      } finally {
         foregroundSessionState.markIdle(sessionId);
+        clearAssistantRunState(sessionId);
+
+        if (chatIdInstance) {
+          clearDraftId(chatIdInstance);
+        }
+
         await scheduledTaskRuntime.flushDeferredDeliveries();
-        return;
       }
-    } catch (err) {
-      logger.error("Failed to send message to Telegram:", err);
-      // Stop processing events after critical error to prevent infinite loop
-      logger.error("[Bot] CRITICAL: Stopping event processing due to error");
-      summaryAggregator.clear();
-    } finally {
-      foregroundSessionState.markIdle(sessionId);
-      await scheduledTaskRuntime.flushDeferredDeliveries();
-    }
+    })();
+
+    sessionCompletionTasks.set(sessionId, task);
+    await task;
   });
 
   summaryAggregator.setOnTool(async (toolInfo) => {
@@ -452,7 +627,7 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       return;
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatIdInstance!);
     if (!currentSession || currentSession.id !== toolInfo.sessionId) {
       return;
     }
@@ -468,7 +643,7 @@ async function ensureEventSubscription(directory: string): Promise<void> {
     try {
       const message = formatToolInfo(toolInfo);
       if (message) {
-        toolCallStreamer.append(toolInfo.sessionId, message);
+        toolCallStreamer.append(toolInfo.sessionId, message, toolInfo.tool);
       }
     } catch (err) {
       logger.error("Failed to send tool notification to Telegram:", err);
@@ -481,13 +656,20 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       return;
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatIdInstance!);
     if (!currentSession || currentSession.id !== fileInfo.sessionId) {
       return;
     }
 
     try {
       await toolCallStreamer.breakSession(fileInfo.sessionId, "tool_file_boundary");
+
+      if (!shouldDisplayToolMessage(fileInfo.tool)) {
+        logger.debug(
+          `[Bot] Skipping tool file message for ${fileInfo.tool} (hideToolFileMessages=true)`,
+        );
+        return;
+      }
 
       const toolMessage = formatToolInfo(fileInfo);
       const caption = prepareDocumentCaption(toolMessage || fileInfo.fileData.caption);
@@ -507,7 +689,7 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       return;
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatIdInstance!);
     if (currentSession) {
       await Promise.all([
         toolMessageBatcher.flushSession(currentSession.id, "question_asked"),
@@ -515,19 +697,19 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       ]);
     }
 
-    if (questionManager.isActive()) {
+    if (questionManager.isActive(chatIdInstance!)) {
       logger.warn("[Bot] Replacing active poll with a new one");
 
-      const previousMessageIds = questionManager.getMessageIds();
+      const previousMessageIds = questionManager.getMessageIds(chatIdInstance!);
       for (const messageId of previousMessageIds) {
         await botInstance.api.deleteMessage(chatIdInstance, messageId).catch(() => {});
       }
 
-      clearAllInteractionState("question_replaced_by_new_poll");
+      clearAllInteractionState(chatIdInstance!, "question_replaced_by_new_poll");
     }
 
     logger.info(`[Bot] Received ${questions.length} questions from agent, requestID=${requestID}`);
-    questionManager.startQuestions(questions, requestID);
+    questionManager.startQuestions(chatIdInstance!, questions, requestID);
     await showCurrentQuestion(botInstance.api, chatIdInstance);
   });
 
@@ -535,7 +717,7 @@ async function ensureEventSubscription(directory: string): Promise<void> {
     logger.info(`[Bot] Question tool failed, clearing active poll and deleting messages`);
 
     // Delete all messages from the invalid poll
-    const messageIds = questionManager.getMessageIds();
+    const messageIds = questionManager.getMessageIds(chatIdInstance!);
     for (const messageId of messageIds) {
       if (chatIdInstance) {
         await botInstance?.api.deleteMessage(chatIdInstance, messageId).catch((err) => {
@@ -544,7 +726,7 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       }
     }
 
-    clearAllInteractionState("question_error");
+    clearAllInteractionState(chatIdInstance!, "question_error");
   });
 
   summaryAggregator.setOnPermission(async (request) => {
@@ -561,7 +743,75 @@ async function ensureEventSubscription(directory: string): Promise<void> {
     logger.info(
       `[Bot] Received permission request from agent: type=${request.permission}, requestID=${request.id}`,
     );
-    await showPermissionRequest(botInstance.api, chatIdInstance, request);
+
+    // Super user permission system
+    const currentUserId = getUserIdForChat(chatIdInstance);
+    const isSuper = currentUserId !== null && isSuperUser(currentUserId);
+
+    if (isSuper) {
+      // Super user: auto-approve all permissions
+      logger.info(
+        `[Permission] Auto-approving (super user): type=${request.permission}, userId=${currentUserId}`,
+      );
+      safeBackgroundTask({
+        taskName: "permission.auto_approve_superuser",
+        task: () =>
+          opencodeClient.permission.reply({
+            requestID: request.id,
+            directory: getCurrentSession(chatIdInstance!)?.directory ?? "",
+            reply: "always",
+          }),
+        onSuccess: ({ error }) => {
+          if (error) {
+            logger.error("[Permission] Auto-approve failed:", error);
+          }
+        },
+      });
+      return;
+    }
+
+    // Regular user check
+    const isDangerous = isDangerousPermission(request.permission);
+    const directory = getCurrentSession(chatIdInstance!)?.directory ?? "";
+
+    if (isDangerous) {
+      // Dangerous permission for regular user: auto-reject + notify
+      logger.warn(
+        `[Permission] Rejecting dangerous permission for non-super user: type=${request.permission}, userId=${currentUserId}`,
+      );
+      safeBackgroundTask({
+        taskName: "permission.auto_reject_regular",
+        task: () =>
+          opencodeClient.permission.reply({
+            requestID: request.id,
+            directory,
+            reply: "reject",
+          }),
+      });
+      await botInstance.api
+        .sendMessage(chatIdInstance, t("permission.denied.super_user_only"))
+        .catch(() => {});
+      return;
+    }
+
+    // Safe permission for regular user: auto-approve once
+    logger.info(
+      `[Permission] Auto-approving safe permission: type=${request.permission}, userId=${currentUserId}`,
+    );
+    safeBackgroundTask({
+      taskName: "permission.auto_approve_safe",
+      task: () =>
+        opencodeClient.permission.reply({
+          requestID: request.id,
+          directory,
+          reply: "once",
+        }),
+      onSuccess: ({ error }) => {
+        if (error) {
+          logger.error("[Permission] Auto-approve safe failed:", error);
+        }
+      },
+    });
   });
 
   summaryAggregator.setOnThinking(async (sessionId) => {
@@ -569,7 +819,7 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       return;
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatIdInstance!);
     if (!currentSession || currentSession.id !== sessionId) {
       return;
     }
@@ -584,49 +834,74 @@ async function ensureEventSubscription(directory: string): Promise<void> {
     });
   });
 
+  summaryAggregator.setOnThinkingUpdate((text) => {
+    if (!botInstance || !chatIdInstance) {
+      return;
+    }
+
+    const currentSession = getCurrentSession(chatIdInstance!);
+    if (!currentSession) {
+      return;
+    }
+
+    logger.debug(`[Bot] Subagent status update: ${text.replace(/\n/g, " | ")}`);
+
+    toolCallStreamer.replaceByPrefix(currentSession.id, "🤖", text);
+  });
+
   summaryAggregator.setOnTokens(async (tokens) => {
-    if (!pinnedMessageManager.isInitialized()) {
+    if (isSimpleModeChat(chatIdInstance!)) {
+      return;
+    }
+
+    if (!pinnedMessageManager.isInitialized(chatIdInstance!)) {
       return;
     }
 
     try {
       logger.debug(`[Bot] Received tokens: input=${tokens.input}, output=${tokens.output}`);
 
-      // Update keyboardManager SYNCHRONOUSLY before any await
-      // This ensures keyboard has correct context when onComplete sends the reply
       const contextSize = tokens.input + tokens.cacheRead;
-      const contextLimit = pinnedMessageManager.getContextLimit();
+      const contextLimit = pinnedMessageManager.getContextLimit(chatIdInstance!);
       if (contextLimit > 0) {
-        keyboardManager.updateContext(contextSize, contextLimit);
+        keyboardManager.updateContext(chatIdInstance!, contextSize, contextLimit);
       }
 
-      await pinnedMessageManager.onMessageComplete(tokens);
+      await pinnedMessageManager.onMessageComplete(chatIdInstance!, tokens);
     } catch (err) {
       logger.error("[Bot] Error updating pinned message with tokens:", err);
     }
   });
 
   summaryAggregator.setOnCost(async (cost) => {
-    if (!pinnedMessageManager.isInitialized()) {
+    if (isSimpleModeChat(chatIdInstance!)) {
+      return;
+    }
+
+    if (!pinnedMessageManager.isInitialized(chatIdInstance!)) {
       return;
     }
 
     try {
       logger.debug(`[Bot] Cost update: $${cost.toFixed(2)}`);
-      await pinnedMessageManager.onCostUpdate(cost);
+      await pinnedMessageManager.onCostUpdate(chatIdInstance!, cost);
     } catch (err) {
       logger.error("[Bot] Error updating cost:", err);
     }
   });
 
   summaryAggregator.setOnSessionCompacted(async (sessionId, directory) => {
-    if (!pinnedMessageManager.isInitialized()) {
+    if (isSimpleModeChat(chatIdInstance!)) {
+      return;
+    }
+
+    if (!pinnedMessageManager.isInitialized(chatIdInstance!)) {
       return;
     }
 
     try {
       logger.info(`[Bot] Session compacted, reloading context: ${sessionId}`);
-      await pinnedMessageManager.onSessionCompacted(sessionId, directory);
+      await pinnedMessageManager.onSessionCompacted(chatIdInstance!, sessionId, directory);
     } catch (err) {
       logger.error("[Bot] Error reloading context after compaction:", err);
     }
@@ -638,7 +913,7 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       return;
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatIdInstance!);
     if (!currentSession || currentSession.id !== sessionId) {
       responseStreamer.clearSession(sessionId, "session_error_not_current");
       toolCallStreamer.clearSession(sessionId, "session_error_not_current");
@@ -648,6 +923,10 @@ async function ensureEventSubscription(directory: string): Promise<void> {
     }
 
     responseStreamer.clearSession(sessionId, "session_error");
+    if (hasLoadingMessage(sessionId)) {
+      void clearLoadingMessage(sessionId, botInstance.api, "session_error");
+    }
+
     await Promise.all([
       toolMessageBatcher.flushSession(sessionId, "session_error"),
       toolCallStreamer.flushSession(sessionId, "session_error"),
@@ -666,6 +945,7 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       });
 
     foregroundSessionState.markIdle(sessionId);
+    clearAssistantRunState(sessionId);
     await scheduledTaskRuntime.flushDeferredDeliveries();
   });
 
@@ -674,9 +954,13 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       return;
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatIdInstance!);
     if (!currentSession || currentSession.id !== sessionId) {
       return;
+    }
+
+    if (hasLoadingMessage(sessionId)) {
+      void clearLoadingMessage(sessionId, botInstance.api, "session_retry");
     }
 
     const normalizedMessage = message.trim() || t("common.unknown_error");
@@ -690,28 +974,40 @@ async function ensureEventSubscription(directory: string): Promise<void> {
   });
 
   summaryAggregator.setOnSessionDiff(async (_sessionId, diffs) => {
-    if (!pinnedMessageManager.isInitialized()) {
+    if (isSimpleModeChat(chatIdInstance!)) {
+      return;
+    }
+
+    if (!pinnedMessageManager.isInitialized(chatIdInstance!)) {
       return;
     }
 
     try {
-      await pinnedMessageManager.onSessionDiff(diffs);
+      await pinnedMessageManager.onSessionDiff(chatIdInstance!, diffs);
     } catch (err) {
       logger.error("[Bot] Error updating session diff:", err);
     }
   });
 
   summaryAggregator.setOnFileChange((change) => {
-    if (!pinnedMessageManager.isInitialized()) {
+    if (isSimpleModeChat(chatIdInstance!)) {
       return;
     }
-    pinnedMessageManager.addFileChange(change);
+
+    if (!pinnedMessageManager.isInitialized(chatIdInstance!)) {
+      return;
+    }
+    pinnedMessageManager.addFileChange(chatIdInstance!, change);
   });
 
   pinnedMessageManager.setOnKeyboardUpdate(async (tokensUsed, tokensLimit) => {
+    if (isSimpleModeChat(chatIdInstance!)) {
+      return;
+    }
+
     try {
       logger.debug(`[Bot] Updating keyboard with context: ${tokensUsed}/${tokensLimit}`);
-      keyboardManager.updateContext(tokensUsed, tokensLimit);
+      keyboardManager.updateContext(chatIdInstance!, tokensUsed, tokensLimit);
       // Don't send automatic keyboard updates - keyboard will update naturally with user messages
     } catch (err) {
       logger.error("[Bot] Error updating keyboard context:", err);
@@ -733,14 +1029,34 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       }
     }
 
+    if (event.type === "message.updated") {
+      const { info: msgInfo } = event.properties as {
+        info: {
+          role?: string;
+          sessionID?: string;
+          agent?: string;
+          modelID?: string;
+          providerID?: string;
+        };
+      };
+
+      if (msgInfo?.role === "assistant" && msgInfo.sessionID) {
+        setAssistantRunState(msgInfo.sessionID, {
+          agentId: msgInfo.agent ?? null,
+          modelId: msgInfo.modelID ?? null,
+          provider: msgInfo.providerID ?? null,
+        });
+      }
+    }
+
     summaryAggregator.processEvent(event);
   }).catch((err) => {
     logger.error("Failed to subscribe to events:", err);
   });
 }
 
-export function createBot(): Bot<Context> {
-  clearAllInteractionState("bot_startup");
+export async function createBot(): Promise<Bot<Context>> {
+  clearAllInteractionState(chatIdInstance ?? 0, "bot_startup");
   toolMessageBatcher.setIntervalSeconds(config.bot.serviceMessagesIntervalSec);
   logger.debug(
     `[ToolBatcher] Service messages interval: ${config.bot.serviceMessagesIntervalSec}s`,
@@ -769,6 +1085,25 @@ export function createBot(): Bot<Context> {
   }
 
   const bot = new Bot(config.telegram.token, botOptions);
+
+  bot.use(sequentialize((ctx) => ctx.chat?.id.toString() ?? ""));
+
+  setTelegramBotApi(bot.api as unknown as TelegramBotApi);
+  await initQueue();
+  startWorker().catch((err) =>
+    logger.warn("[Bot] BullMQ worker disabled (Redis unavailable):", err),
+  );
+
+  // Initialize task tracking for persistence
+  initializeTaskTracking(bot);
+  recoverInterruptedTasks();
+
+  // Initialize system monitoring
+  initializeSystemMonitoring(bot);
+  startSystemMonitoring({
+    userId: config.telegram.allowedUserIds[0],
+    checkIntervalMinutes: 5,
+  });
 
   // Heartbeat for diagnostics: verify the event loop is not blocked
   let heartbeatCounter = 0;
@@ -801,15 +1136,83 @@ export function createBot(): Bot<Context> {
     logger.debug(
       `[DEBUG] Incoming update: hasCallbackQuery=${hasCallbackQuery}, hasMessage=${hasMessage}, callbackData=${callbackData}`,
     );
+
+    // Track userId per chatId for permission system
+    if (ctx.from?.id && ctx.chat?.id) {
+      trackChatUser(ctx.chat.id, ctx.from.id);
+    }
+
     return next();
   });
 
+  // DIAGNOSTIC: Log ALL message:text events BEFORE any middleware
+  bot.on("message:text", async (ctx, next) => {
+    const text = ctx.message?.text || "(no text)";
+    const chatType = ctx.chat?.type || "unknown";
+    const userId = ctx.from?.id || "unknown";
+    const messageId = ctx.message?.message_id || "unknown";
+    logger.info(
+      `[DIAGNOSTIC] message:text ENTERED chain: text="${text.substring(0, 80)}...", chatType=${chatType}, userId=${userId}, messageId=${messageId}`,
+    );
+    await next();
+    logger.debug(`[DIAGNOSTIC] message:text AFTER middleware chain completed`);
+  });
+
   bot.use(authMiddleware);
+
+  // Auto-select dedicated project and model settings for restricted users after auth passes
+  bot.use(async (ctx, next) => {
+    const userId = ctx.from?.id;
+    const chatId = ctx.chat?.id;
+    if (userId != null && chatId != null) {
+      const restriction = getUserProjectRestriction(userId);
+      if (restriction) {
+        const currentProject = getCurrentProject(chatId);
+        const isCorrectProject =
+          currentProject?.worktree.toLowerCase().replace(/[\\/]+$/g, "") ===
+          restriction.projectPath.toLowerCase().replace(/[\\/]+$/g, "");
+
+        if (!isCorrectProject) {
+          try {
+            await ensureUserProjectDirectory(userId);
+            const { getProjectsForUser: fetchUserProjects } = await import("../project/manager.js");
+            const projects = await fetchUserProjects(userId);
+            const project = projects[0] ?? createFallbackProjectInfo(userId);
+            if (project) {
+              setCurrentProject(chatId, project);
+              logger.info(
+                `[UserAccess] Auto-selected project "${project.name}" for userId=${userId}, chatId=${chatId}`,
+              );
+            }
+          } catch (err) {
+            logger.warn(`[UserAccess] Could not auto-select project for userId=${userId}:`, err);
+          }
+        }
+
+        // Auto-apply the preferred model variant
+        const preferredVariant = getUserModelVariant(userId);
+        if (preferredVariant) {
+          const currentModel = getCurrentModel(chatId);
+          if (currentModel?.variant !== preferredVariant) {
+            setCurrentModel(chatId, {
+              ...(currentModel ?? { providerID: "", modelID: "" }),
+              variant: preferredVariant,
+            });
+            logger.debug(
+              `[UserAccess] Auto-set model variant "${preferredVariant}" for userId=${userId}, chatId=${chatId}`,
+            );
+          }
+        }
+      }
+    }
+    return next();
+  });
   bot.use(ensureCommandsInitialized);
+  bot.on("inline_query", handleInlineQuery);
   bot.use(interactionGuardMiddleware);
 
   const blockMenuWhileInteractionActive = async (ctx: Context): Promise<boolean> => {
-    const activeInteraction = interactionManager.getSnapshot();
+    const activeInteraction = interactionManager.getSnapshot(chatIdInstance!);
     if (!activeInteraction) {
       return false;
     }
@@ -830,10 +1233,41 @@ export function createBot(): Bot<Context> {
   bot.command("sessions", sessionsCommand);
   bot.command("new", newCommand);
   bot.command("abort", abortCommand);
+  bot.command("stop", abortCommand);
+  bot.command("steer", async (ctx) => {
+    await steerCommand(ctx, { bot, ensureEventSubscription });
+  });
   bot.command("task", taskCommand);
   bot.command("tasklist", taskListCommand);
   bot.command("rename", renameCommand);
   bot.command("commands", commandsCommand);
+  bot.command("shell", shellCommand);
+  bot.command("ls", lsCommand);
+  bot.command("read", readCommand);
+  bot.command("tasks", tasksCommand);
+  bot.command("logs", logsCommand);
+  bot.command("health", healthCommand);
+  bot.command("journal", journalCommand);
+  bot.command("sandbox", sandboxCommand);
+  bot.command("cost", costCommand);
+  bot.command("export", exportCommand);
+  bot.command("messages", messagesCommand);
+  bot.command("skills", skillsCommand);
+  bot.command("mcps", mcpsCommand);
+  bot.command("models", modelsCommand);
+  bot.command("compact", compactCommand);
+  bot.command("tts", ttsCommand);
+
+  // Register slash command handlers for inline mode commands.
+  // When a user taps an inline result (e.g. @bot feynman: some text), the bot
+  // sends "/feynman some text" as the message. Slash commands bypass Telegram
+  // Group Privacy Mode, so the bot receives them without needing @mention.
+  for (const inlineCmd of INLINE_COMMANDS) {
+    bot.command(inlineCmd.slashCommand, async (ctx) => {
+      const query = (ctx.match as string)?.trim() || undefined;
+      await handleLlmCommandRequest(ctx, inlineCmd.slashCommand, query);
+    });
+  }
 
   bot.on("message:text", unknownCommandMiddleware);
 
@@ -847,6 +1281,7 @@ export function createBot(): Bot<Context> {
     }
 
     try {
+      const handledShell = await handleShellCallback(ctx);
       const handledInlineCancel = await handleInlineMenuCancel(ctx);
       const handledSession = await handleSessionSelect(ctx);
       const handledProject = await handleProjectSelect(ctx);
@@ -860,12 +1295,19 @@ export function createBot(): Bot<Context> {
       const handledTaskList = await handleTaskListCallback(ctx);
       const handledRenameCancel = await handleRenameCancel(ctx);
       const handledCommands = await handleCommandsCallback(ctx, { bot, ensureEventSubscription });
+      const handledMessages = await handleMessagesCallback(ctx);
+      const handledSkills = await handleSkillsCallback(ctx);
+      const handledMcps = await handleMcpsCallback(ctx);
+      const handledJournal = await handleJournalCallback(ctx);
+      const handledInlineRun = await handleInlineRunCallback(ctx);
+      const handledLlmGuard = await handleLlmConfirmCallback(ctx);
 
       logger.debug(
-        `[Bot] Callback handled: inlineCancel=${handledInlineCancel}, session=${handledSession}, project=${handledProject}, question=${handledQuestion}, permission=${handledPermission}, agent=${handledAgent}, model=${handledModel}, variant=${handledVariant}, compactConfirm=${handledCompactConfirm}, task=${handledTask}, taskList=${handledTaskList}, rename=${handledRenameCancel}, commands=${handledCommands}`,
+        `[Bot] Callback handled: shell=${handledShell}, inlineCancel=${handledInlineCancel}, session=${handledSession}, project=${handledProject}, question=${handledQuestion}, permission=${handledPermission}, agent=${handledAgent}, model=${handledModel}, variant=${handledVariant}, compactConfirm=${handledCompactConfirm}, task=${handledTask}, taskList=${handledTaskList}, rename=${handledRenameCancel}, commands=${handledCommands}, messages=${handledMessages}, skills=${handledSkills}, mcps=${handledMcps}, journal=${handledJournal}, inlineRun=${handledInlineRun}, llmGuard=${handledLlmGuard}`,
       );
 
       if (
+        !handledShell &&
         !handledInlineCancel &&
         !handledSession &&
         !handledProject &&
@@ -878,20 +1320,27 @@ export function createBot(): Bot<Context> {
         !handledTask &&
         !handledTaskList &&
         !handledRenameCancel &&
-        !handledCommands
+        !handledCommands &&
+        !handledMessages &&
+        !handledSkills &&
+        !handledMcps &&
+        !handledJournal &&
+        !handledInlineRun &&
+        !handledLlmGuard
       ) {
         logger.debug("Unknown callback query:", ctx.callbackQuery?.data);
         await ctx.answerCallbackQuery({ text: t("callback.unknown_command") });
       }
     } catch (err) {
       logger.error("[Bot] Error handling callback:", err);
-      clearAllInteractionState("callback_handler_error");
+      clearAllInteractionState(chatIdInstance!, "callback_handler_error");
       await ctx.answerCallbackQuery({ text: t("callback.processing_error") }).catch(() => {});
     }
   });
 
   // Handle Reply Keyboard button press (agent mode indicator)
   bot.hears(AGENT_MODE_BUTTON_TEXT_PATTERN, async (ctx) => {
+    if (ctx.from?.id && isSimpleUser(ctx.from.id)) return;
     logger.debug(`[Bot] Agent mode button pressed: ${ctx.message?.text}`);
 
     try {
@@ -909,6 +1358,7 @@ export function createBot(): Bot<Context> {
   // Handle Reply Keyboard button press (model selector)
   // Model button text is produced by formatModelForButton() and always starts with "🤖 ".
   bot.hears(MODEL_BUTTON_TEXT_PATTERN, async (ctx) => {
+    if (ctx.from?.id && isSimpleUser(ctx.from.id)) return;
     logger.debug(`[Bot] Model button pressed: ${ctx.message?.text}`);
 
     try {
@@ -925,6 +1375,7 @@ export function createBot(): Bot<Context> {
 
   // Handle Reply Keyboard button press (context button)
   bot.hears(/^📊(?:\s|$)/, async (ctx) => {
+    if (ctx.from?.id && isSimpleUser(ctx.from.id)) return;
     logger.debug(`[Bot] Context button pressed: ${ctx.message?.text}`);
 
     try {
@@ -942,7 +1393,7 @@ export function createBot(): Bot<Context> {
   // Handle Reply Keyboard button press (variant selector)
   // Keep support for both legacy "💭" and current "💡" prefix.
   bot.hears(VARIANT_BUTTON_TEXT_PATTERN, async (ctx) => {
-    logger.debug(`[Bot] Variant button pressed: ${ctx.message?.text}`);
+    if (ctx.from?.id && isSimpleUser(ctx.from.id)) return;
 
     try {
       if (await blockMenuWhileInteractionActive(ctx)) {
@@ -1024,7 +1475,7 @@ export function createBot(): Bot<Context> {
       const largestPhoto = photos[photos.length - 1];
 
       // Check model capabilities
-      const storedModel = getStoredModel();
+      const storedModel = getStoredModel(ctx.chat.id);
       const capabilities = await getModelCapabilities(storedModel.providerID, storedModel.modelID);
 
       if (!supportsInput(capabilities, "image")) {
@@ -1083,7 +1534,11 @@ export function createBot(): Bot<Context> {
 
   bot.on("message:text", async (ctx) => {
     const text = ctx.message?.text;
+    logger.info(
+      `[DIAGNOSTIC] Final message:text handler ENTERED: text="${text?.substring(0, 80) || "(no text)"}", chatId=${ctx.chat?.id}, chatType=${ctx.chat?.type}`,
+    );
     if (!text) {
+      logger.info(`[DIAGNOSTIC] Final_message:text handler: no text, returning`);
       return;
     }
 
@@ -1091,38 +1546,158 @@ export function createBot(): Bot<Context> {
     chatIdInstance = ctx.chat.id;
 
     if (text.startsWith("/")) {
+      logger.info(`[DIAGNOSTIC] Final_message:text handler: starts with /, returning`);
       return;
     }
 
-    if (questionManager.isActive()) {
+    // ── LLM Guard: capture query input when in awaiting_query state ──
+    if (await handleLlmQueryText(ctx)) return;
+
+    const isPrivateChat = ctx.chat.type === "private";
+    logger.info(`[DIAGNOSTIC] Final_message:text handler: isPrivateChat=${isPrivateChat}`);
+
+    // In DMs: all non-slash text is a prompt
+    // In groups: only @botname or @ai prefixed text is a prompt
+    let promptText: string;
+    if (isPrivateChat) {
+      const trimmed = text.trim();
+      const botUsername = ctx.me?.username?.toLowerCase();
+
+      // Strip @botname prefix if present (same as groups)
+      if (botUsername && trimmed.toLowerCase().startsWith(`@${botUsername}`)) {
+        promptText = trimmed.replace(new RegExp(`^@${botUsername}\\s*`, "i"), "");
+      } else {
+        promptText = trimmed;
+      }
+
+      // Check for inline command prefixes WITHOUT colon (e.g. "eli5 why..." in DMs)
+      const inlineNoColon = detectInlineCommandWithoutColon(promptText);
+      if (inlineNoColon) {
+        const { command, actualQuery } = inlineNoColon;
+        if (actualQuery.length >= command.minQueryLength) {
+          const ackMsg = await ctx.reply(t("inline.thinking"));
+          await addTaskJob({
+            jobType: "llm_direct",
+            command: command.slashCommand,
+            query: actualQuery,
+            chatId: ctx.chat!.id,
+            ackMessageId: ackMsg.message_id,
+            userId: ctx.from!.id,
+            taskId: randomUUID(),
+            promptText: actualQuery,
+            sessionId: null,
+            directory: "",
+            agent: "",
+            modelProvider: "",
+            modelId: "",
+            variant: null,
+            parts: [],
+          });
+          return;
+        }
+      }
+    } else {
+      const trimmed = text.trim();
+      const botUsername = ctx.me?.username?.toLowerCase();
+
+      // Check for @botname mention (Telegram inserts actual bot username)
+      if (botUsername && trimmed.toLowerCase().startsWith(`@${botUsername}`)) {
+        promptText = trimmed.replace(new RegExp(`^@${botUsername}\\s*`, "i"), "");
+      } else if (trimmed.toLowerCase().startsWith("@ai")) {
+        // Backward compat: also accept @ai trigger
+        promptText = trimmed.replace(/^@ai\s*/i, "");
+      } else {
+        logger.info(
+          `[DIAGNOSTIC] Final_message:text handler: group chat, no @botname/@ai prefix, returning`,
+        );
+        return;
+      }
+    }
+
+    logger.info(
+      `[DIAGNOSTIC] Final_message:text handler: promptText="${promptText.substring(0, 80)}..."`,
+    );
+
+    if (questionManager.isActive(chatIdInstance!)) {
+      logger.info(
+        `[DIAGNOSTIC] Final_message:text handler: questionManager is active, routing to handleQuestionTextAnswer`,
+      );
       await handleQuestionTextAnswer(ctx);
       return;
     }
 
     const handledTask = await handleTaskTextInput(ctx);
     if (handledTask) {
+      logger.info(`[DIAGNOSTIC] Final_message:text handler: handled by handleTaskTextInput`);
       return;
     }
 
     const handledRename = await handleRenameTextAnswer(ctx);
     if (handledRename) {
+      logger.info(`[DIAGNOSTIC] Final_message:text handler: handled by handleRenameTextAnswer`);
       return;
     }
 
     const promptDeps = { bot, ensureEventSubscription };
     const handledCommandArgs = await handleCommandTextArguments(ctx, promptDeps);
     if (handledCommandArgs) {
+      logger.info(`[DIAGNOSTIC] Final_message:text handler: handled by handleCommandTextArguments`);
       return;
     }
 
-    await processUserPrompt(ctx, text, promptDeps);
+    // Detect inline command prefixes (e.g. "summarise:", "eli5:", "deep-research:")
+    // and enqueue as llm_direct jobs for non-blocking processing.
+    const inlineMatch = detectInlineCommand(promptText);
+    logger.info(
+      `[DIAGNOSTIC] Final_message:text handler: detectInlineCommand result=${inlineMatch ? `matched prefix="${inlineMatch.command.prefix}"` : "NO MATCH"}`,
+    );
+    if (inlineMatch) {
+      const { command, actualQuery } = inlineMatch;
+      logger.info(
+        `[DIAGNOSTIC] Final_message:text handler: inline command matched, actualQuery length=${actualQuery.length}, minRequired=${command.minQueryLength}`,
+      );
+      if (actualQuery.length >= command.minQueryLength) {
+        logger.info(`[DIAGNOSTIC] Final_message:text handler: enqueuing llm_direct job`);
+        const ackMsg = await ctx.reply(t("inline.thinking"));
+        await addTaskJob({
+          jobType: "llm_direct",
+          command: command.slashCommand,
+          query: actualQuery,
+          chatId: ctx.chat!.id,
+          ackMessageId: ackMsg.message_id,
+          userId: ctx.from!.id,
+          taskId: randomUUID(),
+          promptText: actualQuery,
+          sessionId: null,
+          directory: "",
+          agent: "",
+          modelProvider: "",
+          modelId: "",
+          variant: null,
+          parts: [],
+        });
+        return;
+      }
+
+      // Query too short — send user-friendly error
+      logger.info(`[DIAGNOSTIC] Final_message:text handler: query too short, sending error`);
+      await ctx.reply(
+        t("inline.cmd.error.query_too_short", { min: String(command.minQueryLength) }),
+      );
+      return;
+    }
+
+    logger.info(
+      `[DIAGNOSTIC] Final_message:text handler: no inline command, calling processUserPrompt with regular prompt`,
+    );
+    await processUserPrompt(ctx, promptText, promptDeps);
 
     logger.debug("[Bot] message:text handler completed (prompt sent in background)");
   });
 
   bot.catch((err) => {
     logger.error("[Bot] Unhandled error in bot:", err);
-    clearAllInteractionState("bot_unhandled_error");
+    clearAllInteractionState(chatIdInstance!, "bot_unhandled_error");
     if (err.ctx) {
       logger.error(
         "[Bot] Error context - update type:",

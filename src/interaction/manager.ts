@@ -50,14 +50,18 @@ function cloneState(state: InteractionState): InteractionState {
 }
 
 class InteractionManager {
-  private state: InteractionState | null = null;
+  private states: Map<number, InteractionState> = new Map();
 
-  start(options: StartInteractionOptions): InteractionState {
+  private getState(chatId: number): InteractionState | null {
+    return this.states.get(chatId) ?? null;
+  }
+
+  start(chatId: number, options: StartInteractionOptions): InteractionState {
     const now = Date.now();
     let expiresAt: number | null = null;
 
-    if (this.state) {
-      this.clear("state_replaced");
+    if (this.getState(chatId)) {
+      this.clear(chatId, "state_replaced");
     }
 
     if (typeof options.expiresInMs === "number") {
@@ -73,7 +77,7 @@ class InteractionManager {
       expiresAt,
     };
 
-    this.state = nextState;
+    this.states.set(chatId, nextState);
 
     logger.info(
       `[InteractionManager] Started interaction: kind=${nextState.kind}, expectedInput=${nextState.expectedInput}, allowedCommands=${nextState.allowedCommands.join(",") || "none"}`,
@@ -82,71 +86,77 @@ class InteractionManager {
     return cloneState(nextState);
   }
 
-  get(): InteractionState | null {
-    if (!this.state) {
+  get(chatId: number): InteractionState | null {
+    const state = this.getState(chatId);
+    if (!state) {
       return null;
     }
 
-    return cloneState(this.state);
+    return cloneState(state);
   }
 
-  getSnapshot(): InteractionState | null {
-    return this.get();
+  getSnapshot(chatId: number): InteractionState | null {
+    return this.get(chatId);
   }
 
-  isActive(): boolean {
-    return this.state !== null;
+  isActive(chatId: number): boolean {
+    return this.getState(chatId) !== null;
   }
 
-  isExpired(referenceTimeMs: number = Date.now()): boolean {
-    if (!this.state || this.state.expiresAt === null) {
+  isExpired(chatId: number, referenceTimeMs: number = Date.now()): boolean {
+    const state = this.getState(chatId);
+    if (!state || state.expiresAt === null) {
       return false;
     }
 
-    return referenceTimeMs >= this.state.expiresAt;
+    return referenceTimeMs >= state.expiresAt;
   }
 
-  transition(options: TransitionInteractionOptions): InteractionState | null {
-    if (!this.state) {
+  transition(chatId: number, options: TransitionInteractionOptions): InteractionState | null {
+    const state = this.getState(chatId);
+    if (!state) {
       return null;
     }
 
     const now = Date.now();
 
-    this.state = {
-      ...this.state,
-      kind: options.kind ?? this.state.kind,
-      expectedInput: options.expectedInput ?? this.state.expectedInput,
+    const newState: InteractionState = {
+      ...state,
+      kind: options.kind ?? state.kind,
+      expectedInput: options.expectedInput ?? state.expectedInput,
       allowedCommands:
         options.allowedCommands !== undefined
           ? normalizeAllowedCommands(options.allowedCommands)
-          : [...this.state.allowedCommands],
-      metadata: options.metadata ? { ...options.metadata } : { ...this.state.metadata },
+          : [...state.allowedCommands],
+      metadata: options.metadata ? { ...options.metadata } : { ...state.metadata },
       expiresAt:
         options.expiresInMs === undefined
-          ? this.state.expiresAt
+          ? state.expiresAt
           : options.expiresInMs === null
             ? null
             : now + options.expiresInMs,
     };
 
+    this.states.set(chatId, newState);
+
     logger.debug(
-      `[InteractionManager] Transitioned interaction: kind=${this.state.kind}, expectedInput=${this.state.expectedInput}, allowedCommands=${this.state.allowedCommands.join(",") || "none"}`,
+      `[InteractionManager] Transitioned interaction: kind=${newState.kind}, expectedInput=${newState.expectedInput}, allowedCommands=${newState.allowedCommands.join(",") || "none"}`,
     );
 
-    return cloneState(this.state);
+    return cloneState(newState);
   }
 
-  clear(reason: InteractionClearReason = "manual"): void {
-    if (!this.state) {
+  clear(chatId: number, reason: InteractionClearReason = "manual"): void {
+    const state = this.getState(chatId);
+    if (!state) {
       return;
     }
 
     logger.info(
-      `[InteractionManager] Cleared interaction: reason=${reason}, kind=${this.state.kind}, expectedInput=${this.state.expectedInput}`,
+      `[InteractionManager] Cleared interaction: reason=${reason}, kind=${state.kind}, expectedInput=${state.expectedInput}`,
     );
 
-    this.state = null;
+    this.states.delete(chatId);
   }
 }
 

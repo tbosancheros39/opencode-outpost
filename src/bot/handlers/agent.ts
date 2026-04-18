@@ -33,37 +33,35 @@ export async function handleAgentSelect(ctx: Context): Promise<boolean> {
 
   logger.debug(`[AgentHandler] Received callback: ${callbackQuery.data}`);
 
-  try {
-    if (ctx.chat) {
-      keyboardManager.initialize(ctx.api, ctx.chat.id);
-    }
+  const chatId = ctx.chat?.id;
+  if (!chatId) return false;
 
-    if (pinnedMessageManager.getContextLimit() === 0) {
-      await pinnedMessageManager.refreshContextLimit();
+  try {
+    keyboardManager.initialize(ctx.api, chatId);
+
+    if (pinnedMessageManager.getContextLimit(chatId) === 0) {
+      await pinnedMessageManager.refreshContextLimit(chatId);
     }
 
     const agentName = callbackQuery.data.replace("agent:", "");
 
-    // Select agent and persist
-    selectAgent(agentName);
+    selectAgent(chatId, agentName);
 
-    // Update keyboard manager state
-    keyboardManager.updateAgent(agentName);
+    keyboardManager.updateAgent(chatId, agentName);
 
-    // Update Reply Keyboard with new agent, current model, and context
-    const currentModel = getStoredModel();
+    const currentModel = getStoredModel(chatId);
     const contextInfo =
-      pinnedMessageManager.getContextInfo() ??
-      (pinnedMessageManager.getContextLimit() > 0
-        ? { tokensUsed: 0, tokensLimit: pinnedMessageManager.getContextLimit() }
+      pinnedMessageManager.getContextInfo(chatId) ??
+      (pinnedMessageManager.getContextLimit(chatId) > 0
+        ? { tokensUsed: 0, tokensLimit: pinnedMessageManager.getContextLimit(chatId) }
         : null);
 
-    keyboardManager.updateModel(currentModel);
+    keyboardManager.updateModel(chatId, currentModel);
     if (contextInfo) {
-      keyboardManager.updateContext(contextInfo.tokensUsed, contextInfo.tokensLimit);
+      keyboardManager.updateContext(chatId, contextInfo.tokensUsed, contextInfo.tokensLimit);
     }
 
-    const state = keyboardManager.getState();
+    const state = keyboardManager.getState(chatId);
     const variantName =
       state?.variantName ?? formatVariantForButton(currentModel.variant || "default");
     const keyboard = createMainKeyboard(
@@ -74,20 +72,18 @@ export async function handleAgentSelect(ctx: Context): Promise<boolean> {
     );
     const displayName = getAgentDisplayName(agentName);
 
-    clearActiveInlineMenu("agent_selected");
+    clearActiveInlineMenu(chatId, "agent_selected");
 
-    // Send confirmation message with updated keyboard
     await ctx.answerCallbackQuery({ text: t("agent.changed_callback", { name: displayName }) });
     await ctx.reply(t("agent.changed_message", { name: displayName }), {
       reply_markup: keyboard,
     });
 
-    // Delete the inline menu message
     await ctx.deleteMessage().catch(() => {});
 
     return true;
   } catch (err) {
-    clearActiveInlineMenu("agent_select_error");
+    clearActiveInlineMenu(chatId, "agent_select_error");
     logger.error("[AgentHandler] Error handling agent select:", err);
     await ctx.answerCallbackQuery({ text: t("agent.change_error_callback") }).catch(() => {});
     return false;
@@ -97,18 +93,21 @@ export async function handleAgentSelect(ctx: Context): Promise<boolean> {
 /**
  * Build inline keyboard with available agents
  * @param currentAgent Current agent name for highlighting
+ * @param chatId Chat ID for manager calls
  * @returns InlineKeyboard with agent selection buttons
  */
-export async function buildAgentSelectionMenu(currentAgent?: string): Promise<InlineKeyboard> {
+export async function buildAgentSelectionMenu(
+  currentAgent?: string,
+  chatId?: number,
+): Promise<InlineKeyboard> {
   const keyboard = new InlineKeyboard();
-  const agents = await getAvailableAgents();
+  const agents = await getAvailableAgents(chatId ?? 0);
 
   if (agents.length === 0) {
     logger.warn("[AgentHandler] No available agents found");
     return keyboard;
   }
 
-  // Add button for each agent
   agents.forEach((agent) => {
     const emoji = getAgentEmoji(agent.name);
     const isActive = agent.name === currentAgent;
@@ -127,9 +126,11 @@ export async function buildAgentSelectionMenu(currentAgent?: string): Promise<In
  * @param ctx grammY context
  */
 export async function showAgentSelectionMenu(ctx: Context): Promise<void> {
+  const chatId = ctx.chat?.id;
+
   try {
-    const currentAgent = await fetchCurrentAgent();
-    const keyboard = await buildAgentSelectionMenu(currentAgent);
+    const currentAgent = await fetchCurrentAgent(chatId ?? 0);
+    const keyboard = await buildAgentSelectionMenu(currentAgent, chatId);
 
     if (keyboard.inline_keyboard.length === 0) {
       await ctx.reply(t("agent.menu.empty"));

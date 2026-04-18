@@ -17,16 +17,17 @@ function getCallbackMessageId(ctx: Context): number | null {
   return typeof messageId === "number" ? messageId : null;
 }
 
-function clearRenameInteraction(reason: string): void {
-  const state = interactionManager.getSnapshot();
+function clearRenameInteraction(chatId: number, reason: string): void {
+  const state = interactionManager.getSnapshot(chatId);
   if (state?.kind === "rename") {
-    interactionManager.clear(reason);
+    interactionManager.clear(chatId, reason);
   }
 }
 
 export async function renameCommand(ctx: CommandContext<Context>): Promise<void> {
   try {
-    const currentSession = getCurrentSession();
+    const chatId = ctx.chat?.id ?? 0;
+    const currentSession = getCurrentSession(chatId);
 
     if (!currentSession) {
       await ctx.reply(t("rename.no_session"));
@@ -39,9 +40,9 @@ export async function renameCommand(ctx: CommandContext<Context>): Promise<void>
       reply_markup: keyboard,
     });
 
-    renameManager.startWaiting(currentSession.id, currentSession.directory, currentSession.title);
-    renameManager.setMessageId(message.message_id);
-    interactionManager.start({
+    renameManager.startWaiting(chatId, currentSession.id, currentSession.directory, currentSession.title);
+    renameManager.setMessageId(chatId, message.message_id);
+    interactionManager.start(chatId, {
       kind: "rename",
       expectedInput: "text",
       metadata: {
@@ -65,27 +66,29 @@ export async function handleRenameCancel(ctx: Context): Promise<boolean> {
 
   logger.debug("[RenameHandler] Cancel callback received");
 
-  if (!renameManager.isWaitingForName()) {
-    clearRenameInteraction("rename_cancel_inactive");
+  const chatId = ctx.chat?.id ?? 0;
+
+  if (!renameManager.isWaitingForName(chatId)) {
+    clearRenameInteraction(chatId, "rename_cancel_inactive");
     await ctx.answerCallbackQuery({ text: t("rename.inactive_callback"), show_alert: true });
     return true;
   }
 
-  const interactionState = interactionManager.getSnapshot();
+  const interactionState = interactionManager.getSnapshot(chatId);
   if (interactionState?.kind !== "rename") {
-    renameManager.clear();
+    renameManager.clear(chatId);
     await ctx.answerCallbackQuery({ text: t("rename.inactive_callback"), show_alert: true });
     return true;
   }
 
   const callbackMessageId = getCallbackMessageId(ctx);
-  if (!renameManager.isActiveMessage(callbackMessageId)) {
+  if (!renameManager.isActiveMessage(chatId, callbackMessageId)) {
     await ctx.answerCallbackQuery({ text: t("rename.inactive_callback"), show_alert: true });
     return true;
   }
 
-  renameManager.clear();
-  clearRenameInteraction("rename_cancelled");
+  renameManager.clear(chatId);
+  clearRenameInteraction(chatId, "rename_cancelled");
 
   await ctx.answerCallbackQuery();
   await ctx.editMessageText(t("rename.cancelled")).catch(() => {});
@@ -94,7 +97,9 @@ export async function handleRenameCancel(ctx: Context): Promise<boolean> {
 }
 
 export async function handleRenameTextAnswer(ctx: Context): Promise<boolean> {
-  if (!renameManager.isWaitingForName()) {
+  const chatId = ctx.chat?.id ?? 0;
+
+  if (!renameManager.isWaitingForName(chatId)) {
     return false;
   }
 
@@ -107,17 +112,17 @@ export async function handleRenameTextAnswer(ctx: Context): Promise<boolean> {
     return false;
   }
 
-  const interactionState = interactionManager.getSnapshot();
+  const interactionState = interactionManager.getSnapshot(chatId);
   if (interactionState?.kind !== "rename") {
-    renameManager.clear();
+    renameManager.clear(chatId);
     await ctx.reply(t("rename.inactive"));
     return true;
   }
 
-  const sessionInfo = renameManager.getSessionInfo();
+  const sessionInfo = renameManager.getSessionInfo(chatId);
   if (!sessionInfo) {
-    renameManager.clear();
-    clearRenameInteraction("rename_missing_session_info");
+    renameManager.clear(chatId);
+    clearRenameInteraction(chatId, "rename_missing_session_info");
     return false;
   }
 
@@ -140,17 +145,17 @@ export async function handleRenameTextAnswer(ctx: Context): Promise<boolean> {
       throw error || new Error("Failed to update session");
     }
 
-    setCurrentSession({
+    setCurrentSession(chatId, {
       id: sessionInfo.sessionId,
       title: newTitle,
       directory: sessionInfo.directory,
     });
 
-    if (pinnedMessageManager.isInitialized()) {
-      await pinnedMessageManager.onSessionChange(sessionInfo.sessionId, newTitle);
+    if (ctx.chat && pinnedMessageManager.isInitialized(ctx.chat.id)) {
+      await pinnedMessageManager.onSessionChange(ctx.chat.id, sessionInfo.sessionId, newTitle);
     }
 
-    const messageId = renameManager.getMessageId();
+    const messageId = renameManager.getMessageId(chatId);
     if (messageId && ctx.chat) {
       await ctx.api.deleteMessage(ctx.chat.id, messageId).catch(() => {});
     }
@@ -163,7 +168,7 @@ export async function handleRenameTextAnswer(ctx: Context): Promise<boolean> {
     await ctx.reply(t("rename.error"));
   }
 
-  renameManager.clear();
-  clearRenameInteraction("rename_completed");
+  renameManager.clear(chatId);
+  clearRenameInteraction(chatId, "rename_completed");
   return true;
 }

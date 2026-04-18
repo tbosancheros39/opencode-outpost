@@ -5,6 +5,7 @@ import { getCurrentSession } from "../../session/manager.js";
 import { opencodeClient } from "../../opencode/client.js";
 import { quoteShellArg } from "../utils/shell-security.js";
 import { getCurrentProject } from "../../settings/manager.js";
+import { getStoredAgent } from "../../agent/manager.js";
 import { interactionManager } from "../../interaction/manager.js";
 import { listDirectory } from "../../file-explorer/manager.js";
 import type { FileExplorerItem, FileExplorerMetadata } from "../../file-explorer/types.js";
@@ -119,7 +120,7 @@ export async function feCommand(ctx: CommandContext<Context>) {
   logger.info(`[FE] Starting file explorer at: ${targetPath}`);
 
   try {
-    const pageData = await listDirectory(session.id, targetPath);
+    const pageData = await listDirectory(session.id, targetPath, chatId);
     if (pageData.items.length === 0) {
       await ctx.reply(t("fe.empty_directory"));
       return;
@@ -191,7 +192,7 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
 
       await ctx.answerCallbackQuery();
 
-      const pageData = await listDirectory(metadata.sessionId, path);
+      const pageData = await listDirectory(metadata.sessionId, path, chatId);
 
       const text = `📁 <b>${escapeHtml(pageData.currentPath)}</b>\n\n${t("fe.select_hint")}`;
       const keyboard = buildFilesKeyboard(
@@ -257,7 +258,7 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
       const parentPath = metadata.parentPath;
       if (!parentPath) return true;
 
-      const pageData = await listDirectory(metadata.sessionId, parentPath);
+      const pageData = await listDirectory(metadata.sessionId, parentPath, chatId);
 
       const text = `📁 <b>${escapeHtml(pageData.currentPath)}</b>\n\n${t("fe.select_hint")}`;
       const keyboard = buildFilesKeyboard(
@@ -289,7 +290,7 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
     if (callbackData === FE_HOME) {
       await ctx.answerCallbackQuery();
 
-      const pageData = await listDirectory(metadata.sessionId, metadata.projectRoot);
+      const pageData = await listDirectory(metadata.sessionId, metadata.projectRoot, chatId);
 
       const text = `📁 <b>${escapeHtml(pageData.currentPath)}</b>\n\n${t("fe.select_hint")}`;
       const keyboard = buildFilesKeyboard(
@@ -321,7 +322,7 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
     if (callbackData === FE_REFRESH) {
       await ctx.answerCallbackQuery();
 
-      const pageData = await listDirectory(metadata.sessionId, metadata.currentPath);
+      const pageData = await listDirectory(metadata.sessionId, metadata.currentPath, chatId);
 
       const text = `📁 <b>${escapeHtml(pageData.currentPath)}</b>\n\n${t("fe.select_hint")}`;
       const keyboard = buildFilesKeyboard(
@@ -364,9 +365,11 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
       await ctx.answerCallbackQuery(t("fe.reading_file", { path: escapeHtml(filePath) }));
 
       try {
+        const currentAgent = getStoredAgent(chatId) ?? "build";
         const { data, error } = await opencodeClient.session.shell({
           sessionID: metadata.sessionId,
           command: `cat ${quoteShellArg(filePath)}`,
+          agent: currentAgent,
         });
 
         if (error) {

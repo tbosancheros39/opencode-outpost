@@ -85,6 +85,11 @@ function getInteractionBlockedMessage(
 
 export async function interactionGuardMiddleware(ctx: Context, next: NextFunction): Promise<void> {
   const decision = resolveInteractionGuardDecision(ctx);
+  const textPreview = ctx.message?.text?.substring(0, 60) || "(no text)";
+
+  logger.info(
+    `[DIAGNOSTIC] InteractionGuard: text="${textPreview}", allow=${decision.allow}, busy=${decision.busy}, kind=${decision.state?.kind || "none"}, reason=${decision.reason || "none"}, inputType=${decision.inputType}`,
+  );
 
   if (decision.allow) {
     await next();
@@ -97,8 +102,8 @@ export async function interactionGuardMiddleware(ctx: Context, next: NextFunctio
       : t("interaction.blocked.finish_current")
     : getInteractionBlockedMessage(decision.reason, decision.state?.kind);
 
-  logger.debug(
-    `[InteractionGuard] Blocked input: interactionKind=${decision.state?.kind || "none"}, inputType=${decision.inputType}, reason=${decision.reason || "unknown"}, command=${decision.command || "-"}, busy=${decision.busy ? "yes" : "no"}`,
+  logger.warn(
+    `[DIAGNOSTIC] InteractionGuard BLOCKED: text="${textPreview}", interactionKind=${decision.state?.kind || "none"}, inputType=${decision.inputType}, reason=${decision.reason || "unknown"}, command=${decision.command || "-"}, busy=${decision.busy ? "yes" : "no"}`,
   );
 
   if (ctx.callbackQuery) {

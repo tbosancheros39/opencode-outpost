@@ -1,5 +1,17 @@
 import type { CodeFileData } from "./formatter.js";
+import { config } from "../config.js";
 import { logger } from "../utils/logger.js";
+
+const FILE_TOOL_NAMES = ["write_file", "edit_file", "create_file", "patch_file"];
+
+export function shouldDisplayToolMessage(toolName: string): boolean {
+  if (config.bot.hideToolFileMessages) {
+    if (FILE_TOOL_NAMES.includes(toolName)) {
+      return false;
+    }
+  }
+  return true;
+}
 
 const DEFAULT_INTERVAL_SECONDS = 5;
 const TELEGRAM_MESSAGE_MAX_LENGTH = 4096;

@@ -10,41 +10,70 @@ import { clearProject } from "../../settings/manager.js";
 import { foregroundSessionState } from "../../scheduled-task/foreground-state.js";
 import { abortCurrentOperation } from "./abort.js";
 import { t } from "../../i18n/index.js";
+import { isSimpleUser } from "../../users/access.js";
+import { isSuperUser } from "../utils/user-tracker.js";
 
 export async function startCommand(ctx: Context): Promise<void> {
-  if (ctx.chat) {
-    if (!pinnedMessageManager.isInitialized()) {
-      pinnedMessageManager.initialize(ctx.api, ctx.chat.id);
-    }
-    keyboardManager.initialize(ctx.api, ctx.chat.id);
+  const chatId = ctx.chat?.id;
+  if (!chatId) {
+    return;
   }
+
+  const userId = ctx.from?.id;
+
+  // Super users bypass simple user restrictions
+  if (userId && isSuperUser(userId)) {
+    // Proceed to full interface forsuper users
+  } else if (userId && isSimpleUser(userId)) {
+    await abortCurrentOperation(ctx, { notifyUser: false });
+    foregroundSessionState.clearAll("start_command_reset");
+    clearSession(chatId);
+    clearProject(chatId);
+
+    pinnedMessageManager.initialize(ctx.api, chatId);
+    await pinnedMessageManager.clear(chatId);
+
+    await ctx.reply(
+      "Zdravo! 👋 Ja sam tvoj asistent.\n\n" +
+        "Samo mi napiši šta te zanima i rado ću pomoći! " +
+        "Možeš me pitati o kuhanju, receptima, planiranju obroka, " +
+        "kupovini, organizaciji doma i svemu što ti treba u svakodnevnom životu. 🏠\n\n" +
+        "Kada god želiš početi novi razgovor, ukucaj /new.",
+      { reply_markup: { remove_keyboard: true } },
+    );
+    return;
+  }
+
+  if (!pinnedMessageManager.isInitialized(chatId)) {
+    pinnedMessageManager.initialize(ctx.api, chatId);
+  }
+  keyboardManager.initialize(ctx.api, chatId);
 
   await abortCurrentOperation(ctx, { notifyUser: false });
   foregroundSessionState.clearAll("start_command_reset");
 
-  clearSession();
-  clearProject();
-  keyboardManager.clearContext();
-  await pinnedMessageManager.clear();
+  clearSession(chatId);
+  clearProject(chatId);
+  keyboardManager.clearContext(chatId);
+  await pinnedMessageManager.clear(chatId);
 
-  if (pinnedMessageManager.getContextLimit() === 0) {
-    await pinnedMessageManager.refreshContextLimit();
+  if (pinnedMessageManager.getContextLimit(chatId) === 0) {
+    await pinnedMessageManager.refreshContextLimit(chatId);
   }
 
-  // Get current agent, model, and context
-  const currentAgent = getStoredAgent();
-  const currentModel = getStoredModel();
+  const currentAgent = getStoredAgent(chatId);
+  const currentModel = getStoredModel(chatId);
   const variantName = formatVariantForButton(currentModel.variant || "default");
   const contextInfo =
-    pinnedMessageManager.getContextInfo() ??
-    (pinnedMessageManager.getContextLimit() > 0
-      ? { tokensUsed: 0, tokensLimit: pinnedMessageManager.getContextLimit() }
+    pinnedMessageManager.getContextInfo(chatId) ??
+    (pinnedMessageManager.getContextLimit(chatId) > 0
+      ? { tokensUsed: 0, tokensLimit: pinnedMessageManager.getContextLimit(chatId) }
       : null);
 
-  keyboardManager.updateAgent(currentAgent);
-  keyboardManager.updateModel(currentModel);
+  keyboardManager.updateAgent(chatId, currentAgent);
+  keyboardManager.updateModel(chatId, currentModel);
   if (contextInfo) {
-    keyboardManager.updateContext(contextInfo.tokensUsed, contextInfo.tokensLimit);
+    keyboardManager.updateContext(chatId, contextInfo.tokensUsed, contextInfo.tokensLimit);
   }
 
   const keyboard = createMainKeyboard(

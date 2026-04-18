@@ -4,6 +4,7 @@ import { opencodeClient } from "../opencode/client.js";
 import { ProjectInfo } from "../settings/manager.js";
 import { getCachedSessionProjects } from "../session/cache-manager.js";
 import { logger } from "../utils/logger.js";
+import { filterProjectsForUser } from "../users/access.js";
 
 interface InternalProject extends ProjectInfo {
   lastUpdated: number;
@@ -118,4 +119,13 @@ export async function getProjectByWorktree(worktree: string): Promise<ProjectInf
     throw new Error(`Project with worktree ${worktree} not found`);
   }
   return project;
+}
+
+/**
+ * Returns projects visible to a specific user.
+ * Users with a dedicated project restriction only see their assigned project.
+ */
+export async function getProjectsForUser(userId: number): Promise<ProjectInfo[]> {
+  const allProjects = await getProjects();
+  return filterProjectsForUser(userId, allProjects);
 }

@@ -1,11 +1,5 @@
 import { logger } from "../../utils/logger.js";
-import { SUPER_USER_IDS } from "../../constants.js";
-
-/**
- * Tracks the current userId per chatId.
- * Needed because permission events come from SSE (no user context),
- * so we need to know which user triggered the session.
- */
+import { config } from "../../config.js";
 
 const DANGEROUS_PERMISSIONS = new Set(["bash", "edit", "write", "task", "external_directory"]);
 
@@ -21,7 +15,7 @@ export function getUserIdForChat(chatId: number): number | null {
 }
 
 export function isSuperUser(userId: number): boolean {
-  return SUPER_USER_IDS.has(userId);
+  return config.superUserIds.has(userId);
 }
 
 export function isDangerousPermission(permission: string): boolean {

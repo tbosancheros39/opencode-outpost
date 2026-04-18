@@ -3,6 +3,7 @@ import { config } from "../config.js";
 import { opencodeClient } from "../opencode/client.js";
 import { logger } from "../utils/logger.js";
 import type { ModelInfo, FavoriteModel, ModelSelectionLists } from "./types.js";
+import { filterFreeModels, filterModelsByTelegramGroups } from "./free-models.js";
 import path from "node:path";
 
 interface OpenCodeModelState {
@@ -11,8 +12,10 @@ interface OpenCodeModelState {
 }
 
 const MODEL_CATALOG_CACHE_TTL_MS = 10 * 60 * 1000;
+const DEFAULT_CHAT_ID = 0;
 
 let cachedValidModelKeys: Set<string> | null = null;
+let cachedTelegramGroupModels: FavoriteModel[] | null = null;
 let modelCatalogCacheExpiresAt = 0;
 let modelCatalogFetchInFlight: Promise<Set<string> | null> | null = null;
 
@@ -166,10 +169,6 @@ function getOpenCodeModelStatePath(): string {
   return path.join(homeDir, ".local", "state", "opencode", "model.json");
 }
 
-/**
- * Get favorite and recent models from OpenCode local state file.
- * Config model is always treated as favorite.
- */
 export async function getModelSelectionLists(): Promise<ModelSelectionLists> {
   const envDefaultModel = getEnvDefaultModel();
 
@@ -243,12 +242,52 @@ export async function getModelSelectionLists(): Promise<ModelSelectionLists> {
   }
 }
 
-/**
- * Validate stored selected model against OpenCode providers catalog.
- * If selected model is unavailable, fallback to env default model.
- */
-export async function reconcileStoredModelSelection(): Promise<void> {
-  const currentModel = getCurrentModel();
+export async function getTelegramModelGroups(): Promise<FavoriteModel[]> {
+  if (cachedTelegramGroupModels && Date.now() < modelCatalogCacheExpiresAt) {
+    return cachedTelegramGroupModels;
+  }
+
+  try {
+    const response = await opencodeClient.config.providers();
+    if (response.error || !response.data) {
+      logger.warn("[ModelManager] Failed to fetch providers for Telegram groups");
+      return cachedTelegramGroupModels || [];
+    }
+
+    const filteredModels = filterModelsByTelegramGroups(response.data.providers);
+    cachedTelegramGroupModels = filteredModels;
+    logger.info(`[ModelManager] Telegram model groups: ${filteredModels.length} models`);
+    filteredModels.forEach((m) => {
+      logger.debug(`[ModelManager]   - ${m.providerID}/${m.modelID}`);
+    });
+    return filteredModels;
+  } catch (err) {
+    logger.warn("[ModelManager] Error fetching Telegram model groups:", err);
+    return cachedTelegramGroupModels || [];
+  }
+}
+
+async function findFirstAvailableFreeModel(): Promise<FavoriteModel | null> {
+  try {
+    const response = await opencodeClient.config.providers();
+    if (response.error || !response.data) {
+      logger.warn("[ModelManager] Could not fetch providers for free model search");
+      return null;
+    }
+    const freeModels = filterFreeModels(response.data.providers);
+    if (freeModels.length === 0) {
+      logger.warn("[ModelManager] No free models found in catalog");
+      return null;
+    }
+    return freeModels[0];
+  } catch (err) {
+    logger.warn("[ModelManager] Error finding free model:", err);
+    return null;
+  }
+}
+
+export async function reconcileStoredModelSelection(chatId: number = DEFAULT_CHAT_ID): Promise<void> {
+  const currentModel = getCurrentModel(chatId);
 
   if (!currentModel?.providerID || !currentModel.modelID) {
     return;
@@ -268,74 +307,71 @@ export async function reconcileStoredModelSelection(): Promise<void> {
   }
 
   const envDefaultModel = getEnvDefaultModel();
-  if (!envDefaultModel) {
+  if (envDefaultModel) {
+    const fallbackKey = getModelKey(envDefaultModel.providerID, envDefaultModel.modelID);
+    if (validModelKeys.has(fallbackKey)) {
+      logger.warn(
+        `[ModelManager] Stored model ${currentModelKey} is unavailable, falling back to env default ${fallbackKey}`,
+      );
+      setCurrentModel(chatId, {
+        providerID: envDefaultModel.providerID,
+        modelID: envDefaultModel.modelID,
+        variant: "default",
+      });
+      return;
+    }
+  }
+
+  const freeModel = await findFirstAvailableFreeModel();
+  if (freeModel) {
+    const freeModelKey = getModelKey(freeModel.providerID, freeModel.modelID);
     logger.warn(
-      `[ModelManager] Stored model ${currentModelKey} is unavailable and env default model is missing`,
+      `[ModelManager] Stored model ${currentModelKey} is unavailable, env default invalid, auto-selecting free model ${freeModelKey}`,
     );
+    setCurrentModel(chatId, {
+      providerID: freeModel.providerID,
+      modelID: freeModel.modelID,
+      variant: "default",
+    });
     return;
   }
 
-  const fallbackKey = getModelKey(envDefaultModel.providerID, envDefaultModel.modelID);
   logger.warn(
-    `[ModelManager] Stored model ${currentModelKey} is unavailable, falling back to ${fallbackKey}`,
+    `[ModelManager] Stored model ${currentModelKey} is unavailable, no valid env default, and no free models found`,
   );
-
-  setCurrentModel({
-    providerID: envDefaultModel.providerID,
-    modelID: envDefaultModel.modelID,
-    variant: "default",
-  });
 }
 
 export function __resetModelCatalogCacheForTests(): void {
   cachedValidModelKeys = null;
+  cachedTelegramGroupModels = null;
   modelCatalogCacheExpiresAt = 0;
   modelCatalogFetchInFlight = null;
 }
 
-/**
- * Get list of favorite models from OpenCode local state file
- * Falls back to env default model if file is unavailable or empty
- */
 export async function getFavoriteModels(): Promise<FavoriteModel[]> {
   const { favorites } = await getModelSelectionLists();
   return favorites;
 }
 
-/**
- * Get current model from settings or fallback to config
- * @returns Current model info
- */
-export function fetchCurrentModel(): ModelInfo {
-  return getStoredModel();
+export function fetchCurrentModel(chatId: number = DEFAULT_CHAT_ID): ModelInfo {
+  return getStoredModel(chatId);
 }
 
-/**
- * Select model and persist to settings
- * @param modelInfo Model to select
- */
-export function selectModel(modelInfo: ModelInfo): void {
+export function selectModel(chatId: number, modelInfo: ModelInfo): void {
   logger.info(`[ModelManager] Selected model: ${modelInfo.providerID}/${modelInfo.modelID}`);
-  setCurrentModel(modelInfo);
+  setCurrentModel(chatId, modelInfo);
 }
 
-/**
- * Get stored model from settings (synchronous)
- * ALWAYS returns a model - fallback to config if not found
- * @returns Current model info
- */
-export function getStoredModel(): ModelInfo {
-  const storedModel = getCurrentModel();
+export function getStoredModel(chatId: number = DEFAULT_CHAT_ID): ModelInfo {
+  const storedModel = getCurrentModel(chatId);
 
   if (storedModel) {
-    // Ensure variant is set (default to "default")
     if (!storedModel.variant) {
       storedModel.variant = "default";
     }
     return storedModel;
   }
 
-  // Fallback to model from config (environment variables)
   if (config.opencode.model.provider && config.opencode.model.modelId) {
     logger.debug("[ModelManager] Using model from config");
     return {
@@ -345,7 +381,6 @@ export function getStoredModel(): ModelInfo {
     };
   }
 
-  // This should not happen if config is properly set
   logger.warn("[ModelManager] No model found in settings or config, returning empty model");
   return {
     providerID: "",

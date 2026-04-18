@@ -5,7 +5,7 @@ import {
 } from "./send-with-markdown-fallback.js";
 
 type SendMessageApi = Pick<Api<RawApi>, "sendMessage">;
-type EditMessageApi = Pick<Api<RawApi>, "editMessageText">;
+type EditMessageApi = Pick<Api<RawApi>, "editMessageText" | "sendMessage">;
 
 type TelegramSendMessageOptions = Parameters<SendMessageApi["sendMessage"]>[2];
 type TelegramEditMessageOptions = Parameters<EditMessageApi["editMessageText"]>[3];

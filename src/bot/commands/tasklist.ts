@@ -81,10 +81,10 @@ function parseTaskListMetadata(state: InteractionState | null): TaskListMetadata
   return null;
 }
 
-function clearTaskListInteraction(reason: string): void {
-  const metadata = parseTaskListMetadata(interactionManager.getSnapshot());
+function clearTaskListInteraction(chatId: number, reason: string): void {
+  const metadata = parseTaskListMetadata(interactionManager.getSnapshot(chatId));
   if (metadata) {
-    interactionManager.clear(reason);
+    interactionManager.clear(chatId, reason);
   }
 }
 
@@ -180,7 +180,8 @@ export async function taskListCommand(ctx: CommandContext<Context>): Promise<voi
       reply_markup: buildTaskListKeyboard(tasks),
     });
 
-    interactionManager.start({
+    const chatId = ctx.chat?.id ?? 0;
+    interactionManager.start(chatId, {
       kind: "custom",
       expectedInput: "callback",
       metadata: {
@@ -201,7 +202,8 @@ export async function handleTaskListCallback(ctx: Context): Promise<boolean> {
     return false;
   }
 
-  const metadata = parseTaskListMetadata(interactionManager.getSnapshot());
+  const chatId = ctx.chat?.id ?? 0;
+  const metadata = parseTaskListMetadata(interactionManager.getSnapshot(chatId));
   const callbackMessageId = getCallbackMessageId(ctx);
 
   if (!metadata || callbackMessageId === null || metadata.messageId !== callbackMessageId) {
@@ -211,7 +213,7 @@ export async function handleTaskListCallback(ctx: Context): Promise<boolean> {
 
   try {
     if (data === TASKLIST_CANCEL_CALLBACK) {
-      clearTaskListInteraction("tasklist_cancelled");
+      clearTaskListInteraction(chatId, "tasklist_cancelled");
       await ctx.answerCallbackQuery({ text: t("tasklist.cancelled_callback") });
       await ctx.deleteMessage().catch(() => {});
       return true;
@@ -226,7 +228,7 @@ export async function handleTaskListCallback(ctx: Context): Promise<boolean> {
       const taskId = data.slice(TASKLIST_OPEN_PREFIX.length);
       const task = getScheduledTask(taskId);
       if (!task) {
-        clearTaskListInteraction("tasklist_selected_task_missing");
+        clearTaskListInteraction(chatId, "tasklist_selected_task_missing");
         await ctx.answerCallbackQuery({ text: t("tasklist.inactive_callback"), show_alert: true });
         await ctx.deleteMessage().catch(() => {});
         return true;
@@ -237,7 +239,7 @@ export async function handleTaskListCallback(ctx: Context): Promise<boolean> {
         reply_markup: buildTaskDetailsKeyboard(task.id),
       });
 
-      interactionManager.transition({
+      interactionManager.transition(chatId, {
         expectedInput: "callback",
         metadata: {
           flow: "tasklist",
@@ -264,7 +266,7 @@ export async function handleTaskListCallback(ctx: Context): Promise<boolean> {
 
       await removeScheduledTask(taskId);
       scheduledTaskRuntime.removeTask(taskId);
-      clearTaskListInteraction("tasklist_deleted");
+      clearTaskListInteraction(chatId, "tasklist_deleted");
       await ctx.answerCallbackQuery({ text: t("tasklist.deleted_callback") });
       await ctx.deleteMessage().catch(() => {});
       return true;
@@ -274,7 +276,7 @@ export async function handleTaskListCallback(ctx: Context): Promise<boolean> {
     return true;
   } catch (error) {
     logger.error("[TaskList] Failed to handle task list callback", error);
-    clearTaskListInteraction("tasklist_callback_error");
+    clearTaskListInteraction(chatId, "tasklist_callback_error");
     await ctx.answerCallbackQuery({ text: t("callback.processing_error") }).catch(() => {});
     return true;
   }

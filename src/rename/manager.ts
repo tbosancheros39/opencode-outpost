@@ -9,63 +9,72 @@ interface RenameState {
 }
 
 class RenameManager {
-  private state: RenameState = {
-    isWaiting: false,
-    sessionId: null,
-    sessionDirectory: null,
-    currentTitle: null,
-    messageId: null,
-  };
+  private states: Map<number, RenameState> = new Map();
 
-  startWaiting(sessionId: string, directory: string, currentTitle: string): void {
+  private getState(chatId: number): RenameState {
+    let state = this.states.get(chatId);
+    if (!state) {
+      state = {
+        isWaiting: false,
+        sessionId: null,
+        sessionDirectory: null,
+        currentTitle: null,
+        messageId: null,
+      };
+      this.states.set(chatId, state);
+    }
+    return state;
+  }
+
+  startWaiting(chatId: number, sessionId: string, directory: string, currentTitle: string): void {
     logger.info(`[RenameManager] Starting rename flow for session: ${sessionId}`);
-    this.state = {
-      isWaiting: true,
-      sessionId,
-      sessionDirectory: directory,
-      currentTitle,
-      messageId: null,
-    };
+    const state = this.getState(chatId);
+    state.isWaiting = true;
+    state.sessionId = sessionId;
+    state.sessionDirectory = directory;
+    state.currentTitle = currentTitle;
+    state.messageId = null;
   }
 
-  setMessageId(messageId: number): void {
-    this.state.messageId = messageId;
+  setMessageId(chatId: number, messageId: number): void {
+    this.getState(chatId).messageId = messageId;
   }
 
-  getMessageId(): number | null {
-    return this.state.messageId;
+  getMessageId(chatId: number): number | null {
+    return this.getState(chatId).messageId;
   }
 
-  isActiveMessage(messageId: number | null): boolean {
+  isActiveMessage(chatId: number, messageId: number | null): boolean {
+    const state = this.getState(chatId);
     return (
-      this.state.isWaiting && this.state.messageId !== null && this.state.messageId === messageId
+      state.isWaiting && state.messageId !== null && state.messageId === messageId
     );
   }
 
-  isWaitingForName(): boolean {
-    return this.state.isWaiting;
+  isWaitingForName(chatId: number): boolean {
+    return this.getState(chatId).isWaiting;
   }
 
-  getSessionInfo(): { sessionId: string; directory: string; currentTitle: string } | null {
-    if (!this.state.isWaiting || !this.state.sessionId) {
+  getSessionInfo(chatId: number): { sessionId: string; directory: string; currentTitle: string } | null {
+    const state = this.getState(chatId);
+    if (!state.isWaiting || !state.sessionId) {
       return null;
     }
     return {
-      sessionId: this.state.sessionId,
-      directory: this.state.sessionDirectory!,
-      currentTitle: this.state.currentTitle!,
+      sessionId: state.sessionId,
+      directory: state.sessionDirectory!,
+      currentTitle: state.currentTitle!,
     };
   }
 
-  clear(): void {
+  clear(chatId: number): void {
     logger.debug("[RenameManager] Clearing rename state");
-    this.state = {
-      isWaiting: false,
-      sessionId: null,
-      sessionDirectory: null,
-      currentTitle: null,
-      messageId: null,
-    };
+    const state = this.getState(chatId);
+    state.isWaiting = false;
+    state.sessionId = null;
+    state.sessionDirectory = null;
+    state.currentTitle = null;
+    state.messageId = null;
   }
 }
 

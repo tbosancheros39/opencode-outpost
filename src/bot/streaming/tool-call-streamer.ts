@@ -2,6 +2,19 @@ import { logger } from "../../utils/logger.js";
 
 const TELEGRAM_MESSAGE_SAFE_LENGTH = 4000;
 
+type ToolStreamKey = "files" | "commands" | "search" | "other";
+
+const FILE_STREAM_TOOLS = ["write_file", "edit_file", "create_file", "patch_file"];
+const COMMAND_STREAM_TOOLS = ["bash", "shell", "run_command"];
+const SEARCH_STREAM_TOOLS = ["search", "grep", "find", "glob"];
+
+export function getToolStreamKey(toolName: string): ToolStreamKey {
+  if (FILE_STREAM_TOOLS.includes(toolName)) return "files";
+  if (COMMAND_STREAM_TOOLS.includes(toolName)) return "commands";
+  if (SEARCH_STREAM_TOOLS.includes(toolName)) return "search";
+  return "other";
+}
+
 interface ToolCallStreamerOptions {
   throttleMs: number;
   sendText: (sessionId: string, text: string) => Promise<number>;
@@ -12,6 +25,7 @@ interface ToolCallStreamerOptions {
 interface StreamEntry {
   prefix?: string;
   text: string;
+  toolName?: string;
 }
 
 interface StreamState {
@@ -35,31 +49,6 @@ function getErrorMessage(error: unknown): string {
   }
 
   return String(error);
-}
-
-function getRetryAfterMs(error: unknown): number | null {
-  const message = getErrorMessage(error);
-  if (!/\b429\b/.test(message)) {
-    return null;
-  }
-
-  const retryMatch = message.match(/retry after\s+(\d+)/i);
-  if (!retryMatch) {
-    return null;
-  }
-
-  const seconds = Number.parseInt(retryMatch[1], 10);
-  if (!Number.isFinite(seconds) || seconds <= 0) {
-    return null;
-  }
-
-  return seconds * 1000;
-}
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
 }
 
 function splitLongText(text: string, limit: number): string[] {
@@ -88,15 +77,31 @@ function splitLongText(text: string, limit: number): string[] {
 }
 
 function buildParts(entries: StreamEntry[]): string[] {
-  const text = entries
-    .map((entry) => entry.text.trim())
-    .filter(Boolean)
-    .join("\n\n");
-  if (!text) {
+  const nonEmptyEntries = entries.filter((entry) => entry.text.trim());
+  if (nonEmptyEntries.length === 0) {
     return [];
   }
 
-  return splitLongText(text, TELEGRAM_MESSAGE_SAFE_LENGTH).filter(Boolean);
+  const fileEntries = nonEmptyEntries.filter(
+    (entry) => entry.toolName && getToolStreamKey(entry.toolName) === "files",
+  );
+  const otherEntries = nonEmptyEntries.filter(
+    (entry) => !entry.toolName || getToolStreamKey(entry.toolName) !== "files",
+  );
+
+  const parts: string[] = [];
+
+  if (otherEntries.length > 0) {
+    const text = otherEntries.map((entry) => entry.text.trim()).join("\n\n");
+    parts.push(...splitLongText(text, TELEGRAM_MESSAGE_SAFE_LENGTH));
+  }
+
+  if (fileEntries.length > 0) {
+    const summary = `\u{1F4C1} ${fileEntries.length} file operation${fileEntries.length > 1 ? "s" : ""}`;
+    parts.push(summary);
+  }
+
+  return parts.filter(Boolean);
 }
 
 export class ToolCallStreamer {
@@ -114,14 +119,14 @@ export class ToolCallStreamer {
     this.deleteText = options.deleteText;
   }
 
-  append(sessionId: string, text: string): void {
+  append(sessionId: string, text: string, toolName?: string): void {
     const normalizedText = text.trim();
     if (!sessionId || !normalizedText) {
       return;
     }
 
     const state = this.getOrCreateState(sessionId);
-    state.entries.push({ text: normalizedText });
+    state.entries.push({ text: normalizedText, toolName });
     state.latestParts = buildParts(state.entries);
     this.ensureTimer(state);
   }
@@ -295,47 +300,33 @@ export class ToolCallStreamer {
       return false;
     }
 
-    while (!state.isBroken && !state.cancelled) {
-      const parts = state.latestParts;
-      const unchanged =
-        parts.length === state.lastSentParts.length &&
-        parts.every((part, index) => state.lastSentParts[index] === part);
+    const parts = state.latestParts;
+    const unchanged =
+      parts.length === state.lastSentParts.length &&
+      parts.every((part, index) => state.lastSentParts[index] === part);
 
-      if (unchanged) {
-        return state.telegramMessageIds.length > 0;
-      }
-
-      if (parts.length === 0) {
-        return state.telegramMessageIds.length > 0;
-      }
-
-      try {
-        await this.syncMessages(state, parts);
-        if (state.cancelled) {
-          return false;
-        }
-
-        logger.debug(
-          `[ToolCallStreamer] Stream synced: session=${state.sessionId}, reason=${reason}, parts=${parts.length}`,
-        );
-        return true;
-      } catch (error) {
-        const retryAfterMs = getRetryAfterMs(error);
-        if (retryAfterMs === null) {
-          this.markStreamBroken(state, error, reason);
-          return false;
-        }
-
-        const delayMs = Math.max(this.throttleMs, retryAfterMs);
-        logger.warn(
-          `[ToolCallStreamer] Stream sync rate-limited, retrying in ${delayMs}ms: session=${state.sessionId}, reason=${reason}`,
-          error,
-        );
-        await delay(delayMs);
-      }
+    if (unchanged) {
+      return state.telegramMessageIds.length > 0;
     }
 
-    return false;
+    if (parts.length === 0) {
+      return state.telegramMessageIds.length > 0;
+    }
+
+    try {
+      await this.syncMessages(state, parts);
+      if (state.cancelled) {
+        return false;
+      }
+
+      logger.debug(
+        `[ToolCallStreamer] Stream synced: session=${state.sessionId}, reason=${reason}, parts=${parts.length}`,
+      );
+      return true;
+    } catch (error) {
+      this.markStreamBroken(state, error, reason);
+      return false;
+    }
   }
 
   private markStreamBroken(state: StreamState, error: unknown, reason: string): void {

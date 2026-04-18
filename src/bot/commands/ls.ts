@@ -1,10 +1,12 @@
 import { CommandContext, Context } from "grammy";
 import { opencodeClient } from "../../opencode/client.js";
 import { getCurrentSession, setCurrentSession, type SessionInfo } from "../../session/manager.js";
+import { getStoredAgent } from "../../agent/manager.js";
+import { getCurrentProject } from "../../settings/manager.js";
 import { logger } from "../../utils/logger.js";
 import { escapeHtml } from "../../utils/html.js";
 import { chunkOutput } from "../utils/chunk.js";
-import { quoteShellArg, validateShellPathInput } from "../utils/shell-security.js";
+import { quoteShellArg, validateShellPathInput, extractShellOutput } from "../utils/shell-security.js";
 
 export async function lsCommand(ctx: CommandContext<Context>) {
   if (!ctx.chat) {
@@ -27,7 +29,10 @@ export async function lsCommand(ctx: CommandContext<Context>) {
   try {
     let session = getCurrentSession(chatId);
     if (!session) {
-      const { data: newSession, error } = await opencodeClient.session.create({});
+      const currentProject = getCurrentProject(chatId);
+      const { data: newSession, error } = await opencodeClient.session.create({
+        directory: currentProject?.worktree ?? "",
+      });
       if (error || !newSession) {
         throw error || new Error("Failed to create session");
       }
@@ -41,19 +46,18 @@ export async function lsCommand(ctx: CommandContext<Context>) {
       session = sessionInfo;
     }
 
+    const currentAgent = getStoredAgent(chatId) ?? "build";
     const { data, error } = await opencodeClient.session.shell({
       sessionID: session.id,
       command: `ls -la ${quoteShellArg(targetPath)}`,
+      agent: currentAgent,
     });
 
     if (error) {
       throw error instanceof Error ? error : new Error(String(error));
     }
 
-    const rawOutput =
-      (data as { stdout?: string; stderr?: string })?.stdout ||
-      (data as { stdout?: string; stderr?: string })?.stderr ||
-      "(empty directory)";
+    const rawOutput = extractShellOutput(data, "(empty directory)");
 
     const chunks = chunkOutput(rawOutput);
 

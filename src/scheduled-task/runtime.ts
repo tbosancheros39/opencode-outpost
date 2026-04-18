@@ -1,9 +1,6 @@
 import type { Bot, Context } from "grammy";
 import { config } from "../config.js";
-import {
-  escapePlainTextForTelegramMarkdownV2,
-  formatSummaryWithMode,
-} from "../summary/formatter.js";
+import { formatSummaryWithMode } from "../summary/formatter.js";
 import { t } from "../i18n/index.js";
 import { logger } from "../utils/logger.js";
 import { safeBackgroundTask } from "../utils/safe-background-task.js";
@@ -41,7 +38,7 @@ function buildScheduledTaskSuccessMessageParts(delivery: QueuedScheduledTaskDeli
     );
   }
 
-  const header = escapePlainTextForTelegramMarkdownV2(delivery.notificationText);
+  const header = delivery.notificationText;
   const resultParts = formatSummaryWithMode(delivery.resultText, config.bot.messageFormatMode);
   if (resultParts.length === 0) {
     return [header];
@@ -111,7 +108,7 @@ export class ScheduledTaskRuntime {
 
   async initialize(bot: Bot<Context>): Promise<void> {
     this.botApi = bot.api;
-    this.chatId = config.telegram.allowedUserId;
+    this.chatId = config.telegram.allowedUserIds[0];
 
     if (this.initialized) {
       return;
@@ -234,7 +231,7 @@ export class ScheduledTaskRuntime {
     });
 
     if (hasChanges) {
-      await replaceScheduledTasks(normalizedTasks);
+      await replaceScheduledTasks(this.chatId ?? 0, normalizedTasks);
     }
 
     for (const task of normalizedTasks) {
@@ -330,13 +327,17 @@ export class ScheduledTaskRuntime {
     }
 
     const startedAt = new Date().toISOString();
-    const runningTask = await updateScheduledTask(taskId, (task) => ({
-      ...task,
-      lastStatus: "running",
-      lastError: null,
-      lastRunAt: startedAt,
-      runCount: task.runCount + 1,
-    }));
+    const runningTask = await updateScheduledTask(
+      this.chatId ?? 0,
+      taskId,
+      (task: ScheduledTask) => ({
+        ...task,
+        lastStatus: "running",
+        lastError: null,
+        lastRunAt: startedAt,
+        runCount: task.runCount + 1,
+      }),
+    );
 
     if (!runningTask) {
       this.removeTask(taskId);
@@ -390,12 +391,16 @@ export class ScheduledTaskRuntime {
       nextRunAt = null;
     }
 
-    const updatedTask = await updateScheduledTask(task.id, (currentTask) => ({
-      ...currentTask,
-      lastStatus: "success",
-      lastError: null,
-      nextRunAt,
-    }));
+    const updatedTask = await updateScheduledTask(
+      this.chatId ?? 0,
+      task.id,
+      (currentTask: ScheduledTask) => ({
+        ...currentTask,
+        lastStatus: "success",
+        lastError: null,
+        nextRunAt,
+      }),
+    );
 
     if (updatedTask) {
       this.scheduleTask(updatedTask);
@@ -423,12 +428,16 @@ export class ScheduledTaskRuntime {
       }
     }
 
-    const updatedTask = await updateScheduledTask(task.id, (currentTask) => ({
-      ...currentTask,
-      lastStatus: "error",
-      lastError: errorMessage,
-      nextRunAt,
-    }));
+    const updatedTask = await updateScheduledTask(
+      this.chatId ?? 0,
+      task.id,
+      (currentTask: ScheduledTask) => ({
+        ...currentTask,
+        lastStatus: "error",
+        lastError: errorMessage,
+        nextRunAt,
+      }),
+    );
 
     if (updatedTask) {
       this.scheduleTask(updatedTask);

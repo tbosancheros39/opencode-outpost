@@ -2,6 +2,7 @@
 
 import { opencodeClient } from "../opencode/client.js";
 import { quoteShellArg, validateShellPathInput } from "../bot/utils/shell-security.js";
+import { getStoredAgent } from "../agent/manager.js";
 import type { FileExplorerItem, FileExplorerPage } from "./types.js";
 
 const EXPLORER_ITEMS_PER_PAGE = 15;
@@ -48,15 +49,18 @@ export function parseLsOutput(output: string, basePath: string): FileExplorerIte
 export async function listDirectory(
   sessionId: string,
   directory: string,
+  chatId?: number,
 ): Promise<FileExplorerPage> {
   const validationError = validateShellPathInput(directory);
   if (validationError) {
     throw new Error(validationError);
   }
 
+  const currentAgent = chatId ? (getStoredAgent(chatId) ?? "build") : "build";
   const { data, error } = await opencodeClient.session.shell({
     sessionID: sessionId,
     command: `ls -la ${quoteShellArg(directory)}`,
+    agent: currentAgent,
   });
 
   if (error) {

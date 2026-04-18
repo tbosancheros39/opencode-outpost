@@ -135,7 +135,7 @@ async function ensureCacheLoaded(): Promise<void> {
     return;
   }
 
-  const storedCache = getSessionDirectoryCache();
+  const storedCache = getSessionDirectoryCache(0);
   cacheData = normalizeCacheData(storedCache);
   cacheLoaded = true;
   logger.debug(
@@ -150,7 +150,7 @@ function queuePersist(): Promise<void> {
     })
     .then(async () => {
       try {
-        await setSessionDirectoryCache(cacheData);
+        await setSessionDirectoryCache(0, cacheData);
       } catch (error) {
         logger.error("[SessionCache] Failed to persist sessions cache", error);
       }

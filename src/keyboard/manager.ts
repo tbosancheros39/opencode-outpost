@@ -8,161 +8,155 @@ import { logger } from "../utils/logger.js";
 import type { ContextInfo, KeyboardState } from "./types.js";
 import { t } from "../i18n/index.js";
 
-/**
- * Keyboard Manager - manages Reply Keyboard state and updates
- * Singleton pattern
- */
 class KeyboardManager {
-  private state: KeyboardState | null = null;
+  private states: Map<number, KeyboardState> = new Map();
+  private apiByChat: Map<number, Api> = new Map();
+  private lastUpdateTimeByChat: Map<number, number> = new Map();
+  private readonly UPDATE_DEBOUNCE_MS = 2000;
 
-  private api: Api | null = null;
-  private chatId: number | null = null;
-  private lastUpdateTime: number = 0;
-  private readonly UPDATE_DEBOUNCE_MS = 2000; // Don't update more than once per 2 seconds
-
-  /**
-   * Initialize the keyboard manager with Telegram API and chat ID
-   * Loads initial state from settings/config
-   */
-  public initialize(api: Api, chatId: number): void {
-    this.api = api;
-    this.chatId = chatId;
-
-    // Initialize state from settings/config on first call
-    if (!this.state) {
-      const currentModel = getStoredModel();
-      this.state = {
-        currentAgent: getStoredAgent(),
+  private getOrCreateState(chatId: number): KeyboardState {
+    let state = this.states.get(chatId);
+    if (!state) {
+      const currentModel = getStoredModel(chatId);
+      state = {
+        currentAgent: getStoredAgent(chatId),
         currentModel: currentModel,
         contextInfo: null,
         variantName: formatVariantForButton(currentModel.variant || "default"),
       };
+      this.states.set(chatId, state);
+    }
+    return state;
+  }
+
+  private getApiForChat(chatId: number): Api | null {
+    return this.apiByChat.get(chatId) ?? null;
+  }
+
+  private getLastUpdateTime(chatId: number): number {
+    return this.lastUpdateTimeByChat.get(chatId) ?? 0;
+  }
+
+  private setLastUpdateTime(chatId: number, time: number): void {
+    this.lastUpdateTimeByChat.set(chatId, time);
+  }
+
+  public initialize(api: Api, chatId: number): void {
+    this.apiByChat.set(chatId, api);
+
+    if (!this.states.has(chatId)) {
+      const currentModel = getStoredModel(chatId);
+      const state: KeyboardState = {
+        currentAgent: getStoredAgent(chatId),
+        currentModel: currentModel,
+        contextInfo: null,
+        variantName: formatVariantForButton(currentModel.variant || "default"),
+      };
+      this.states.set(chatId, state);
       logger.debug(
-        `[KeyboardManager] Initialized with agent="${this.state.currentAgent}", model="${this.state.currentModel.providerID}/${this.state.currentModel.modelID}", variant="${currentModel.variant || "default"}", chatId=${chatId}`,
+        `[KeyboardManager] Initialized with agent="${state.currentAgent}", model="${state.currentModel.providerID}/${state.currentModel.modelID}", variant="${currentModel.variant || "default"}", chatId=${chatId}`,
       );
     } else {
       logger.debug("[KeyboardManager] Already initialized, updating chatId:", chatId);
     }
   }
 
-  /**
-   * Update current agent
-   */
-  public updateAgent(agent: string): void {
-    if (!this.state) {
+  public updateAgent(chatId: number, agent: string): void {
+    const state = this.getOrCreateState(chatId);
+    if (!this.states.has(chatId)) {
       logger.warn("[KeyboardManager] Cannot update agent: not initialized");
       return;
     }
-    this.state.currentAgent = agent;
+    state.currentAgent = agent;
     logger.debug(`[KeyboardManager] Agent updated: ${agent}`);
   }
 
-  /**
-   * Update current model
-   */
-  public updateModel(model: ModelInfo): void {
-    if (!this.state) {
+  public updateModel(chatId: number, model: ModelInfo): void {
+    const state = this.getOrCreateState(chatId);
+    if (!this.states.has(chatId)) {
       logger.warn("[KeyboardManager] Cannot update model: not initialized");
       return;
     }
-    this.state.currentModel = model;
-    this.state.variantName = formatVariantForButton(model.variant || "default");
+    state.currentModel = model;
+    state.variantName = formatVariantForButton(model.variant || "default");
     logger.debug(
       `[KeyboardManager] Model updated: ${model.providerID}/${model.modelID}, variant: ${model.variant || "default"}`,
     );
   }
 
-  /**
-   * Update current variant
-   */
-  public updateVariant(variantId: string): void {
-    if (!this.state) {
+  public updateVariant(chatId: number, variantId: string): void {
+    const state = this.getOrCreateState(chatId);
+    if (!this.states.has(chatId)) {
       logger.warn("[KeyboardManager] Cannot update variant: not initialized");
       return;
     }
-    this.state.variantName = formatVariantForButton(variantId);
+    state.variantName = formatVariantForButton(variantId);
     logger.debug(`[KeyboardManager] Variant updated: ${variantId}`);
   }
 
-  /**
-   * Update context information
-   */
-  public updateContext(tokensUsed: number, tokensLimit: number): void {
-    if (!this.state) {
+  public updateContext(chatId: number, tokensUsed: number, tokensLimit: number): void {
+    const state = this.getOrCreateState(chatId);
+    if (!this.states.has(chatId)) {
       logger.warn("[KeyboardManager] Cannot update context: not initialized");
       return;
     }
-    this.state.contextInfo = { tokensUsed, tokensLimit };
+    state.contextInfo = { tokensUsed, tokensLimit };
     logger.debug(`[KeyboardManager] Context updated: ${tokensUsed}/${tokensLimit}`);
   }
 
-  /**
-   * Clear context information
-   */
-  public clearContext(): void {
-    if (!this.state) {
+  public clearContext(chatId: number): void {
+    const state = this.getOrCreateState(chatId);
+    if (!this.states.has(chatId)) {
       logger.warn("[KeyboardManager] Cannot clear context: not initialized");
       return;
     }
-    this.state.contextInfo = null;
+    state.contextInfo = null;
     logger.debug("[KeyboardManager] Context cleared");
   }
 
-  /**
-   * Get current context info
-   */
-  public getContextInfo(): ContextInfo | null {
-    return this.state?.contextInfo ?? null;
+  public getContextInfo(chatId: number): ContextInfo | null {
+    const state = this.states.get(chatId);
+    return state?.contextInfo ?? null;
   }
 
-  /**
-   * Build keyboard with current state
-   */
-  private buildKeyboard() {
-    if (!this.state) {
+  private buildKeyboard(chatId: number) {
+    const state = this.states.get(chatId);
+    if (!state) {
       logger.warn("[KeyboardManager] Cannot build keyboard: not initialized");
-      // Return a minimal keyboard as fallback
       return createMainKeyboard("build", { providerID: "", modelID: "" }, undefined);
     }
     return createMainKeyboard(
-      this.state.currentAgent,
-      this.state.currentModel,
-      this.state.contextInfo ?? undefined,
-      this.state.variantName,
+      state.currentAgent,
+      state.currentModel,
+      state.contextInfo ?? undefined,
+      state.variantName,
     );
   }
 
-  /**
-   * Send keyboard update to user
-   * Implements debouncing to avoid rate limits
-   */
-  public async sendKeyboardUpdate(chatId?: number): Promise<void> {
-    if (!this.api) {
+  public async sendKeyboardUpdate(chatId: number): Promise<void> {
+    const api = this.getApiForChat(chatId);
+    if (!api) {
       logger.warn("[KeyboardManager] API not initialized");
       return;
     }
 
-    const targetChatId = chatId ?? this.chatId;
-    if (!targetChatId) {
+    if (!chatId) {
       logger.warn("[KeyboardManager] No chatId available");
       return;
     }
 
-    // Debounce: don't update more frequently than UPDATE_DEBOUNCE_MS
     const now = Date.now();
-    if (now - this.lastUpdateTime < this.UPDATE_DEBOUNCE_MS) {
+    if (now - this.getLastUpdateTime(chatId) < this.UPDATE_DEBOUNCE_MS) {
       logger.debug("[KeyboardManager] Update debounced");
       return;
     }
 
-    this.lastUpdateTime = now;
+    this.setLastUpdateTime(chatId, now);
 
     try {
-      const keyboard = this.buildKeyboard();
+      const keyboard = this.buildKeyboard(chatId);
 
-      // Send a dummy message with updated keyboard
-      // This is needed because Reply Keyboard updates require a message
-      await this.api.sendMessage(targetChatId, t("keyboard.updated"), {
+      await api.sendMessage(chatId, t("keyboard.updated"), {
         reply_markup: keyboard,
       });
 
@@ -172,33 +166,26 @@ class KeyboardManager {
     }
   }
 
-  /**
-   * Update keyboard without sending a message (for use in existing messages)
-   * Returns undefined if not initialized (caller should handle this)
-   */
-  public getKeyboard() {
-    if (!this.state) {
+  public getKeyboard(chatId: number) {
+    const state = this.states.get(chatId);
+    if (!state) {
       logger.warn("[KeyboardManager] Cannot get keyboard: not initialized");
       return undefined;
     }
-    return this.buildKeyboard();
+    return this.buildKeyboard(chatId);
   }
 
-  /**
-   * Get current keyboard state
-   * Returns undefined if not initialized
-   */
-  public getState(): KeyboardState | undefined {
-    return this.state ?? undefined;
+  public getState(chatId: number): KeyboardState | undefined {
+    const state = this.states.get(chatId);
+    if (!state) {
+      return undefined;
+    }
+    return { ...state };
   }
 
-  /**
-   * Check if keyboard manager is initialized
-   */
-  public isInitialized(): boolean {
-    return this.state !== null;
+  public isInitialized(chatId: number): boolean {
+    return this.states.has(chatId);
   }
 }
 
-// Export singleton instance
 export const keyboardManager = new KeyboardManager();

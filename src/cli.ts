@@ -62,9 +62,16 @@ async function runConfigCommand(): Promise<number> {
 }
 
 async function runPlaceholderCommand(
-  command: Exclude<CliCommand, "start" | "config">,
+  command: Exclude<CliCommand, "start" | "config" | "doctor">,
 ): Promise<number> {
   writeStdout(getPlaceholderMessage(command));
+  return EXIT_SUCCESS;
+}
+
+async function runDoctorCommand(): Promise<number> {
+  setRuntimeMode("installed");
+  const { runDoctor } = await import("./cli/doctor.js");
+  await runDoctor();
   return EXIT_SUCCESS;
 }
 
@@ -86,6 +93,10 @@ async function runCli(argv: string[]): Promise<number> {
 
   if (parsedArgs.command === "config") {
     return runConfigCommand();
+  }
+
+  if (parsedArgs.command === "doctor") {
+    return runDoctorCommand();
   }
 
   return runPlaceholderCommand(parsedArgs.command);

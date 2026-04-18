@@ -50,16 +50,16 @@ function getCallbackMessageId(ctx: Context): number | null {
   return typeof messageId === "number" ? messageId : null;
 }
 
-function clearTaskInteraction(reason: string): void {
-  const state = interactionManager.getSnapshot();
+function clearTaskInteraction(chatId: number, reason: string): void {
+  const state = interactionManager.getSnapshot(chatId);
   if (state?.kind === "task") {
-    interactionManager.clear(reason);
+    interactionManager.clear(chatId, reason);
   }
 }
 
-function clearTaskFlow(reason: string): void {
+function clearTaskFlow(chatId: number, reason: string): void {
   taskCreationManager.clear();
-  clearTaskInteraction(reason);
+  clearTaskInteraction(chatId, reason);
 }
 
 function isTaskLimitReached(): boolean {
@@ -298,7 +298,8 @@ function buildScheduledTask(
 }
 
 export async function taskCommand(ctx: CommandContext<Context>): Promise<void> {
-  const currentProject = getCurrentProject();
+  const chatId = ctx.chat?.id ?? 0;
+  const currentProject = getCurrentProject(chatId);
   if (!currentProject) {
     await ctx.reply(t("bot.project_not_selected"));
     return;
@@ -309,10 +310,10 @@ export async function taskCommand(ctx: CommandContext<Context>): Promise<void> {
     return;
   }
 
-  const currentModel = createScheduledTaskModel(getStoredModel());
+  const currentModel = createScheduledTaskModel(getStoredModel(chatId));
 
   taskCreationManager.start(currentProject.id, currentProject.worktree, currentModel);
-  interactionManager.start({
+  interactionManager.start(chatId, {
     kind: "task",
     expectedInput: "text",
     metadata: buildTaskInteractionMetadata(
@@ -334,8 +335,9 @@ export async function handleTaskCallback(ctx: Context): Promise<boolean> {
     return false;
   }
 
+  const chatId = ctx.chat?.id ?? 0;
   const flowState = taskCreationManager.getState();
-  const interactionState = interactionManager.getSnapshot();
+  const interactionState = interactionManager.getSnapshot(chatId);
   const callbackMessageId = getCallbackMessageId(ctx);
 
   if (
@@ -345,7 +347,7 @@ export async function handleTaskCallback(ctx: Context): Promise<boolean> {
     !isTaskCallbackActive(flowState, callbackMessageId)
   ) {
     if (!flowState && isTaskInteraction(interactionState)) {
-      clearTaskInteraction("task_retry_inactive_state");
+      clearTaskInteraction(chatId, "task_retry_inactive_state");
     }
 
     await ctx.answerCallbackQuery({ text: t("task.inactive_callback"), show_alert: true });
@@ -357,7 +359,7 @@ export async function handleTaskCallback(ctx: Context): Promise<boolean> {
     await deleteMessageIfPresent(ctx, flowState.scheduleRequestMessageId);
     await deleteMessageIfPresent(ctx, flowState.previewMessageId);
     await deleteMessageIfPresent(ctx, flowState.promptRequestMessageId);
-    clearTaskFlow("task_cancelled");
+    clearTaskFlow(chatId, "task_cancelled");
     await ctx.reply(t("task.cancelled"));
     return true;
   }
@@ -371,7 +373,7 @@ export async function handleTaskCallback(ctx: Context): Promise<boolean> {
   }
 
   taskCreationManager.resetSchedule();
-  interactionManager.transition({
+  interactionManager.transition(chatId, {
     kind: "task",
     expectedInput: "text",
     metadata: buildTaskInteractionMetadata(
@@ -402,7 +404,8 @@ export async function handleTaskTextInput(ctx: Context): Promise<boolean> {
     return false;
   }
 
-  const interactionState = interactionManager.getSnapshot();
+  const chatId = ctx.chat?.id ?? 0;
+  const interactionState = interactionManager.getSnapshot(chatId);
   if (!isTaskInteraction(interactionState)) {
     taskCreationManager.clear();
     await ctx.reply(t("task.inactive"));
@@ -411,7 +414,7 @@ export async function handleTaskTextInput(ctx: Context): Promise<boolean> {
 
   const flowState = taskCreationManager.getState();
   if (!flowState) {
-    clearTaskFlow("task_state_missing");
+    clearTaskFlow(chatId, "task_state_missing");
     await ctx.reply(t("task.inactive"));
     return true;
   }
@@ -429,7 +432,7 @@ export async function handleTaskTextInput(ctx: Context): Promise<boolean> {
     }
 
     taskCreationManager.markScheduleParsing();
-    interactionManager.transition({
+    interactionManager.transition(chatId, {
       kind: "task",
       expectedInput: "text",
       metadata: buildTaskInteractionMetadata(
@@ -456,7 +459,7 @@ export async function handleTaskTextInput(ctx: Context): Promise<boolean> {
         parsedSchedule,
         previewMessage.message_id,
       );
-      interactionManager.transition({
+      interactionManager.transition(chatId, {
         kind: "task",
         expectedInput: "mixed",
         metadata: buildTaskInteractionMetadata(
@@ -472,7 +475,7 @@ export async function handleTaskTextInput(ctx: Context): Promise<boolean> {
       logger.warn(`[TaskCommand] Failed to parse task schedule: ${errorMessage}`);
       await deleteMessageIfPresent(ctx, flowState.scheduleRequestMessageId);
       taskCreationManager.resetSchedule();
-      interactionManager.transition({
+      interactionManager.transition(chatId, {
         kind: "task",
         expectedInput: "text",
         metadata: buildTaskInteractionMetadata(
@@ -502,7 +505,7 @@ export async function handleTaskTextInput(ctx: Context): Promise<boolean> {
   }
 
   if (!flowState.parsedSchedule || !flowState.scheduleText) {
-    clearTaskFlow("task_missing_schedule_before_save");
+    clearTaskFlow(chatId, "task_missing_schedule_before_save");
     await ctx.reply(t("task.inactive"));
     return true;
   }
@@ -511,7 +514,7 @@ export async function handleTaskTextInput(ctx: Context): Promise<boolean> {
     if (isTaskLimitReached()) {
       await deleteMessageIfPresent(ctx, flowState.previewMessageId);
       await deleteMessageIfPresent(ctx, flowState.promptRequestMessageId);
-      clearTaskFlow("task_limit_reached_before_save");
+      clearTaskFlow(chatId, "task_limit_reached_before_save");
       await ctx.reply(t("task.limit_reached", { limit: String(config.bot.taskLimit) }));
       return true;
     }
@@ -525,11 +528,11 @@ export async function handleTaskTextInput(ctx: Context): Promise<boolean> {
       prompt,
     );
 
-    await addScheduledTask(task);
+    await addScheduledTask(chatId, task);
     scheduledTaskRuntime.registerTask(task);
     await deleteMessageIfPresent(ctx, flowState.previewMessageId);
     await deleteMessageIfPresent(ctx, flowState.promptRequestMessageId);
-    clearTaskFlow("task_completed");
+    clearTaskFlow(chatId, "task_completed");
     await ctx.reply(formatTaskCreatedMessage(task));
   } catch (error) {
     logger.error("[TaskCommand] Failed to save scheduled task", error);

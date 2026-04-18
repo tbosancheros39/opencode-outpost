@@ -30,7 +30,8 @@ export function buildCompactConfirmationMenu(): InlineKeyboard {
 export async function handleContextButtonPress(ctx: Context): Promise<void> {
   logger.debug("[ContextHandler] Context button pressed");
 
-  const session = getCurrentSession();
+  const chatId = ctx.chat?.id ?? 0;
+  const session = getCurrentSession(chatId);
 
   if (!session) {
     await ctx.reply(t("context.no_active_session"));
@@ -65,11 +66,13 @@ export async function handleCompactConfirm(ctx: Context): Promise<boolean> {
 
   logger.debug("[ContextHandler] Compact confirmed");
 
+  const chatId = ctx.chat?.id ?? 0;
+
   try {
-    const session = getCurrentSession();
+    const session = getCurrentSession(chatId);
 
     if (!session) {
-      clearActiveInlineMenu("context_session_missing");
+      clearActiveInlineMenu(chatId, "context_session_missing");
       await ctx.answerCallbackQuery({ text: t("context.callback_session_not_found") });
       await ctx.reply(t("context.no_active_session"));
       await ctx.deleteMessage().catch(() => {});
@@ -78,16 +81,16 @@ export async function handleCompactConfirm(ctx: Context): Promise<boolean> {
 
     // Answer callback query and delete menu immediately
     await ctx.answerCallbackQuery({ text: t("context.callback_compacting") });
-    clearActiveInlineMenu("context_compact_confirmed");
+    clearActiveInlineMenu(chatId, "context_compact_confirmed");
     await ctx.deleteMessage().catch(() => {});
 
     // Send progress message
     const progressMessage = await ctx.reply(t("context.progress"));
 
     // Show typing indicator
-    await ctx.api.sendChatAction(ctx.chat!.id, "typing");
+    await ctx.api.sendChatAction(chatId, "typing");
 
-    const storedModel = getStoredModel();
+    const storedModel = getStoredModel(chatId);
 
     logger.debug(
       `[ContextHandler] Calling summarize with sessionID=${session.id}, directory=${session.directory}, model=${storedModel.providerID}/${storedModel.modelID}`,
@@ -105,7 +108,7 @@ export async function handleCompactConfirm(ctx: Context): Promise<boolean> {
       logger.error("[ContextHandler] Compact failed:", error);
       // Update progress message to show error
       await ctx.api
-        .editMessageText(ctx.chat!.id, progressMessage.message_id, t("context.error"))
+        .editMessageText(chatId, progressMessage.message_id, t("context.error"))
         .catch(() => {});
       return true;
     }
@@ -113,12 +116,12 @@ export async function handleCompactConfirm(ctx: Context): Promise<boolean> {
     logger.info(`[ContextHandler] Session compacted: ${session.id}`);
     // Update progress message to show success
     await ctx.api
-      .editMessageText(ctx.chat!.id, progressMessage.message_id, t("context.success"))
+      .editMessageText(chatId, progressMessage.message_id, t("context.success"))
       .catch(() => {});
 
     return true;
   } catch (err) {
-    clearActiveInlineMenu("context_compact_error");
+    clearActiveInlineMenu(chatId, "context_compact_error");
     logger.error("[ContextHandler] Compact exception:", err);
     await ctx.answerCallbackQuery({ text: t("callback.processing_error") }).catch(() => {});
     await ctx.reply(t("context.error"));

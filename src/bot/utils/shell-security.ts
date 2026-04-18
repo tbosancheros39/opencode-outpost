@@ -23,6 +23,26 @@ export function validateShellPathInput(input: string): string | null {
   return null;
 }
 
+/**
+ * Extracts command output from the OpenCode /session/{id}/shell API response.
+ * The API returns { info, parts[] } — not { stdout, stderr }.
+ * Each bash/shell tool part carries the output in state.output.
+ */
+export function extractShellOutput(data: unknown, fallback: string): string {
+  type ShellPart = {
+    type?: string;
+    tool?: string;
+    state?: { output?: string; metadata?: { output?: string } };
+  };
+  type ShellResponse = { parts?: ShellPart[] };
+  const parts = (data as ShellResponse)?.parts ?? [];
+  const outputs = parts
+    .filter((p) => p.type === "tool" && (p.tool === "bash" || p.tool === "shell"))
+    .map((p) => p.state?.output ?? p.state?.metadata?.output ?? "")
+    .filter(Boolean);
+  return outputs.length > 0 ? outputs.join("\n") : fallback;
+}
+
 export function quoteShellArg(value: string): string {
   return `'${value.replace(/'/g, `'\"'\"'`)}'`;
 }

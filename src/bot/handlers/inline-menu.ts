@@ -101,8 +101,9 @@ export async function replyWithInlineMenu(
   }
 
   const message = await ctx.reply(options.text, replyOptions);
+  const chatId = ctx.chat?.id ?? 0;
 
-  interactionManager.start({
+  interactionManager.start(chatId, {
     kind: "inline",
     expectedInput: "callback",
     metadata: {
@@ -122,7 +123,8 @@ export async function ensureActiveInlineMenu(
   ctx: Context,
   menuKind: InlineMenuKind,
 ): Promise<boolean> {
-  const activeMetadata = getActiveInlineMenuMetadata(interactionManager.getSnapshot());
+  const chatId = ctx.chat?.id ?? 0;
+  const activeMetadata = getActiveInlineMenuMetadata(interactionManager.getSnapshot(chatId));
   const callbackMessageId = getCallbackMessageId(ctx);
 
   const isActive =
@@ -146,10 +148,10 @@ export async function ensureActiveInlineMenu(
   return false;
 }
 
-export function clearActiveInlineMenu(reason: string): void {
-  const state = interactionManager.getSnapshot();
+export function clearActiveInlineMenu(chatId: number, reason: string): void {
+  const state = interactionManager.getSnapshot(chatId);
   if (state?.kind === "inline") {
-    interactionManager.clear(reason);
+    interactionManager.clear(chatId, reason);
   }
 }
 
@@ -179,7 +181,7 @@ export async function handleInlineMenuCancel(ctx: Context): Promise<boolean> {
     return true;
   }
 
-  clearActiveInlineMenu(`inline_menu_cancel:${menuKind}`);
+  clearActiveInlineMenu(ctx.chat?.id ?? 0, `inline_menu_cancel:${menuKind}`);
 
   await ctx.answerCallbackQuery({ text: t("inline.cancelled_callback") }).catch(() => {});
   await ctx.deleteMessage().catch(() => {});

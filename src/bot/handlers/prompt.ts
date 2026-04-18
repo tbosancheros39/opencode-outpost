@@ -14,11 +14,14 @@ import { summaryAggregator } from "../../summary/aggregator.js";
 import { stopEventListening } from "../../opencode/events.js";
 import { interactionManager } from "../../interaction/manager.js";
 import { clearAllInteractionState } from "../../interaction/cleanup.js";
-import { safeBackgroundTask } from "../../utils/safe-background-task.js";
-import { formatErrorDetails } from "../../utils/error-format.js";
+import { createTask } from "../../task-queue/store.js";
+import { associateSessionWithTask } from "../../task-queue/tracker.js";
+import { addTaskJob } from "../../queue/index.js";
 import { logger } from "../../utils/logger.js";
 import { t } from "../../i18n/index.js";
 import { foregroundSessionState } from "../../scheduled-task/foreground-state.js";
+import { getUserSystemPrompt, getUserModelVariant } from "../../users/access.js";
+import { getOrCreateGlobalDirectory } from "../utils/global-mode.js";
 
 /** Module-level references for async callbacks that don't have ctx. */
 let botInstance: Bot<Context> | null = null;
@@ -54,20 +57,20 @@ async function isSessionBusy(sessionId: string, directory: string): Promise<bool
   }
 }
 
-async function resetMismatchedSessionContext(): Promise<void> {
+async function resetMismatchedSessionContext(chatId: number): Promise<void> {
   stopEventListening();
   summaryAggregator.clear();
   foregroundSessionState.clearAll("session_mismatch_reset");
-  clearAllInteractionState("session_mismatch_reset");
-  clearSession();
-  keyboardManager.clearContext();
+  clearAllInteractionState(chatId, "session_mismatch_reset");
+  clearSession(chatId);
+  keyboardManager.clearContext(chatId);
 
-  if (!pinnedMessageManager.isInitialized()) {
+  if (!pinnedMessageManager.isInitialized(chatId)) {
     return;
   }
 
   try {
-    await pinnedMessageManager.clear();
+    await pinnedMessageManager.clear(chatId);
   } catch (err) {
     logger.error("[Bot] Failed to clear pinned message during session reset:", err);
   }
@@ -96,31 +99,54 @@ export async function processUserPrompt(
 ): Promise<boolean> {
   const { bot, ensureEventSubscription } = deps;
 
-  const currentProject = getCurrentProject();
-  if (!currentProject) {
-    await ctx.reply(t("bot.project_not_selected"));
-    return false;
+  if (!ctx.chat) return false;
+  const chatId = ctx.chat.id;
+
+  // Send acknowledgment immediately before any network calls
+  const ackMsg = await ctx.reply(t("bot.working_on_it"));
+  const ackMessageId = ackMsg.message_id;
+
+  const currentProject = getCurrentProject(chatId);
+  const isGlobalMode = !currentProject;
+
+  let workingDirectory: string;
+  if (isGlobalMode) {
+    // Global/Scratchpad mode — use a per-chat temporary directory so the user
+    // can send prompts without selecting a project first.
+    workingDirectory = await getOrCreateGlobalDirectory(chatId);
+    logger.info(`[Bot] Using Global Mode: chatId=${chatId}, directory=${workingDirectory}`);
+  } else {
+    // Project mode — use the worktree of the selected project.
+    workingDirectory = currentProject.worktree;
+    logger.info(
+      `[Bot] Using Project Mode: chatId=${chatId}, project=${currentProject.name ?? workingDirectory}`,
+    );
   }
 
   botInstance = bot;
-  chatIdInstance = ctx.chat!.id;
+  chatIdInstance = chatId;
 
   // Initialize pinned message manager if not already
-  if (!pinnedMessageManager.isInitialized()) {
-    pinnedMessageManager.initialize(bot.api, ctx.chat!.id);
+  if (!pinnedMessageManager.isInitialized(chatId)) {
+    pinnedMessageManager.initialize(bot.api, chatId);
   }
 
   // Initialize keyboard manager if not already
-  keyboardManager.initialize(bot.api, ctx.chat!.id);
+  keyboardManager.initialize(bot.api, chatId);
 
-  let currentSession = getCurrentSession();
+  let currentSession = getCurrentSession(chatId);
 
-  if (currentSession && currentSession.directory !== currentProject.worktree) {
+  if (currentSession && currentSession.directory !== workingDirectory) {
     logger.warn(
-      `[Bot] Session/project mismatch detected. sessionDirectory=${currentSession.directory}, projectDirectory=${currentProject.worktree}. Resetting session context.`,
+      `[Bot] Session/mode mismatch detected. sessionDirectory=${currentSession.directory}, expectedDirectory=${workingDirectory}. Resetting session context.`,
     );
-    await resetMismatchedSessionContext();
-    await ctx.reply(t("bot.session_reset_project_mismatch"));
+    await resetMismatchedSessionContext(chatId);
+
+    const mismatchMsg = isGlobalMode
+      ? t("bot.session_reset_to_global")
+      : t("bot.session_reset_project_mismatch");
+
+    await ctx.reply(mismatchMsg);
     return false;
   }
 
@@ -128,7 +154,7 @@ export async function processUserPrompt(
     await ctx.reply(t("bot.creating_session"));
 
     const { data: session, error } = await opencodeClient.session.create({
-      directory: currentProject.worktree,
+      directory: workingDirectory,
     });
 
     if (error || !session) {
@@ -137,28 +163,28 @@ export async function processUserPrompt(
     }
 
     logger.info(
-      `[Bot] Created new session: id=${session.id}, title="${session.title}", project=${currentProject.worktree}`,
+      `[Bot] Created new session: id=${session.id}, title="${session.title}", directory=${workingDirectory}`,
     );
 
     currentSession = {
       id: session.id,
       title: session.title,
-      directory: currentProject.worktree,
+      directory: workingDirectory,
     };
 
-    setCurrentSession(currentSession);
+    setCurrentSession(chatId, currentSession);
     await ingestSessionInfoForCache(session);
 
     // Create pinned message for new session
     try {
-      await pinnedMessageManager.onSessionChange(session.id, session.title);
+      await pinnedMessageManager.onSessionChange(chatId, session.id, session.title);
     } catch (err) {
       logger.error("[Bot] Error creating pinned message for new session:", err);
     }
 
-    const currentAgent = getStoredAgent();
-    const currentModel = getStoredModel();
-    const contextInfo = pinnedMessageManager.getContextInfo();
+    const currentAgent = getStoredAgent(chatId);
+    const currentModel = getStoredModel(chatId);
+    const contextInfo = pinnedMessageManager.getContextInfo(chatId);
     const variantName = formatVariantForButton(currentModel.variant || "default");
     const keyboard = createMainKeyboard(
       currentAgent,
@@ -176,9 +202,9 @@ export async function processUserPrompt(
     );
 
     // Ensure pinned message exists for existing session
-    if (!pinnedMessageManager.getState().messageId) {
+    if (!pinnedMessageManager.getState(chatId).messageId) {
       try {
-        await pinnedMessageManager.onSessionChange(currentSession.id, currentSession.title);
+        await pinnedMessageManager.onSessionChange(chatId, currentSession.id, currentSession.title);
       } catch (err) {
         logger.error("[Bot] Error creating pinned message for existing session:", err);
       }
@@ -188,7 +214,7 @@ export async function processUserPrompt(
   await ensureEventSubscription(currentSession.directory);
 
   summaryAggregator.setSession(currentSession.id);
-  summaryAggregator.setBotAndChatId(bot, ctx.chat!.id);
+  summaryAggregator.setBotAndChatId(bot, chatId);
 
   const sessionIsBusy = await isSessionBusy(currentSession.id, currentSession.directory);
   if (sessionIsBusy) {
@@ -198,8 +224,8 @@ export async function processUserPrompt(
   }
 
   try {
-    const currentAgent = getStoredAgent();
-    const storedModel = getStoredModel();
+    const currentAgent = getStoredAgent(chatId);
+    const storedModel = getStoredModel(chatId);
 
     // Build parts array with text and files
     const parts: Array<TextPartInput | FilePartInput> = [];
@@ -227,6 +253,7 @@ export async function processUserPrompt(
       model?: { providerID: string; modelID: string };
       agent?: string;
       variant?: string;
+      system?: string;
     } = {
       sessionID: currentSession.id,
       directory: currentSession.directory,
@@ -241,63 +268,63 @@ export async function processUserPrompt(
         modelID: storedModel.modelID,
       };
 
-      // Add variant if specified
-      if (storedModel.variant) {
-        promptOptions.variant = storedModel.variant;
-      }
+      // Add variant if specified; fall back to user-level restriction variant
+      const variantOverride = getUserModelVariant(ctx.from!.id);
+      promptOptions.variant = storedModel.variant || variantOverride;
     }
 
-    const promptErrorLogContext = {
-      sessionId: currentSession.id,
-      directory: currentSession.directory,
-      agent: currentAgent || "default",
-      modelProvider: storedModel.providerID || "default",
-      modelId: storedModel.modelID || "default",
-      variant: storedModel.variant || "default",
-      promptLength: text.length,
-      fileCount: fileParts.length,
-    };
+    // Inject per-user system prompt if defined
+    const userSystemPrompt = getUserSystemPrompt(ctx.from!.id);
+    if (userSystemPrompt) {
+      promptOptions.system = userSystemPrompt;
+    }
 
     logger.info(
       `[Bot] Calling session.prompt (fire-and-forget) with agent=${currentAgent}, fileCount=${fileParts.length}...`,
     );
 
+    // Resolve the effective variant for task records
+    const effectiveVariant = promptOptions.variant ?? storedModel.variant ?? null;
+
+    // Create a task record for persistence
+    const task = createTask({
+      userId: ctx.from!.id,
+      chatId: chatId,
+      promptText: text,
+      sessionId: currentSession.id,
+      directory: currentSession.directory,
+      notificationMessageId: 0, // Will be updated if needed
+      agent: currentAgent || "default",
+      modelProvider: storedModel.providerID || "opencode",
+      modelId: storedModel.modelID || "default",
+      variant: effectiveVariant,
+    });
+
+    // Associate session with task for result tracking
+    associateSessionWithTask(currentSession.id, task.id);
+
     foregroundSessionState.markBusy(currentSession.id);
 
-    // CRITICAL: DO NOT wait for session.prompt to complete.
-    // If we wait, the handler will not finish and grammY will not call getUpdates,
-    // which blocks receiving button callback_query updates.
-    // The processing result will arrive via SSE events.
-    safeBackgroundTask({
-      taskName: "session.prompt",
-      task: () => opencodeClient.session.prompt(promptOptions),
-      onSuccess: ({ error }) => {
-        if (error) {
-          foregroundSessionState.markIdle(currentSession.id);
-          const details = formatErrorDetails(error, 6000);
-          logger.error(
-            "[Bot] OpenCode API returned an error for session.prompt",
-            promptErrorLogContext,
-          );
-          logger.error("[Bot] session.prompt error details:", details);
-          logger.error("[Bot] session.prompt raw API error object:", error);
-
-          // Send user-friendly error via API directly because ctx is no longer available
-          void bot.api.sendMessage(ctx.chat!.id, t("bot.prompt_send_error")).catch(() => {});
-          return;
-        }
-
-        logger.info("[Bot] session.prompt completed");
-      },
-      onError: (error) => {
-        foregroundSessionState.markIdle(currentSession.id);
-        const details = formatErrorDetails(error, 6000);
-        logger.error("[Bot] session.prompt background task failed", promptErrorLogContext);
-        logger.error("[Bot] session.prompt background failure details:", details);
-        logger.error("[Bot] session.prompt raw background error object:", error);
-        void bot.api.sendMessage(ctx.chat!.id, t("bot.prompt_send_error")).catch(() => {});
-      },
+    // Enqueue task to BullMQ for async processing with progress heartbeats
+    // The worker will call session.prompt() and send progress updates via Telegram
+    const job = await addTaskJob({
+      taskId: task.id,
+      userId: ctx.from!.id,
+      chatId: chatId,
+      ackMessageId,
+      promptText: text,
+      sessionId: currentSession.id,
+      directory: currentSession.directory,
+      agent: currentAgent || "default",
+      modelProvider: storedModel.providerID || "opencode",
+      modelId: storedModel.modelID || "default",
+      variant: effectiveVariant,
+      system: userSystemPrompt,
+      parts,
+      jobType: "opencode",
     });
+
+    logger.info(`[Bot] Task ${task.id} enqueued (job ${job.id})`);
 
     return true;
   } catch (err) {
@@ -305,8 +332,8 @@ export async function processUserPrompt(
       foregroundSessionState.markIdle(currentSession.id);
     }
     logger.error("Error in prompt handler:", err);
-    if (interactionManager.getSnapshot()) {
-      clearAllInteractionState("message_handler_error");
+    if (interactionManager.getSnapshot(chatId)) {
+      clearAllInteractionState(chatId, "message_handler_error");
     }
     await ctx.reply(t("error.generic"));
     return false;

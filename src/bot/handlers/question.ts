@@ -21,14 +21,15 @@ function getCallbackMessageId(ctx: Context): number | null {
   return typeof messageId === "number" ? messageId : null;
 }
 
-function clearQuestionInteraction(reason: string): void {
-  const state = interactionManager.getSnapshot();
+function clearQuestionInteraction(chatId: number, reason: string): void {
+  const state = interactionManager.getSnapshot(chatId);
   if (state?.kind === "question") {
-    interactionManager.clear(reason);
+    interactionManager.clear(chatId, reason);
   }
 }
 
 function syncQuestionInteractionState(
+  chatId: number,
   expectedInput: "callback" | "mixed",
   questionIndex: number,
   messageId: number | null,
@@ -38,7 +39,7 @@ function syncQuestionInteractionState(
     inputMode: expectedInput === "mixed" ? "custom" : "options",
   };
 
-  const requestID = questionManager.getRequestID();
+  const requestID = questionManager.getRequestID(chatId);
   if (requestID) {
     metadata.requestID = requestID;
   }
@@ -47,16 +48,16 @@ function syncQuestionInteractionState(
     metadata.messageId = messageId;
   }
 
-  const state = interactionManager.getSnapshot();
+  const state = interactionManager.getSnapshot(chatId);
   if (state?.kind === "question") {
-    interactionManager.transition({
+    interactionManager.transition(chatId, {
       expectedInput,
       metadata,
     });
     return;
   }
 
-  interactionManager.start({
+  interactionManager.start(chatId, {
     kind: "question",
     expectedInput,
     metadata,
@@ -71,16 +72,19 @@ export async function handleQuestionCallback(ctx: Context): Promise<boolean> {
     return false;
   }
 
+  const chatId = ctx.chat?.id;
+  if (!chatId) return false;
+
   logger.debug(`[QuestionHandler] Received callback: ${data}`);
 
-  if (!questionManager.isActive()) {
-    clearQuestionInteraction("question_inactive_callback");
+  if (!questionManager.isActive(chatId)) {
+    clearQuestionInteraction(chatId, "question_inactive_callback");
     await ctx.answerCallbackQuery({ text: t("question.inactive_callback"), show_alert: true });
     return true;
   }
 
   const callbackMessageId = getCallbackMessageId(ctx);
-  if (!questionManager.isActiveMessage(callbackMessageId)) {
+  if (!questionManager.isActiveMessage(chatId, callbackMessageId)) {
     await ctx.answerCallbackQuery({ text: t("question.inactive_callback"), show_alert: true });
     return true;
   }
@@ -89,7 +93,7 @@ export async function handleQuestionCallback(ctx: Context): Promise<boolean> {
   const action = parts[1];
   const questionIndex = parseInt(parts[2], 10);
 
-  if (Number.isNaN(questionIndex) || questionIndex !== questionManager.getCurrentIndex()) {
+  if (Number.isNaN(questionIndex) || questionIndex !== questionManager.getCurrentIndex(chatId)) {
     await ctx.answerCallbackQuery({ text: t("question.inactive_callback"), show_alert: true });
     return true;
   }
@@ -107,17 +111,17 @@ export async function handleQuestionCallback(ctx: Context): Promise<boolean> {
             break;
           }
 
-          await handleSelectOption(ctx, questionIndex, optionIndex);
+          await handleSelectOption(ctx, chatId, questionIndex, optionIndex);
         }
         break;
       case "submit":
-        await handleSubmitAnswer(ctx, questionIndex);
+        await handleSubmitAnswer(ctx, chatId, questionIndex);
         break;
       case "custom":
-        await handleCustomAnswer(ctx, questionIndex);
+        await handleCustomAnswer(ctx, chatId, questionIndex);
         break;
       case "cancel":
-        await handleCancelPoll(ctx);
+        await handleCancelPoll(ctx, chatId);
         break;
       default:
         await ctx.answerCallbackQuery({
@@ -139,6 +143,7 @@ export async function handleQuestionCallback(ctx: Context): Promise<boolean> {
 
 async function handleSelectOption(
   ctx: Context,
+  chatId: number,
   questionIndex: number,
   optionIndex: number,
 ): Promise<void> {
@@ -146,46 +151,43 @@ async function handleSelectOption(
     `[QuestionHandler] handleSelectOption: qIndex=${questionIndex}, oIndex=${optionIndex}`,
   );
 
-  const question = questionManager.getCurrentQuestion();
+  const question = questionManager.getCurrentQuestion(chatId);
   if (!question) {
     logger.debug("[QuestionHandler] No current question");
     return;
   }
 
-  if (questionManager.isWaitingForCustomInput(questionIndex)) {
-    questionManager.clearCustomInput();
-    syncQuestionInteractionState("callback", questionIndex, questionManager.getActiveMessageId());
+  if (questionManager.isWaitingForCustomInput(chatId, questionIndex)) {
+    questionManager.clearCustomInput(chatId);
+    syncQuestionInteractionState(chatId, "callback", questionIndex, questionManager.getActiveMessageId(chatId));
   }
 
-  questionManager.selectOption(questionIndex, optionIndex);
+  questionManager.selectOption(chatId, questionIndex, optionIndex);
 
   if (question.multiple) {
     logger.debug("[QuestionHandler] Multiple choice mode, updating message");
-    await updateQuestionMessage(ctx);
+    await updateQuestionMessage(ctx, chatId);
     await ctx.answerCallbackQuery();
   } else {
     logger.debug("[QuestionHandler] Single choice mode, moving to next question");
     await ctx.answerCallbackQuery();
 
-    const answer = questionManager.getSelectedAnswer(questionIndex);
+    const answer = questionManager.getSelectedAnswer(chatId, questionIndex);
     logger.debug(`[QuestionHandler] Selected answer for question ${questionIndex}: ${answer}`);
 
-    // Delete the question message before showing the next one
     await ctx.deleteMessage().catch(() => {});
 
-    // DO NOT send the answer immediately - move to the next question
-    // All answers will be sent together after the user answers all questions
-    await showNextQuestion(ctx);
+    await showNextQuestion(ctx, chatId);
   }
 }
 
-async function handleSubmitAnswer(ctx: Context, questionIndex: number): Promise<void> {
-  if (questionManager.isWaitingForCustomInput(questionIndex)) {
-    questionManager.clearCustomInput();
-    syncQuestionInteractionState("callback", questionIndex, questionManager.getActiveMessageId());
+async function handleSubmitAnswer(ctx: Context, chatId: number, questionIndex: number): Promise<void> {
+  if (questionManager.isWaitingForCustomInput(chatId, questionIndex)) {
+    questionManager.clearCustomInput(chatId);
+    syncQuestionInteractionState(chatId, "callback", questionIndex, questionManager.getActiveMessageId(chatId));
   }
 
-  const answer = questionManager.getSelectedAnswer(questionIndex);
+  const answer = questionManager.getSelectedAnswer(chatId, questionIndex);
 
   if (!answer) {
     await ctx.answerCallbackQuery({
@@ -199,17 +201,14 @@ async function handleSubmitAnswer(ctx: Context, questionIndex: number): Promise<
 
   await ctx.answerCallbackQuery();
 
-  // Delete the question message before showing the next one
   await ctx.deleteMessage().catch(() => {});
 
-  // DO NOT send the answer immediately - move to the next question
-  // All answers will be sent together after the user answers all questions
-  await showNextQuestion(ctx);
+  await showNextQuestion(ctx, chatId);
 }
 
-async function handleCustomAnswer(ctx: Context, questionIndex: number): Promise<void> {
-  questionManager.startCustomInput(questionIndex);
-  syncQuestionInteractionState("mixed", questionIndex, questionManager.getActiveMessageId());
+async function handleCustomAnswer(ctx: Context, chatId: number, questionIndex: number): Promise<void> {
+  questionManager.startCustomInput(chatId, questionIndex);
+  syncQuestionInteractionState(chatId, "mixed", questionIndex, questionManager.getActiveMessageId(chatId));
 
   await ctx.answerCallbackQuery({
     text: t("question.enter_custom_callback"),
@@ -217,27 +216,28 @@ async function handleCustomAnswer(ctx: Context, questionIndex: number): Promise<
   });
 }
 
-async function handleCancelPoll(ctx: Context): Promise<void> {
-  questionManager.cancel();
-  clearQuestionInteraction("question_cancelled");
+async function handleCancelPoll(ctx: Context, chatId: number): Promise<void> {
+  questionManager.cancel(chatId);
+  clearQuestionInteraction(chatId, "question_cancelled");
 
   await ctx.editMessageText(t("question.cancelled")).catch(() => {});
   await ctx.answerCallbackQuery();
 
-  questionManager.clear();
+  questionManager.clear(chatId);
 }
 
-async function updateQuestionMessage(ctx: Context): Promise<void> {
-  const question = questionManager.getCurrentQuestion();
+async function updateQuestionMessage(ctx: Context, chatId: number): Promise<void> {
+  const question = questionManager.getCurrentQuestion(chatId);
   if (!question) {
     logger.debug("[QuestionHandler] updateQuestionMessage: no current question");
     return;
   }
 
-  const text = formatQuestionText(question);
+  const text = formatQuestionText(question, chatId);
   const keyboard = buildQuestionKeyboard(
     question,
-    questionManager.getSelectedOptions(questionManager.getCurrentIndex()),
+    questionManager.getSelectedOptions(chatId, questionManager.getCurrentIndex(chatId)),
+    chatId,
   );
 
   logger.debug("[QuestionHandler] Updating question message");
@@ -252,7 +252,7 @@ async function updateQuestionMessage(ctx: Context): Promise<void> {
 }
 
 export async function showCurrentQuestion(bot: Context["api"], chatId: number): Promise<void> {
-  const question = questionManager.getCurrentQuestion();
+  const question = questionManager.getCurrentQuestion(chatId);
 
   if (!question) {
     await showPollSummary(bot, chatId);
@@ -261,10 +261,11 @@ export async function showCurrentQuestion(bot: Context["api"], chatId: number): 
 
   logger.debug(`[QuestionHandler] Showing question: ${question.header} - ${question.question}`);
 
-  const text = formatQuestionText(question);
+  const text = formatQuestionText(question, chatId);
   const keyboard = buildQuestionKeyboard(
     question,
-    questionManager.getSelectedOptions(questionManager.getCurrentIndex()),
+    questionManager.getSelectedOptions(chatId, questionManager.getCurrentIndex(chatId)),
+    chatId,
   );
 
   logger.debug(`[QuestionHandler] Sending message with keyboard, chatId=${chatId}`);
@@ -276,18 +277,19 @@ export async function showCurrentQuestion(bot: Context["api"], chatId: number): 
 
     logger.debug(`[QuestionHandler] Message sent, messageId=${message.message_id}`);
 
-    questionManager.addMessageId(message.message_id);
-    questionManager.setActiveMessageId(message.message_id);
+    questionManager.addMessageId(chatId, message.message_id);
+    questionManager.setActiveMessageId(chatId, message.message_id);
     syncQuestionInteractionState(
+      chatId,
       "callback",
-      questionManager.getCurrentIndex(),
-      questionManager.getActiveMessageId(),
+      questionManager.getCurrentIndex(chatId),
+      questionManager.getActiveMessageId(chatId),
     );
 
     summaryAggregator.stopTypingIndicator();
   } catch (err) {
-    questionManager.clear();
-    clearQuestionInteraction("question_message_send_failed");
+    questionManager.clear(chatId);
+    clearQuestionInteraction(chatId, "question_message_send_failed");
 
     logger.error("[QuestionHandler] Failed to send question message:", err);
     throw err;
@@ -298,42 +300,42 @@ export async function handleQuestionTextAnswer(ctx: Context): Promise<void> {
   const text = ctx.message?.text;
   if (!text) return;
 
-  const currentIndex = questionManager.getCurrentIndex();
+  const chatId = ctx.chat?.id;
+  if (!chatId) return;
 
-  if (!questionManager.isWaitingForCustomInput(currentIndex)) {
+  const currentIndex = questionManager.getCurrentIndex(chatId);
+
+  if (!questionManager.isWaitingForCustomInput(chatId, currentIndex)) {
     await ctx.reply(t("question.use_custom_button_first"));
     return;
   }
 
-  if (questionManager.hasCustomAnswer(currentIndex)) {
+  if (questionManager.hasCustomAnswer(chatId, currentIndex)) {
     await ctx.reply(t("question.answer_already_received"));
     return;
   }
 
   logger.debug(`[QuestionHandler] Custom text answer for question ${currentIndex}: ${text}`);
 
-  questionManager.setCustomAnswer(currentIndex, text);
-  questionManager.clearCustomInput();
+  questionManager.setCustomAnswer(chatId, currentIndex, text);
+  questionManager.clearCustomInput(chatId);
 
-  // Delete the previous question message
-  const activeMessageId = questionManager.getActiveMessageId();
+  const activeMessageId = questionManager.getActiveMessageId(chatId);
   if (activeMessageId !== null && ctx.chat) {
     await ctx.api.deleteMessage(ctx.chat.id, activeMessageId).catch(() => {});
   }
 
-  // DO NOT send the answer immediately - move to the next question
-  // All answers will be sent together after the user answers all questions
-  await showNextQuestion(ctx);
+  await showNextQuestion(ctx, chatId);
 }
 
-async function showNextQuestion(ctx: Context): Promise<void> {
-  questionManager.nextQuestion();
+async function showNextQuestion(ctx: Context, chatId: number): Promise<void> {
+  questionManager.nextQuestion(chatId);
 
   if (!ctx.chat) {
     return;
   }
 
-  if (questionManager.hasNextQuestion()) {
+  if (questionManager.hasNextQuestion(chatId)) {
     await showCurrentQuestion(ctx.api, ctx.chat.id);
   } else {
     await showPollSummary(ctx.api, ctx.chat.id);
@@ -341,14 +343,13 @@ async function showNextQuestion(ctx: Context): Promise<void> {
 }
 
 async function showPollSummary(bot: Context["api"], chatId: number): Promise<void> {
-  const answers = questionManager.getAllAnswers();
-  const totalQuestions = questionManager.getTotalQuestions();
+  const answers = questionManager.getAllAnswers(chatId);
+  const totalQuestions = questionManager.getTotalQuestions(chatId);
 
   logger.info(
     `[QuestionHandler] Poll completed: ${answers.length}/${totalQuestions} questions answered`,
   );
 
-  // Send all answers to the OpenCode API
   await sendAllAnswersToAgent(bot, chatId);
 
   if (answers.length === 0) {
@@ -358,16 +359,16 @@ async function showPollSummary(bot: Context["api"], chatId: number): Promise<voi
     await bot.sendMessage(chatId, summary);
   }
 
-  clearQuestionInteraction("question_completed");
-  questionManager.clear();
+  clearQuestionInteraction(chatId, "question_completed");
+  questionManager.clear(chatId);
   logger.debug("[QuestionHandler] Poll completed and cleared");
 }
 
 async function sendAllAnswersToAgent(bot: Context["api"], chatId: number): Promise<void> {
-  const currentProject = getCurrentProject();
-  const currentSession = getCurrentSession();
-  const requestID = questionManager.getRequestID();
-  const totalQuestions = questionManager.getTotalQuestions();
+  const currentProject = getCurrentProject(chatId);
+  const currentSession = getCurrentSession(chatId);
+  const requestID = questionManager.getRequestID(chatId);
+  const totalQuestions = questionManager.getTotalQuestions(chatId);
   const directory = currentSession?.directory ?? currentProject?.worktree;
 
   if (!directory) {
@@ -382,24 +383,18 @@ async function sendAllAnswersToAgent(bot: Context["api"], chatId: number): Promi
     return;
   }
 
-  // Collect answers for all questions
-  // Format: Array<Array<string>> - for each question, an array of strings (selected options)
   const allAnswers: string[][] = [];
 
   for (let i = 0; i < totalQuestions; i++) {
-    const customAnswer = questionManager.getCustomAnswer(i);
-    const selectedAnswer = questionManager.getSelectedAnswer(i);
+    const customAnswer = questionManager.getCustomAnswer(chatId, i);
+    const selectedAnswer = questionManager.getSelectedAnswer(chatId, i);
 
-    // Priority: custom answer > selected options
     const answer = customAnswer || selectedAnswer || "";
 
     if (answer) {
-      // Split by newlines if multiple options were selected (in multiple choice mode)
-      // Each option is formatted as "* Label: Description"
       const answerParts = answer.split("\n").filter((part) => part.trim());
       allAnswers.push(answerParts);
     } else {
-      // Empty answer for unanswered questions
       allAnswers.push([]);
     }
   }
@@ -409,8 +404,6 @@ async function sendAllAnswersToAgent(bot: Context["api"], chatId: number): Promi
   );
   logger.debug(`[QuestionHandler] Answers payload:`, JSON.stringify(allAnswers, null, 2));
 
-  // CRITICAL: Fire-and-forget! Do not wait for question.reply to complete,
-  // otherwise it may block subsequent updates
   safeBackgroundTask({
     taskName: "question.reply",
     task: () =>
@@ -435,9 +428,9 @@ function formatQuestionText(question: {
   header: string;
   question: string;
   multiple?: boolean;
-}): string {
-  const currentIndex = questionManager.getCurrentIndex();
-  const totalQuestions = questionManager.getTotalQuestions();
+}, chatId: number): string {
+  const currentIndex = questionManager.getCurrentIndex(chatId);
+  const totalQuestions = questionManager.getTotalQuestions(chatId);
   const progressText = totalQuestions > 0 ? `${currentIndex + 1}/${totalQuestions}` : "";
 
   const headerTitle = [progressText, question.header].filter(Boolean).join(" ");
@@ -449,10 +442,11 @@ function formatQuestionText(question: {
 function buildQuestionKeyboard(
   question: { options: Array<{ label: string; description: string }>; multiple?: boolean },
   selectedOptions: Set<number>,
+  chatId: number,
 ): InlineKeyboard {
   const keyboard = new InlineKeyboard();
 
-  const questionIndex = questionManager.getCurrentIndex();
+  const questionIndex = questionManager.getCurrentIndex(chatId);
 
   logger.debug(`[QuestionHandler] Building keyboard for question ${questionIndex}`);
 

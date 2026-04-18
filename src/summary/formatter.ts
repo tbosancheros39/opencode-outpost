@@ -1,11 +1,11 @@
 import { ToolInfo } from "./aggregator.js";
 import * as path from "path";
-import { convert } from "telegram-markdown-v2";
 import { config } from "../config.js";
 import type { MessageFormatMode } from "../config.js";
 import { logger } from "../utils/logger.js";
 import { t } from "../i18n/index.js";
 import { getCurrentProject } from "../settings/manager.js";
+import { chunkOutput } from "../telegram/render/chunker.js";
 
 const TELEGRAM_MESSAGE_LIMIT = 4096;
 const MARKDOWN_V2_RESERVED_CHARS = /([_\*\[\]\(\)~`>#+\-=|{}.!\\])/g;
@@ -34,112 +34,9 @@ function splitText(text: string, maxLength: number): string[] {
   return parts;
 }
 
-function isCodeFenceLine(line: string): boolean {
-  return line.trimStart().startsWith("```");
-}
-
-function isHorizontalRuleLine(line: string): boolean {
-  const normalized = line.trim();
-  if (!normalized) {
-    return false;
-  }
-
-  return /^([-*_])(?:\s*\1){2,}$/.test(normalized);
-}
-
-function isHeadingLine(line: string): boolean {
-  return /^\s{0,3}#{1,6}\s+\S/.test(line);
-}
-
-function normalizeHeadingLine(line: string): string {
-  const match = line.match(/^\s{0,3}#{1,6}\s+(.+?)\s*$/);
-  if (!match) {
-    return line;
-  }
-
-  return `**${match[1]}**`;
-}
-
-function normalizeChecklistLine(line: string): string | null {
-  const match = line.match(/^(\s*)(?:[-+*]|\d+\.)\s+\[( |x|X)\]\s+(.*)$/);
-  if (!match) {
-    return null;
-  }
-
-  const marker = match[2].toLowerCase() === "x" ? "✅" : "🔲";
-  return `${match[1]}${marker} ${match[3]}`;
-}
-
-function preprocessMarkdownForTelegram(text: string): string {
-  const lines = text.split("\n");
-  const output: string[] = [];
-  let inCodeFence = false;
-  let inQuote = false;
-
-  for (let index = 0; index < lines.length; index++) {
-    const line = lines[index];
-
-    if (isCodeFenceLine(line)) {
-      inCodeFence = !inCodeFence;
-      inQuote = false;
-      output.push(line);
-      continue;
-    }
-
-    if (inCodeFence) {
-      output.push(line);
-      continue;
-    }
-
-    if (!line.trim()) {
-      inQuote = false;
-      output.push(line);
-      continue;
-    }
-
-    if (isHeadingLine(line)) {
-      output.push(normalizeHeadingLine(line));
-      inQuote = false;
-      continue;
-    }
-
-    if (isHorizontalRuleLine(line)) {
-      output.push("──────────");
-      inQuote = false;
-      continue;
-    }
-
-    const trimmedLeft = line.trimStart();
-    if (trimmedLeft.startsWith(">")) {
-      inQuote = true;
-      const quoteContent = trimmedLeft.replace(/^>\s?/, "");
-      const normalizedChecklistInQuote = normalizeChecklistLine(quoteContent);
-      output.push(
-        normalizedChecklistInQuote ? `> ${normalizedChecklistInQuote.trimStart()}` : trimmedLeft,
-      );
-      continue;
-    }
-
-    const normalizedChecklist = normalizeChecklistLine(line);
-    if (normalizedChecklist) {
-      output.push(inQuote ? `> ${normalizedChecklist.trimStart()}` : normalizedChecklist);
-      continue;
-    }
-
-    if (inQuote) {
-      output.push(`> ${trimmedLeft}`);
-      continue;
-    }
-
-    output.push(line);
-  }
-
-  return output.join("\n");
-}
-
-export function normalizePathForDisplay(filePath: string): string {
+export function normalizePathForDisplay(filePath: string, chatId: number = 0): string {
   const normalizedPath = filePath.replace(/\\/g, "/");
-  const project = getCurrentProject();
+  const project = getCurrentProject(chatId);
 
   if (!project?.worktree) {
     return normalizedPath;
@@ -183,52 +80,6 @@ export function escapePlainTextForTelegramMarkdownV2(text: string): string {
   return text.replace(MARKDOWN_V2_RESERVED_CHARS, "\\$1");
 }
 
-function formatMarkdownForTelegram(text: string): string {
-  try {
-    const preprocessed = preprocessMarkdownForTelegram(text);
-    return escapeMarkdownV2PipesOutsideCode(convert(preprocessed, "keep"));
-  } catch (error) {
-    logger.warn("[Formatter] Failed to convert markdown summary, falling back to raw text", error);
-    return text;
-  }
-}
-
-function escapeMarkdownV2PipesOutsideCode(text: string): string {
-  let result = "";
-  let index = 0;
-  let inInlineCode = false;
-  let inCodeFence = false;
-
-  while (index < text.length) {
-    if (text.startsWith("```", index)) {
-      result += "```";
-      index += 3;
-      inCodeFence = !inCodeFence;
-      continue;
-    }
-
-    const char = text[index];
-
-    if (!inCodeFence && char === "`") {
-      inInlineCode = !inInlineCode;
-      result += char;
-      index += 1;
-      continue;
-    }
-
-    if (!inCodeFence && !inInlineCode && char === "|" && text[index - 1] !== "\\") {
-      result += "\\|";
-      index += 1;
-      continue;
-    }
-
-    result += char;
-    index += 1;
-  }
-
-  return result;
-}
-
 export function formatSummaryWithMode(
   text: string,
   mode: MessageFormatMode,
@@ -239,27 +90,26 @@ export function formatSummaryWithMode(
   }
 
   const normalizedMaxLength = Math.max(1, Math.floor(maxLength));
-  const rawTextLimit =
-    mode === "raw" ? Math.max(1, normalizedMaxLength - "```\n\n```".length) : normalizedMaxLength;
+
+  if (mode === "markdown") {
+    const chunks = chunkOutput(text.trim(), normalizedMaxLength);
+    const formattedParts: string[] = [];
+    for (const chunk of chunks) {
+      const trimmed = chunk.trim();
+      if (trimmed) {
+        formattedParts.push(trimmed);
+      }
+    }
+    return formattedParts;
+  }
+
+  const rawTextLimit = Math.max(1, normalizedMaxLength - "```\n\n```".length);
   const parts = splitText(text, rawTextLimit);
   const formattedParts: string[] = [];
 
   for (const part of parts) {
     const trimmed = part.trim();
     if (!trimmed) {
-      continue;
-    }
-
-    if (mode === "markdown") {
-      const converted = formatMarkdownForTelegram(trimmed);
-      const convertedParts = splitText(converted, normalizedMaxLength);
-
-      for (const convertedPart of convertedParts) {
-        const normalizedPart = convertedPart.trim();
-        if (normalizedPart) {
-          formattedParts.push(normalizedPart);
-        }
-      }
       continue;
     }
 

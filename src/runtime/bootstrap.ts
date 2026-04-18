@@ -32,7 +32,7 @@ interface EnvValidationResult {
 interface WizardCollectedValues {
   locale: Locale;
   token: string;
-  allowedUserId: string;
+  allowedUserIds: string;
   apiUrl?: string;
   serverUsername: string;
   serverPassword?: string;
@@ -41,7 +41,7 @@ interface WizardCollectedValues {
 export interface WizardEnvValues {
   BOT_LOCALE: Locale;
   TELEGRAM_BOT_TOKEN: string;
-  TELEGRAM_ALLOWED_USER_ID: string;
+  TELEGRAM_ALLOWED_USER_IDS: string;
   OPENCODE_API_URL?: string;
   OPENCODE_SERVER_USERNAME: string;
   OPENCODE_SERVER_PASSWORD?: string;
@@ -51,6 +51,14 @@ export interface WizardEnvValues {
 
 function isPositiveInteger(value: string): boolean {
   return /^[1-9]\d*$/.test(value);
+}
+
+function isValidCommaSeparatedUserIds(value: string): boolean {
+  if (!value || value.trim().length === 0) {
+    return false;
+  }
+  const ids = value.split(",");
+  return ids.every((id) => isPositiveInteger(id.trim()));
 }
 
 function isValidHttpUrl(value: string): boolean {
@@ -67,8 +75,8 @@ export function validateRuntimeEnvValues(values: Record<string, string>): EnvVal
     return { isValid: false, reason: "Missing TELEGRAM_BOT_TOKEN" };
   }
 
-  if (!isPositiveInteger(values.TELEGRAM_ALLOWED_USER_ID || "")) {
-    return { isValid: false, reason: "Invalid TELEGRAM_ALLOWED_USER_ID" };
+  if (!isValidCommaSeparatedUserIds(values.TELEGRAM_ALLOWED_USER_IDS || "")) {
+    return { isValid: false, reason: "Invalid TELEGRAM_ALLOWED_USER_IDS" };
   }
 
   if (!values.OPENCODE_MODEL_PROVIDER || values.OPENCODE_MODEL_PROVIDER.trim().length === 0) {
@@ -116,7 +124,7 @@ export function buildEnvFileContent(existingContent: string, values: WizardEnvVa
   const orderedUpdates: Array<[keyof WizardEnvValues, string | undefined]> = [
     ["BOT_LOCALE", values.BOT_LOCALE],
     ["TELEGRAM_BOT_TOKEN", values.TELEGRAM_BOT_TOKEN],
-    ["TELEGRAM_ALLOWED_USER_ID", values.TELEGRAM_ALLOWED_USER_ID],
+    ["TELEGRAM_ALLOWED_USER_IDS", values.TELEGRAM_ALLOWED_USER_IDS],
     ["OPENCODE_API_URL", values.OPENCODE_API_URL],
     ["OPENCODE_SERVER_USERNAME", values.OPENCODE_SERVER_USERNAME],
     ["OPENCODE_SERVER_PASSWORD", values.OPENCODE_SERVER_PASSWORD],
@@ -311,16 +319,16 @@ async function askLocale(): Promise<Locale> {
   }
 }
 
-async function askAllowedUserId(): Promise<string> {
+async function askAllowedUserIds(): Promise<string> {
   for (;;) {
-    const allowedUserId = await askVisible(t("runtime.wizard.ask_user_id"));
+    const allowedUserIds = await askVisible(t("runtime.wizard.ask_user_id"));
 
-    if (!isPositiveInteger(allowedUserId)) {
+    if (!isValidCommaSeparatedUserIds(allowedUserIds)) {
       process.stdout.write(t("runtime.wizard.user_id_invalid"));
       continue;
     }
 
-    return allowedUserId;
+    return allowedUserIds;
   }
 }
 
@@ -385,7 +393,7 @@ async function collectWizardValues(): Promise<WizardCollectedValues> {
   process.stdout.write("\n");
 
   const token = await askToken();
-  const allowedUserId = await askAllowedUserId();
+  const allowedUserIds = await askAllowedUserIds();
   const apiUrl = await askApiUrl();
   const serverUsername = await askServerUsername();
   const serverPassword = await askServerPassword();
@@ -395,7 +403,7 @@ async function collectWizardValues(): Promise<WizardCollectedValues> {
   return {
     locale,
     token,
-    allowedUserId,
+    allowedUserIds,
     apiUrl,
     serverUsername,
     serverPassword,
@@ -435,7 +443,7 @@ async function runWizardAndPersist(runtimePaths: RuntimePaths): Promise<void> {
   const envValues: WizardEnvValues = {
     BOT_LOCALE: wizardValues.locale,
     TELEGRAM_BOT_TOKEN: wizardValues.token,
-    TELEGRAM_ALLOWED_USER_ID: wizardValues.allowedUserId,
+    TELEGRAM_ALLOWED_USER_IDS: wizardValues.allowedUserIds,
     OPENCODE_API_URL: wizardValues.apiUrl,
     OPENCODE_SERVER_USERNAME: wizardValues.serverUsername,
     OPENCODE_SERVER_PASSWORD: wizardValues.serverPassword,

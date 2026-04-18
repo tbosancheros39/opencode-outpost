@@ -32,10 +32,13 @@ export const bs = {
   "cmd.description.ask_and_leave": "Ask in group and leave",
   "cmd.description.steer": "Interrupt and redirect the agent",
 
-  "ask_and_leave.error.groups_only": "Ova komanda funkcioniše samo u grupnim četovima.\n\nDodajte bota u grupu i tamo koristite /ask_and_leave <pitanje>.",
-  "ask_and_leave.error.no_query": "Please provide a question.\n\nExample: /ask_and_leave What is the capital of France?",
+  "ask_and_leave.error.groups_only":
+    "Ova komanda funkcioniše samo u grupnim četovima.\n\nDodajte bota u grupu i tamo koristite /ask_and_leave <pitanje>.",
+  "ask_and_leave.error.no_query":
+    "Please provide a question.\n\nExample: /ask_and_leave What is the capital of France?",
   "steer.usage": "Usage: /steer <new instruction>\n\nExample: /steer Stop looping and use python",
-  "steer.abort_failed": "Could not interrupt the agent. The session is still busy. Try again or use /abort first.",
+  "steer.abort_failed":
+    "Could not interrupt the agent. The session is still busy. Try again or use /abort first.",
 
   "callback.unknown_command": "Nepoznata komanda",
   "callback.processing_error": "Greška pri obradi",
@@ -47,17 +50,22 @@ export const bs = {
   "error.generic": "🔴 Nešto je pošlo po zlu.",
 
   "interaction.blocked.expired": "⚠️ Ova interakcija je istekla. Molim vas pokrenite je ponovo.",
-  "interaction.blocked.expected_callback": "⚠️ Za ovaj korak koristite inline dugmad ili dodirnite Otkaži.",
+  "interaction.blocked.expected_callback":
+    "⚠️ Za ovaj korak koristite inline dugmad ili dodirnite Otkaži.",
   "interaction.blocked.expected_text": "⚠️ Za ovaj korak pošaljite tekstualnu poruku.",
   "interaction.blocked.expected_command": "⚠️ Za ovaj korak pošaljite komandu.",
   "interaction.blocked.command_not_allowed": "⚠️ Ova komanda nije dostupna u trenutnom koraku.",
-  "interaction.blocked.finish_current": "⚠️ Završite trenutnu interakciju prvo (odgovorite ili otkažite), zatim otvorite drugi meni.",
+  "interaction.blocked.finish_current":
+    "⚠️ Završite trenutnu interakciju prvo (odgovorite ili otkažite), zatim otvorite drugi meni.",
 
-  "inline.blocked.expected_choice": "⚠️ Odaberite opciju koristeći inline dugmad ili dodirnite Otkaži.",
+  "inline.blocked.expected_choice":
+    "⚠️ Odaberite opciju koristeći inline dugmad ili dodirnite Otkaži.",
   "inline.blocked.command_not_allowed": "⚠️ Ova komanda nije dostupna dok je inline meni aktivan.",
 
-  "question.blocked.expected_answer": "⚠️ Odgovorite na trenutno pitanje koristeći dugmad, Prilagođeni odgovor, ili Otkaži.",
-  "question.blocked.command_not_allowed": "⚠️ Ova komanda nije dostupna dok se ne završi trenutni tok pitanja.",
+  "question.blocked.expected_answer":
+    "⚠️ Odgovorite na trenutno pitanje koristeći dugmad, Prilagođeni odgovor, ili Otkaži.",
+  "question.blocked.command_not_allowed":
+    "⚠️ Ova komanda nije dostupna dok se ne završi trenutni tok pitanja.",
 
   "inline.button.cancel": "❌ Otkaži",
   "inline.inactive_callback": "Ovaj meni je neaktivan",
@@ -66,34 +74,45 @@ export const bs = {
   "common.unknown": "nepoznato",
   "common.unknown_error": "nepoznata greška",
 
-  "start.welcome": "👋 Dobrodošli u OpenCode Telegram Bot!\n\nKoristite komande:\n/projects — odaberite projekat\n/sessions — lista sesija\n/new — nova sesija\n/task — zakazani zadatak\n/tasklist — zakazani zadaci\n/status — status\n/help — pomoć\n\nKoristite donje dugmiće za odabir režima rada, modela i varijante.",
-  "help.keyboard_hint": "💡 Koristite donje dugmiće za režim rada agenta, model, varijantu i radnje konteksta.",
-  "help.text": "📖 **Pomoć**\n\n/status - Provjeri status servera\n/sessions - Lista sesija\n/new - Kreiraj novu sesiju\n/help - Pomoć",
+  "start.welcome":
+    "👋 Dobrodošli u OpenCode Telegram Bot!\n\nKoristite komande:\n/projects — odaberite projekat\n/sessions — lista sesija\n/new — nova sesija\n/task — zakazani zadatak\n/tasklist — zakazani zadaci\n/status — status\n/help — pomoć\n\nKoristite donje dugmiće za odabir režima rada, modela i varijante.",
+  "help.keyboard_hint":
+    "💡 Koristite donje dugmiće za režim rada agenta, model, varijantu i radnje konteksta.",
+  "help.text":
+    "📖 **Pomoć**\n\n/status - Provjeri status servera\n/sessions - Lista sesija\n/new - Kreiraj novu sesiju\n/help - Pomoć",
 
   "bot.thinking": "💭 Razmišljam...",
   "bot.working_on_it": "⏳ Primljeno, radim na tome...",
   "bot.project_not_selected": "🏗 Projekat nije odabran.\n\nPrvo odaberite projekat sa /projects.",
   "bot.global_mode_active": "🌍 Radim u Global Modu (bez konteksta projekta)",
-  "bot.session_reset_to_global": "⚠️ Sesija je prebačena u Global Mode. Koristite /projects za rad sa projektom.",
+  "bot.session_reset_to_global":
+    "⚠️ Sesija je prebačena u Global Mode. Koristite /projects za rad sa projektom.",
   "bot.creating_session": "🔄 Kreiram novu sesiju...",
-  "bot.create_session_error": "🔴 Neuspješno kreiranje sesije. Pokušajte /new ili provjerite status servera sa /status.",
+  "bot.create_session_error":
+    "🔴 Neuspješno kreiranje sesije. Pokušajte /new ili provjerite status servera sa /status.",
   "bot.session_created": "✅ Sesiju kreirano: {title}",
-  "bot.session_busy": "⏳ Agent već pokreće zadatak. Sačekajte završetak ili koristite /abort za prekid.",
-  "bot.session_reset_project_mismatch": "⚠️ Aktivna sesija ne odgovara odabranom projektu, pa je resetovana. Koristite /sessions za odabir ili /new za kreiranje.",
+  "bot.session_busy":
+    "⏳ Agent već pokreće zadatak. Sačekajte završetak ili koristite /abort za prekid.",
+  "bot.session_reset_project_mismatch":
+    "⚠️ Aktivna sesija ne odgovara odabranom projektu, pa je resetovana. Koristite /sessions za odabir ili /new za kreiranje.",
   "bot.prompt_send_error": "Neuspješno slanje zahtjeva OpenCode-u.",
   "bot.session_error": "🔴 OpenCode je vratio grešku: {message}",
-  "bot.session_retry": "🔁 {message}\n\nPružatelj usluga nastavlja davati istu grešku pri ponovljenim pokušajima. Koristite /abort za prekid.",
+  "bot.session_retry":
+    "🔁 {message}\n\nPružatelj usluga nastavlja davati istu grešku pri ponovljenim pokušajima. Koristite /abort za prekid.",
   "bot.unknown_command": "⚠️ Nepoznata komanda: {command}. Koristite /help za dostupne komande.",
   "bot.photo_downloading": "⏳ Preuzimanje fotografije...",
   "bot.photo_too_large": "⚠️ Fotografija je prevelika (maks. {maxSizeMb}MB)",
   "bot.photo_model_no_image": "⚠️ Trenutni model ne podržava ulaz slike. Šaljem samo tekst.",
   "bot.photo_download_error": "🔴 Neuspješno preuzimanje fotografije",
-  "bot.photo_no_caption": "💡 Savjet: Dodajte opis kako biste opisali šta želite uraditi sa ovom fotografijom.",
+  "bot.photo_no_caption":
+    "💡 Savjet: Dodajte opis kako biste opisali šta želite uraditi sa ovom fotografijom.",
   "bot.file_downloading": "⏳ Preuzimanje fajla...",
   "bot.file_too_large": "⚠️ Fajl je preveliki (maks. {maxSizeMb}MB)",
   "bot.file_download_error": "🔴 Neuspješno preuzimanje fajla",
   "bot.model_no_pdf": "⚠️ Trenutni model ne podržava PDF ulaz. Šaljem samo tekst.",
   "bot.text_file_too_large": "⚠️ Tekstualni fajl je preveliki (maks. {maxSizeKb}KB)",
+  "chat_limit.exceeded": "⚠️ Too many active chats. Wait for previous conversations to finish.",
+  "rate_limit.exceeded": "⚠️ Too many messages. Please slow down.",
 
   "status.header_running": "🟢 OpenCode Server je pokrenut",
   "status.health.healthy": "Zdrav",
@@ -113,24 +132,30 @@ export const bs = {
   "status.session_selected": "Trenutna sesija: {title}",
   "status.session_not_selected": "Trenutna sesija: nije odabrana",
   "status.session_hint": "Koristite /sessions za odabir ili /new za kreiranje",
-  "status.server_unavailable": "🔴 OpenCode Server je nedostupan\n\nKoristite /opencode_start za pokretanje servera.",
+  "status.server_unavailable":
+    "🔴 OpenCode Server je nedostupan\n\nKoristite /opencode_start za pokretanje servera.",
 
-  "projects.empty": "📭 Nema pronađenih projekata.\n\nOtvorite direktorij u OpenCode-u i kreirajte barem jednu sesiju, pa će se pojaviti ovdje.",
+  "projects.empty":
+    "📭 Nema pronađenih projekata.\n\nOtvorite direktorij u OpenCode-u i kreirajte barem jednu sesiju, pa će se pojaviti ovdje.",
   "projects.select": "Odaberite projekat:",
   "projects.select_with_current": "Odaberite projekat:\n\nTrenutni: 🏗 {project}",
   "projects.page_indicator": "Stranica {current}/{total}",
   "projects.prev_page": "⬅️ Prethodna",
   "projects.next_page": "Sljedeća ➡️",
-  "projects.fetch_error": "🔴 OpenCode Server je nedostupan ili je došlo do greške pri učitavanju projekata.",
+  "projects.fetch_error":
+    "🔴 OpenCode Server je nedostupan ili je došlo do greške pri učitavanju projekata.",
   "projects.page_load_error": "Ne može se učitati ova stranica. Pokušajte ponovo.",
-  "projects.selected": "✅ Projekat odabran: {project}\n\n📋 Sesija je resetovana. Koristite /sessions ili /new za ovaj projekat.",
+  "projects.selected":
+    "✅ Projekat odabran: {project}\n\n📋 Sesija je resetovana. Koristite /sessions ili /new za ovaj projekat.",
   "projects.select_error": "🔴 Neuspješan odabir projekta.",
 
-  "sessions.project_not_selected": "🏗 Projekat nije odabran.\n\nPrvo odaberite projekat sa /projects.",
+  "sessions.project_not_selected":
+    "🏗 Projekat nije odabran.\n\nPrvo odaberite projekat sa /projects.",
   "sessions.empty": "📭 Nema pronađenih sesija.\n\nKreirajte novu sesiju sa /new.",
   "sessions.select": "Odaberite sesiju:",
   "sessions.select_page": "Odaberite sesiju (stranica {page}):",
-  "sessions.fetch_error": "🔴 OpenCode Server je nedostupan ili je došlo do greške pri učitavanju sesija.",
+  "sessions.fetch_error":
+    "🔴 OpenCode Server je nedostupan ili je došlo do greške pri učitavanju sesija.",
   "sessions.select_project_first": "🔴 Projekat nije odabran. Koristite /projects.",
   "sessions.page_empty_callback": "Nema sesija na ovoj stranici",
   "sessions.page_load_error_callback": "Ne može se učitati ova stranica. Pokušajte ponovo.",
@@ -146,31 +171,46 @@ export const bs = {
 
   "new.project_not_selected": "🏗 Projekat nije odabran.\n\nPrvo odaberite projekat sa /projects.",
   "new.created": "✅ Novu sesiju kreirano: {title}",
-  "new.create_error": "🔴 OpenCode Server je nedostupan ili je došlo do greške pri kreiranju sesije.",
+  "new.create_error":
+    "🔴 OpenCode Server je nedostupan ili je došlo do greške pri kreiranju sesije.",
 
-  "stop.no_active_session": "🛑 Agent nije pokrenut\n\nKreirajte sesiju sa /new ili odaberite jednu preko /sessions.",
-  "stop.in_progress": "🛑 Event stream zaustavljen, šaljem abort signal...\n\nČekanje da se agent zaustavi.",
-  "stop.warn_unconfirmed": "⚠️ Event stream zaustavljen, ali server nije potvrdio abort.\n\nProvjerite /status i pokušajte /abort ponovo za nekoliko sekundi.",
+  "stop.no_active_session":
+    "🛑 Agent nije pokrenut\n\nKreirajte sesiju sa /new ili odaberite jednu preko /sessions.",
+  "stop.in_progress":
+    "🛑 Event stream zaustavljen, šaljem abort signal...\n\nČekanje da se agent zaustavi.",
+  "stop.warn_unconfirmed":
+    "⚠️ Event stream zaustavljen, ali server nije potvrdio abort.\n\nProvjerite /status i pokušajte /abort ponovo za nekoliko sekundi.",
   "stop.warn_maybe_finished": "⚠️ Event stream zaustavljen, ali agent je možda već završio.",
   "stop.success": "✅ Akcija agenta prekinuta. Više poruka iz ovog izvršavanja neće biti poslano.",
-  "stop.warn_still_busy": "⚠️ Signal poslan, ali agent je i dalje zauzet.\n\nEvent stream je već onemogućen, tako da se srednje poruke neće slati.",
-  "stop.warn_timeout": "⚠️ Timeout zahtjeva za abort.\n\nEvent stream je već onemogućen, pokušajte /abort ponovo za nekoliko sekundi.",
+  "stop.warn_still_busy":
+    "⚠️ Signal poslan, ali agent je i dalje zauzet.\n\nEvent stream je već onemogućen, tako da se srednje poruke neće slati.",
+  "stop.warn_timeout":
+    "⚠️ Timeout zahtjeva za abort.\n\nEvent stream je već onemogućen, pokušajte /abort ponovo za nekoliko sekundi.",
   "stop.warn_local_only": "⚠️ Event stream zaustavljen lokalno, ali server-side abort nije uspio.",
-  "stop.error": "🔴 Neuspješno zaustavljanje akcije.\n\nEvent stream je zaustavljen, pokušajte /abort ponovo.",
+  "stop.error":
+    "🔴 Neuspješno zaustavljanje akcije.\n\nEvent stream je zaustavljen, pokušajte /abort ponovo.",
 
-  "opencode_start.already_running_managed": "⚠️ OpenCode Server je već pokrenut\n\nPID: {pid}\nUptime: {seconds} sekundi",
-  "opencode_start.already_running_external": "✅ OpenCode Server je već pokrenut kao vanjski proces\n\nVerzija: {version}\n\nOvaj server nije pokrenut od bota, pa /opencode-stop ne može ga zaustaviti.",
+  "opencode_start.already_running_managed":
+    "⚠️ OpenCode Server je već pokrenut\n\nPID: {pid}\nUptime: {seconds} sekundi",
+  "opencode_start.already_running_external":
+    "✅ OpenCode Server je već pokrenut kao vanjski proces\n\nVerzija: {version}\n\nOvaj server nije pokrenut od bota, pa /opencode-stop ne može ga zaustaviti.",
   "opencode_start.starting": "🔄 Pokretanje OpenCode Servera...",
-  "opencode_start.start_error": "🔴 Neuspješno pokretanje OpenCode Servera\n\nGreška: {error}\n\nProvjerite da li je OpenCode CLI instaliran i dostupan u PATH:\nopencode --version\nnpm install -g @opencode-ai/cli",
-  "opencode_start.started_not_ready": "⚠️ OpenCode Server pokrenut, ali ne odgovara\n\nPID: {pid}\n\nServer se možda još uvijek pokreće. Pokušajte /status za nekoliko sekundi.",
-  "opencode_start.success": "✅ OpenCode Server uspješno pokrenut\n\nPID: {pid}\nVerzija: {version}",
-  "opencode_start.error": "🔴 Došlo je do greške pri pokretanju servera.\n\nProvjerite aplikacijske logove za detalje.",
-  "opencode_stop.external_running": "⚠️ OpenCode Server je pokrenut kao vanjski proces\n\nOvaj server nije pokrenut putem /opencode-start.\nZaustavite ga ručno ili koristite /status za provjeru stanja.",
+  "opencode_start.start_error":
+    "🔴 Neuspješno pokretanje OpenCode Servera\n\nGreška: {error}\n\nProvjerite da li je OpenCode CLI instaliran i dostupan u PATH:\nopencode --version\nnpm install -g @opencode-ai/cli",
+  "opencode_start.started_not_ready":
+    "⚠️ OpenCode Server pokrenut, ali ne odgovara\n\nPID: {pid}\n\nServer se možda još uvijek pokreće. Pokušajte /status za nekoliko sekundi.",
+  "opencode_start.success":
+    "✅ OpenCode Server uspješno pokrenut\n\nPID: {pid}\nVerzija: {version}",
+  "opencode_start.error":
+    "🔴 Došlo je do greške pri pokretanju servera.\n\nProvjerite aplikacijske logove za detalje.",
+  "opencode_stop.external_running":
+    "⚠️ OpenCode Server je pokrenut kao vanjski proces\n\nOvaj server nije pokrenut putem /opencode-start.\nZaustavite ga ručno ili koristite /status za provjeru stanja.",
   "opencode_stop.not_running": "⚠️ OpenCode Server nije pokrenut",
   "opencode_stop.stopping": "🛑 Zaustavljanje OpenCode Servera...\n\nPID: {pid}",
   "opencode_stop.stop_error": "🔴 Neuspješno zaustavljanje OpenCode Servera\n\nGreška: {error}",
   "opencode_stop.success": "✅ OpenCode Server uspješno zaustavljen",
-  "opencode_stop.error": "🔴 Došlo je do greške pri zaustavljanju servera.\n\nProvjerite aplikacijske logove za detalje.",
+  "opencode_stop.error":
+    "🔴 Došlo je do greške pri zaustavljanju servera.\n\nProvjerite aplikacijske logove za detalje.",
 
   "agent.changed_callback": "Modus promijenjen: {name}",
   "agent.changed_message": "✅ Modus promijenjen na: {name}",
@@ -179,7 +219,6 @@ export const bs = {
   "agent.menu.select": "Odaberite radni modus:",
   "agent.menu.empty": "⚠️ Nema dostupnih agenata",
   "agent.menu.error": "�️ Neuspješno učitavanje liste agenata",
-  "agent.inline_blocked_fatima": "ℹ️ Možete koristiti /models za odabir modela.",
 
   "model.changed_callback": "Model promijenjen: {name}",
   "model.changed_message": "✅ Model promijenjen na: {name}",
@@ -193,7 +232,6 @@ export const bs = {
   "model.menu.recent_empty": "— Prazno.",
   "model.menu.favorites_hint": "ℹ️ Dodajte modele u favorite u OpenCode CLI da bi ostali na vrhu.",
   "model.menu.error": "🔴 Neuspješno učitavanje liste modela",
-  "model.inline_blocked_fatima": "ℹ️ Možete koristiti /models za odabir modela.",
 
   "variant.model_not_selected_callback": "Greška: model nije odabran",
   "variant.changed_callback": "Varijanta promijenjena: {name}",
@@ -203,11 +241,11 @@ export const bs = {
   "variant.menu.empty": "⚠️ Nema dostupnih varijanti",
   "variant.menu.current": "Trenutna varijanta: {name}\n\nOdaberite varijantu:",
   "variant.menu.error": "🔴 Neuspješno učitavanje liste varijanti",
-  "variant.inline_blocked_fatima": "ℹ️ Možete koristiti /models za odabir varijante modela.",
 
   "context.button.confirm": "✅ Da, kompaktuj kontekst",
   "context.no_active_session": "⚠️ Nema aktivne sesije. Kreirajte sesiju sa /new",
-  "context.confirm_text": '📊 Kompaktovanje konteksta za sesiju "{title}"\n\nOvo će smanjiti korištenje konteksta uklanjanjem starih poruka iz historije. Trenutni zadatak neće biti prekinut.\n\nNastaviti?',
+  "context.confirm_text":
+    '📊 Kompaktovanje konteksta za sesiju "{title}"\n\nOvo će smanjiti korištenje konteksta uklanjanjem starih poruka iz historije. Trenutni zadatak neće biti prekinut.\n\nNastaviti?',
   "context.callback_session_not_found": "Sesiju nije pronađena",
   "context.callback_compacting": "Kompaktovanje konteksta...",
   "context.progress": "⏳ Kompaktovanje konteksta...",
@@ -222,8 +260,10 @@ export const bs = {
   "permission.reply.reject": "Odbijeno",
   "permission.send_reply_error": "❌ Neuspješno slanje odgovora na zahtjev za dozvolu",
   "permission.denied.super_user_only": "⚠️ Ova akcija zahtijeva dozvolu super korisnika.",
-  "permission.blocked.expected_reply": "⚠️ Prvo odgovorite na zahtjev za dozvolu koristeći dugmad iznad.",
-  "permission.blocked.command_not_allowed": "⚠️ Ova komanda nije dostupna dok ne odgovorite na zahtjev za dozvolu.",
+  "permission.blocked.expected_reply":
+    "⚠️ Prvo odgovorite na zahtjev za dozvolu koristeći dugmad iznad.",
+  "permission.blocked.command_not_allowed":
+    "⚠️ Ova komanda nije dostupna dok ne odgovorite na zahtjev za dozvolu.",
   "permission.header": "{emoji} Zahtjev za dozvolu: {name}\n\n",
   "permission.button.allow": "✅ Dozvoli jednom",
   "permission.button.always": "🔓 Dozvoli uvijek",
@@ -255,7 +295,8 @@ export const bs = {
   "question.button.submit": "✅ Gotovo",
   "question.button.custom": "🔤 Prilagođeni odgovor",
   "question.button.cancel": "❌ Otkaži",
-  "question.use_custom_button_first": '⚠️ Da biste poslali tekst, prvo dodirnite "Prilagođeni odgovor" za trenutno pitanje.',
+  "question.use_custom_button_first":
+    '⚠️ Da biste poslali tekst, prvo dodirnite "Prilagođeni odgovor" za trenutno pitanje.',
   "question.summary.title": "✅ Anketa završena!\n\n",
   "question.summary.question": "Pitanje {index}:\n{question}\n\n",
   "question.summary.answer": "Odgovor:\n{answer}\n\n",
@@ -278,25 +319,36 @@ export const bs = {
   "pinned.files.more": "  ... i {count} više",
 
   "tool.todo.overflow": "*({count} više zadataka)*",
-  "tool.file_header.write": "Piši Fajl/Putanja: {path}\n============================================================\n\n",
-  "tool.file_header.edit": "Uredi Fajl/Putanja: {path}\n============================================================\n\n",
+  "tool.file_header.write":
+    "Piši Fajl/Putanja: {path}\n============================================================\n\n",
+  "tool.file_header.edit":
+    "Uredi Fajl/Putanja: {path}\n============================================================\n\n",
 
   "runtime.wizard.ask_token": "Unesite Telegram bot token (dobijte ga od @BotFather).\n> ",
-  "runtime.wizard.ask_language": "Odaberite jezik interfejsa.\nUnesite broj jezika iz liste ili locale kod.\nPritisnite Enter za zadržavanje podrazumijevanog jezika: {defaultLocale}\n{options}\n> ",
+  "runtime.wizard.ask_language":
+    "Odaberite jezik interfejsa.\nUnesite broj jezika iz liste ili locale kod.\nPritisnite Enter za zadržavanje podrazumijevanog jezika: {defaultLocale}\n{options}\n> ",
   "runtime.wizard.language_invalid": "Unesite broj jezika iz liste ili podržani locale kod.\n",
   "runtime.wizard.language_selected": "Odabrani jezik: {language}\n",
   "runtime.wizard.token_required": "Token je obavezan. Molim vas pokušajte ponovo.\n",
-  "runtime.wizard.token_invalid": "Token izgleda nevažeće (očekivani format <id>:<secret>). Molim vas pokušajte ponovo.\n",
-  "runtime.wizard.ask_user_id": "Unesite vaš Telegram User ID (možete ga dobiti od @userinfobot).\n> ",
+  "runtime.wizard.token_invalid":
+    "Token izgleda nevažeće (očekivani format <id>:<secret>). Molim vas pokušajte ponovo.\n",
+  "runtime.wizard.ask_user_id":
+    "Unesite vaš Telegram User ID (možete ga dobiti od @userinfobot).\n> ",
   "runtime.wizard.user_id_invalid": "Unesite pozitivan cijeli broj (> 0).\n",
-  "runtime.wizard.ask_api_url": "Unesite OpenCode API URL (opcionalno).\nPritisnite Enter za korištenje podrazumijevanog: {defaultUrl}\n> ",
-  "runtime.wizard.ask_server_username": "Unesite OpenCode server username (opcionalno).\nPritisnite Enter za korištenje podrazumijevanog: {defaultUsername}\n> ",
-  "runtime.wizard.ask_server_password": "Unesite OpenCode server password (opcionalno).\nPritisnite Enter za zadržavanje praznog.\n> ",
-  "runtime.wizard.api_url_invalid": "Unesite važeći URL (http/https) ili pritisnite Enter za podrazumijevano.\n",
+  "runtime.wizard.ask_api_url":
+    "Unesite OpenCode API URL (opcionalno).\nPritisnite Enter za korištenje podrazumijevanog: {defaultUrl}\n> ",
+  "runtime.wizard.ask_server_username":
+    "Unesite OpenCode server username (opcionalno).\nPritisnite Enter za korištenje podrazumijevanog: {defaultUsername}\n> ",
+  "runtime.wizard.ask_server_password":
+    "Unesite OpenCode server password (opcionalno).\nPritisnite Enter za zadržavanje praznog.\n> ",
+  "runtime.wizard.api_url_invalid":
+    "Unesite važeći URL (http/https) ili pritisnite Enter za podrazumijevano.\n",
   "runtime.wizard.start": "OpenCode Telegram Bot postavljanje.\n",
   "runtime.wizard.saved": "Konfiguracija sačuvana:\n- {envPath}\n- {settingsPath}\n",
-  "runtime.wizard.not_configured_starting": "Aplikacija još nije konfigurisana. Pokretanje čarobnjaka...\n",
-  "runtime.wizard.tty_required": "Interaktivni čarobnjak zahtijeva TTY terminal. Pokrenite `opencode-telegram config` u interaktivnom shell-u.",
+  "runtime.wizard.not_configured_starting":
+    "Aplikacija još nije konfigurisana. Pokretanje čarobnjaka...\n",
+  "runtime.wizard.tty_required":
+    "Interaktivni čarobnjak zahtijeva TTY terminal. Pokrenite `opencode-telegram config` u interaktivnom shell-u.",
 
   "rename.no_session": "⚠️ Nema aktivne sesije. Kreirajte ili odaberite sesiju prvo.",
   "rename.prompt": "📝 Unesite novi naslov za sesiju:\n\nTrenutni: {title}",
@@ -306,19 +358,25 @@ export const bs = {
   "rename.cancelled": "❌ Preimenovanje otkazano.",
   "rename.inactive_callback": "Zahtjev za preimenovanje je neaktivan",
   "rename.inactive": "⚠️ Zahtjev za preimenovanje nije aktivan. Pokrenite /rename ponovo.",
-  "rename.blocked.expected_name": "⚠️ Pošaljite novi naziv sesije kao tekst ili dodirnite Otkaži u poruci za preimenovanje.",
-  "rename.blocked.command_not_allowed": "⚠️ Ova komanda nije dostupna dok preimenovanje čeka novi naziv.",
+  "rename.blocked.expected_name":
+    "⚠️ Pošaljite novi naziv sesije kao tekst ili dodirnite Otkaži u poruci za preimenovanje.",
+  "rename.blocked.command_not_allowed":
+    "⚠️ Ova komanda nije dostupna dok preimenovanje čeka novi naziv.",
   "rename.button.cancel": "❌ Otkaži",
 
-  "task.prompt.schedule": "⏰ Pošaljite raspored zadatka na prirodnom jeziku.\n\nPrimjeri:\n- svakih 5 minuta\n- svaki dan u 17:00\n- sutra u 12:00",
+  "task.prompt.schedule":
+    "⏰ Pošaljite raspored zadatka na prirodnom jeziku.\n\nPrimjeri:\n- svakih 5 minuta\n- svaki dan u 17:00\n- sutra u 12:00",
   "task.schedule_empty": "⚠️ Raspored ne može biti prazan.",
   "task.parse.in_progress": "⏳ Parsiranje rasporeda...",
-  "task.parse_error": "🔴 Neuspješno parsiranje rasporeda.\n\n{message}\n\nPošaljite raspored ponovo u jasnijem obliku.",
-  "task.schedule_preview": "✅ Raspored parsiran\n\nKako sam razumio: {summary}\n{cronLine}Vremenska zona: {timezone}\nTip: {kind}\nSljedeće pokretanje: {nextRunAt}",
+  "task.parse_error":
+    "🔴 Neuspješno parsiranje rasporeda.\n\n{message}\n\nPošaljite raspored ponovo u jasnijem obliku.",
+  "task.schedule_preview":
+    "✅ Raspored parsiran\n\nKako sam razumio: {summary}\n{cronLine}Vremenska zona: {timezone}\nTip: {kind}\nSljedeće pokretanje: {nextRunAt}",
   "task.schedule_preview.cron": "Cron: {cron}",
   "task.prompt.body": "📝 Sada pošaljite šta bot treba raditi po rasporedu.",
   "task.prompt_empty": "⚠️ Tekst zadatka ne može biti prazan.",
-  "task.created": "✅ Zakazani zadatak kreiran\n\nZadatak: {description}\nProjekat: {project}\nModel: {model}\nRaspored: {schedule}\n{cronLine}Sljedeće pokretanje: {nextRunAt}",
+  "task.created":
+    "✅ Zakazani zadatak kreiran\n\nZadatak: {description}\nProjekat: {project}\nModel: {model}\nRaspored: {schedule}\n{cronLine}Sljedeće pokretanje: {nextRunAt}",
   "task.created.cron": "Cron: {cron}",
   "task.button.retry_schedule": "🔁 Ponovo unesi raspored",
   "task.button.cancel": "❌ Otkaži",
@@ -327,10 +385,14 @@ export const bs = {
   "task.cancelled": "❌ Kreiranje zakazanog zadatka otkazano.",
   "task.inactive_callback": "Ovaj tok zakazanog zadatka je neaktivan",
   "task.inactive": "⚠️ Kreiranje zakazanog zadatka nije aktivan. Pokrenite /task ponovo.",
-  "task.blocked.expected_input": "⚠️ Završite trenutno postavljanje zakazanog zadatka slanjem teksta ili korištenjem dugmeta u poruci o rasporedu.",
-  "task.blocked.command_not_allowed": "⚠️ Ova komanda nije dostupna dok je kreiranje zakazanog zadatka aktivno.",
-  "task.limit_reached": "⚠️ Dostignuto je ograničenje zadataka ({limit}). Prvo obrišite postojeći zakazani zadatak.",
-  "task.schedule_too_frequent": "Ponavljajući raspored je prečest. Minimalni dozvoljeni interval je jednom svakih 5 minuta.",
+  "task.blocked.expected_input":
+    "⚠️ Završite trenutno postavljanje zakazanog zadatka slanjem teksta ili korištenjem dugmeta u poruci o rasporedu.",
+  "task.blocked.command_not_allowed":
+    "⚠️ Ova komanda nije dostupna dok je kreiranje zakazanog zadatka aktivno.",
+  "task.limit_reached":
+    "⚠️ Dostignuto je ograničenje zadataka ({limit}). Prvo obrišite postojeći zakazani zadatak.",
+  "task.schedule_too_frequent":
+    "Ponavljajući raspored je prečest. Minimalni dozvoljeni interval je jednom svakih 5 minuta.",
   "task.kind.cron": "ponavljajući",
   "task.kind.once": "jednokratno",
   "task.run.success": "⏰ Zakazani zadatak završen: {description}",
@@ -338,7 +400,8 @@ export const bs = {
 
   "tasklist.empty": "📭 Još nema zakazanih zadataka.",
   "tasklist.select": "Odaberite zakazani zadatak:",
-  "tasklist.details": "�️ Zakazani zadatak\n\nZadatak: {prompt}\nProjekat: {project}\nRaspored: {schedule}\n{cronLine}Vremenska zona: {timezone}\nSljedeće pokretanje: {nextRunAt}\nZadnje pokretanje: {lastRunAt}\nBroj pokretanja: {runCount}",
+  "tasklist.details":
+    "�️ Zakazani zadatak\n\nZadatak: {prompt}\nProjekat: {project}\nRaspored: {schedule}\n{cronLine}Vremenska zona: {timezone}\nSljedeće pokretanje: {nextRunAt}\nZadnje pokretanje: {lastRunAt}\nBroj pokretanja: {runCount}",
   "tasklist.details.cron": "Cron: {cron}",
   "tasklist.button.delete": "🗑 Obriši",
   "tasklist.button.cancel": "❌ Otkaži",
@@ -353,12 +416,14 @@ export const bs = {
   "commands.no_description": "Bez opisa",
   "commands.button.execute": "✅ Izvrši",
   "commands.button.cancel": "❌ Otkaži",
-  "commands.confirm": "Potvrdite izvršavanje komande {command}. Da biste je izvršili sa argumentima, pošaljite argumente kao poruku.",
+  "commands.confirm":
+    "Potvrdite izvršavanje komande {command}. Da biste je izvršili sa argumentima, pošaljite argumente kao poruku.",
   "commands.inactive_callback": "Ovaj meni komandi je neaktivan",
   "commands.cancelled_callback": "Otkazano",
   "commands.execute_callback": "Izvršavanje komande...",
   "commands.executing_prefix": "⚡ Izvršavanje komande:",
-  "commands.arguments_empty": "⚠️ Argumenti ne mogu biti prazni. Pošaljite tekst ili dodirnite Izvrši.",
+  "commands.arguments_empty":
+    "⚠️ Argumenti ne mogu biti prazni. Pošaljite tekst ili dodirnite Izvrši.",
   "commands.execute_error": "🔴 Neuspješno izvršavanje OpenCode komande.",
   "commands.select_page": "Odaberite OpenCode komandu (stranica {page}):",
   "commands.button.prev_page": "⬅️ Prethodna",
@@ -368,9 +433,12 @@ export const bs = {
 
   "cmd.description.rename": "Preimenuj trenutnu sesiju",
 
-  "cli.usage": "Upotreba:\n  opencode-telegram [start] [--mode sources|installed]\n  opencode-telegram status\n  opencode-telegram stop\n  opencode-telegram config\n\nNapomene:\n  - Bez komande podrazumijeva se `start`\n  - `--mode` je trenutno podržan samo za `start`",
-  "cli.placeholder.status": "Komanda `status` je trenutno placeholder. Prave provjere statusa će biti dodane u sloj servisa (Faza 5).",
-  "cli.placeholder.stop": "Komanda `stop` je trenutno placeholder. Pravo zaustavljanje pozadinskog procesa će biti dodano u sloj servisa (Faza 5).",
+  "cli.usage":
+    "Upotreba:\n  opencode-telegram [start] [--mode sources|installed]\n  opencode-telegram status\n  opencode-telegram stop\n  opencode-telegram config\n\nNapomene:\n  - Bez komande podrazumijeva se `start`\n  - `--mode` je trenutno podržan samo za `start`",
+  "cli.placeholder.status":
+    "Komanda `status` je trenutno placeholder. Prave provjere statusa će biti dodane u sloj servisa (Faza 5).",
+  "cli.placeholder.stop":
+    "Komanda `stop` je trenutno placeholder. Pravo zaustavljanje pozadinskog procesa će biti dodano u sloj servisa (Faza 5).",
   "cli.placeholder.unavailable": "Komanda nije dostupna.",
   "cli.error.prefix": "CLI greška: {message}",
   "cli.args.unknown_command": "Nepoznata komanda: {value}",
@@ -379,7 +447,8 @@ export const bs = {
   "cli.args.unknown_option": "Nepoznata opcija: {value}",
   "cli.args.mode_only_start": "Opcija --mode je podržana samo za start komandu",
 
-  "legacy.models.fetch_error": "🔴 Neuspješno učitavanje liste modela. Provjerite status servera sa /status.",
+  "legacy.models.fetch_error":
+    "🔴 Neuspješno učitavanje liste modela. Provjerite status servera sa /status.",
   "legacy.models.empty": "📋 Nema dostupnih modela. Konfigurišite pružaoce u OpenCode.",
   "legacy.models.header": "📋 Dostupni modeli:\n\n",
   "legacy.models.no_provider_models": "  ⚠️ Nema dostupnih modela\n",
@@ -393,7 +462,8 @@ export const bs = {
 
   "stt.recognizing": "🎤 Prepoznavanje audio zapisa...",
   "stt.recognized": "🎤 Prepoznato:\n{text}",
-  "stt.not_configured": "🎤 Prepoznavanje glasa nije konfigurisano.\n\nPostavite STT_API_URL i STT_API_KEY u .env da ga omogućite.",
+  "stt.not_configured":
+    "🎤 Prepoznavanje glasa nije konfigurisano.\n\nPostavite STT_API_URL i STT_API_KEY u .env da ga omogućite.",
   "stt.error": "🔴 Neuspješno prepoznavanje audio zapisa: {error}",
   "stt.empty_result": "🎤 Govor nije detektovan u audio poruci.",
 
@@ -437,11 +507,14 @@ export const bs = {
   "skills.cancelled_callback": "Cancelled",
   "skills.not_found": "Skill not found",
   "skills.activating": "⚡ Activating skill...",
-  "skills.activation_notice": "✅ Skill /{name} selected.\n\nThe skill will be used in the current session.",
-  "skills.no_session_warning": "⚠️ No active session.\n\nCreate or select a session first to use skills.",
+  "skills.activation_notice":
+    "✅ Skill /{name} selected.\n\nThe skill will be used in the current session.",
+  "skills.no_session_warning":
+    "⚠️ No active session.\n\nCreate or select a session first to use skills.",
 
   "mcps.no_project": "🏗 Project is not selected.\n\nFirst select a project with /projects.",
-  "mcps.empty": "📭 No MCP servers configured.\n\nMCP servers are defined in your OpenCode configuration.",
+  "mcps.empty":
+    "📭 No MCP servers configured.\n\nMCP servers are defined in your OpenCode configuration.",
   "mcps.error_load": "🔴 Failed to load MCP servers.\n\nCheck server status with /status.",
   "mcps.error_no_chat": "⚠️ Unable to identify chat.",
   "mcps.header": "🔌 MCP Servers ({total})\n\nManage your Model Context Protocol servers:",
@@ -476,7 +549,8 @@ export const bs = {
   "inline.cmd.feynman.description": "Teach a concept simply (Feynman technique)",
   "inline.cmd.devils_advocate.title": "😈 Devil's Advocate",
   "inline.cmd.devils_advocate.description": "Argue the opposing view",
-  "inline.cmd.error.query_too_short": "⚠️ Please provide more context (at least {min} characters after the command)",
+  "inline.cmd.error.query_too_short":
+    "⚠️ Please provide more context (at least {min} characters after the command)",
   "inline.cmd.error.resolution_failed": "⚠️ Failed to generate response. Please try again.",
   "inline.cmd.suggestion.usage": "Use: {prefix} [your question]",
   "inline.cmd.button.generate": "✅ Generate Answer",
@@ -497,4 +571,11 @@ export const bs = {
   "llm.guard.queue_failed":
     '<b>/{command}</b>: "{query}"\n\n⚠️ Neuspješno dodavanje u red. Pokušati ponovo?',
   "llm.guard.fallback_query": "Koji je vaš upit?",
+  "cmd.description.tts": "Uključi/isključi text-to-speech za odgovore",
+  "tts.enabled": "🔊 Text-to-speech uključen",
+  "tts.disabled": "🔇 Text-to-speech isključen",
+  "tts.error": "❌ TTS greška",
+  "tts.failed": "❌ Neuspješno generisanje audio odgovora.",
+  "tts.not_configured": "⚠️ TTS nije konfigurisan. Postavite TTS_API_URL i TTS_API_KEY.",
+  "tts.text_too_long": "⚠️ Tekst previše dugačak za TTS (maksimalno {max} karaktera)",
 } as const;

@@ -79,33 +79,8 @@ function getErrorMessage(error: unknown): string {
   return String(error);
 }
 
-function getRetryAfterMs(error: unknown): number | null {
-  const message = getErrorMessage(error);
-  if (!/\b429\b/.test(message)) {
-    return null;
-  }
-
-  const retryMatch = message.match(/retry after\s+(\d+)/i);
-  if (!retryMatch) {
-    return null;
-  }
-
-  const seconds = Number.parseInt(retryMatch[1], 10);
-  if (!Number.isFinite(seconds) || seconds <= 0) {
-    return null;
-  }
-
-  return seconds * 1000;
-}
-
 function createSignature(text: string, format: StreamingMessageFormat): string {
   return `${format}\n${text}`;
-}
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
 }
 
 export class ResponseStreamer {
@@ -310,44 +285,30 @@ export class ResponseStreamer {
       return false;
     }
 
-    while (!state.cancelled) {
-      const payload = state.latestPayload;
-      if (!payload) {
-        return state.telegramMessageIds.length > 0;
-      }
-
-      const targetSignatures = payload.parts.map((part) => createSignature(part, payload.format));
-      const unchanged =
-        targetSignatures.length === state.lastSentSignatures.length &&
-        targetSignatures.every((signature, index) => signature === state.lastSentSignatures[index]);
-
-      if (unchanged) {
-        return state.telegramMessageIds.length > 0;
-      }
-
-      try {
-        await this.syncMessages(state, payload, targetSignatures);
-        logger.debug(
-          `[ResponseStreamer] Stream synced: session=${state.sessionId}, message=${state.messageId}, reason=${reason}, parts=${payload.parts.length}`,
-        );
-        return true;
-      } catch (error) {
-        const retryAfterMs = getRetryAfterMs(error);
-        if (retryAfterMs === null) {
-          this.markStreamBroken(state, error, reason);
-          return false;
-        }
-
-        const delayMs = Math.max(this.throttleMs, retryAfterMs);
-        logger.warn(
-          `[ResponseStreamer] Stream sync rate-limited, retrying in ${delayMs}ms: session=${state.sessionId}, message=${state.messageId}, reason=${reason}`,
-          error,
-        );
-        await delay(delayMs);
-      }
+    const payload = state.latestPayload;
+    if (!payload) {
+      return state.telegramMessageIds.length > 0;
     }
 
-    return false;
+    const targetSignatures = payload.parts.map((part) => createSignature(part, payload.format));
+    const unchanged =
+      targetSignatures.length === state.lastSentSignatures.length &&
+      targetSignatures.every((signature, index) => signature === state.lastSentSignatures[index]);
+
+    if (unchanged) {
+      return state.telegramMessageIds.length > 0;
+    }
+
+    try {
+      await this.syncMessages(state, payload, targetSignatures);
+      logger.debug(
+        `[ResponseStreamer] Stream synced: session=${state.sessionId}, message=${state.messageId}, reason=${reason}, parts=${payload.parts.length}`,
+      );
+      return true;
+    } catch (error) {
+      this.markStreamBroken(state, error, reason);
+      return false;
+    }
   }
 
   private markStreamBroken(state: StreamState, error: unknown, reason: string): void {

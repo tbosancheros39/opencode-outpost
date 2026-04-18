@@ -93,19 +93,39 @@ function getOptionalMessageFormatModeEnvVar(
   return defaultValue;
 }
 
+function getCommaSeparatedIntsEnvVar(key: string): number[] {
+  const value = getEnvVar(key, false);
+  if (!value) {
+    return [];
+  }
+  return value
+    .split(",")
+    .map((s) => {
+      const trimmed = s.trim();
+      const parsed = Number.parseInt(trimmed, 10);
+      return Number.isNaN(parsed) ? NaN : parsed;
+    })
+    .filter((n) => !Number.isNaN(n));
+}
+
 export const config = {
   telegram: {
     token: getEnvVar("TELEGRAM_BOT_TOKEN"),
-    allowedUserId: parseInt(getEnvVar("TELEGRAM_ALLOWED_USER_ID"), 10),
+    allowedUserIds: getCommaSeparatedIntsEnvVar("TELEGRAM_ALLOWED_USER_IDS"),
+    allowedChatIds: getCommaSeparatedIntsEnvVar("TELEGRAM_ALLOWED_CHAT_IDS"),
     proxyUrl: getEnvVar("TELEGRAM_PROXY_URL", false),
   },
+  redis: {
+    url: getEnvVar("REDIS_URL", false) || "redis://localhost:6379",
+  },
+  superUserIds: new Set(getCommaSeparatedIntsEnvVar("TELEGRAM_SUPER_USER_IDS")),
   opencode: {
     apiUrl: getEnvVar("OPENCODE_API_URL", false) || "http://localhost:4096",
     username: getEnvVar("OPENCODE_SERVER_USERNAME", false) || "opencode",
     password: getEnvVar("OPENCODE_SERVER_PASSWORD", false),
     model: {
-      provider: getEnvVar("OPENCODE_MODEL_PROVIDER", true), // Required
-      modelId: getEnvVar("OPENCODE_MODEL_ID", true), // Required
+      provider: getEnvVar("OPENCODE_MODEL_PROVIDER", true),
+      modelId: getEnvVar("OPENCODE_MODEL_ID", true),
     },
   },
   server: {
@@ -123,8 +143,12 @@ export const config = {
     ),
     hideThinkingMessages: getOptionalBooleanEnvVar("HIDE_THINKING_MESSAGES", false),
     hideToolCallMessages: getOptionalBooleanEnvVar("HIDE_TOOL_CALL_MESSAGES", false),
+    hideToolFileMessages: getOptionalBooleanEnvVar("HIDE_TOOL_FILE_MESSAGES", false),
     responseStreaming: getOptionalBooleanEnvVar("RESPONSE_STREAMING", true),
     messageFormatMode: getOptionalMessageFormatModeEnvVar("MESSAGE_FORMAT_MODE", "markdown"),
+    maxConcurrentChats: getOptionalPositiveIntEnvVar("MAX_CONCURRENT_CHATS", 3),
+    rateLimitWindowMs: getOptionalPositiveIntEnvVar("RATE_LIMIT_WINDOW_MS", 60_000),
+    rateLimitMessages: getOptionalPositiveIntEnvVar("RATE_LIMIT_MESSAGES", 30),
   },
   files: {
     maxFileSizeKb: parseInt(getEnvVar("CODE_FILE_MAX_SIZE_KB", false) || "100", 10),
@@ -134,5 +158,20 @@ export const config = {
     apiKey: getEnvVar("STT_API_KEY", false),
     model: getEnvVar("STT_MODEL", false) || "whisper-large-v3-turbo",
     language: getEnvVar("STT_LANGUAGE", false),
+  },
+  tts: {
+    enabled: getOptionalBooleanEnvVar("TTS_ENABLED", false),
+    apiUrl: getEnvVar("TTS_API_URL", false),
+    apiKey: getEnvVar("TTS_API_KEY", false),
+    model: getEnvVar("TTS_MODEL", false) || "gpt-4o-mini-tts",
+    voice: getEnvVar("TTS_VOICE", false) || "alloy",
+  },
+  journal: {
+    pollIntervalSec: getOptionalPositiveIntEnvVar("JOURNAL_POLL_INTERVAL_SEC", 10),
+  },
+  watchdog: {
+    enabled: getOptionalBooleanEnvVar("OPENCODE_WATCHDOG_ENABLED", true),
+    intervalSec: getOptionalPositiveIntEnvVar("OPENCODE_WATCHDOG_INTERVAL_SEC", 30),
+    maxRestarts: getOptionalPositiveIntEnvVar("OPENCODE_WATCHDOG_MAX_RESTARTS", 3),
   },
 };

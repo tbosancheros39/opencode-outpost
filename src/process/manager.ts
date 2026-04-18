@@ -24,7 +24,7 @@ class ProcessManager implements ProcessManagerInterface {
    * Checks if the stored process is still alive
    */
   async initialize(): Promise<void> {
-    const savedProcess = getServerProcess();
+    const savedProcess = getServerProcess(0);
 
     if (!savedProcess) {
       logger.debug("[ProcessManager] No saved process found in settings");
@@ -47,7 +47,7 @@ class ProcessManager implements ProcessManagerInterface {
       };
     } else {
       logger.warn(`[ProcessManager] Process PID=${savedProcess.pid} is dead, cleaning up`);
-      clearServerProcess();
+      clearServerProcess(0);
     }
   }
 
@@ -66,12 +66,12 @@ class ProcessManager implements ProcessManagerInterface {
       logger.info("[ProcessManager] Starting OpenCode server process...");
 
       const isWindows = process.platform === "win32";
-      const command = isWindows ? "cmd.exe" : "opencode";
       const args = isWindows ? ["/c", "opencode", "serve"] : ["serve"];
+      const command = isWindows ? "cmd.exe" : "opencode";
 
       // Spawn the process
       // Windows: use cmd.exe to resolve npm-installed global commands
-      // Unix-like: run opencode directly
+      // Unix-like: run opencode directly (PATH must include /home/anini39/.opencode/bin)
       const childProcess = spawn(command, args, {
         detached: false,
         stdio: ["ignore", "pipe", "pipe"],
@@ -118,7 +118,7 @@ class ProcessManager implements ProcessManagerInterface {
       };
 
       // Persist to settings.json
-      setServerProcess({
+      setServerProcess(0, {
         pid: childProcess.pid,
         startTime: startTime.toISOString(),
       });
@@ -304,7 +304,7 @@ class ProcessManager implements ProcessManagerInterface {
       startTime: null,
       isRunning: false,
     };
-    clearServerProcess();
+    clearServerProcess(0);
   }
 }
 

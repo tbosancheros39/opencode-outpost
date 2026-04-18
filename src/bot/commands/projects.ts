@@ -1,7 +1,7 @@
 import { CommandContext, Context } from "grammy";
 import { InlineKeyboard } from "grammy";
 import { setCurrentProject, getCurrentProject } from "../../settings/manager.js";
-import { getProjects } from "../../project/manager.js";
+import { getProjects, getProjectsForUser } from "../../project/manager.js";
 import { syncSessionDirectoryCache } from "../../session/cache-manager.js";
 import { clearSession } from "../../session/manager.js";
 import { summaryAggregator } from "../../summary/aggregator.js";
@@ -113,9 +113,9 @@ function buildProjectsMenuText(
   })}`;
 }
 
-function buildProjectsKeyboard(projects: ProjectInfo[], page: number): InlineKeyboard {
+function buildProjectsKeyboard(projects: ProjectInfo[], page: number, chatId: number): InlineKeyboard {
   const keyboard = new InlineKeyboard();
-  const currentProject = getCurrentProject();
+  const currentProject = getCurrentProject(chatId);
   const pageSize = config.bot.projectsListLimit;
   const {
     page: normalizedPage,
@@ -155,8 +155,9 @@ function buildProjectsKeyboard(projects: ProjectInfo[], page: number): InlineKey
 function buildProjectsMenuView(
   projects: ProjectInfo[],
   page: number,
+  chatId: number,
 ): { text: string; keyboard: InlineKeyboard } {
-  const currentProject = getCurrentProject();
+  const currentProject = getCurrentProject(chatId);
   const pageSize = config.bot.projectsListLimit;
   const { page: normalizedPage, totalPages } = calculateProjectsPaginationRange(
     projects.length,
@@ -167,7 +168,7 @@ function buildProjectsMenuView(
 
   return {
     text: buildProjectsMenuText(currentProjectName, normalizedPage, totalPages),
-    keyboard: buildProjectsKeyboard(projects, normalizedPage),
+    keyboard: buildProjectsKeyboard(projects, normalizedPage, chatId),
   };
 }
 
@@ -179,14 +180,16 @@ export async function projectsCommand(ctx: CommandContext<Context>) {
     }
 
     await syncSessionDirectoryCache();
-    const projects = await getProjects();
+    const userId = ctx.from?.id;
+    const projects = userId != null ? await getProjectsForUser(userId) : await getProjects();
 
     if (projects.length === 0) {
       await ctx.reply(t("projects.empty"));
       return;
     }
 
-    const { text, keyboard } = buildProjectsMenuView(projects, 0);
+    const chatId = ctx.chat?.id ?? 0;
+    const { text, keyboard } = buildProjectsMenuView(projects, 0, chatId);
 
     await replyWithInlineMenu(ctx, {
       menuKind: "project",
@@ -205,6 +208,9 @@ export async function handleProjectSelect(ctx: Context): Promise<boolean> {
     return false;
   }
 
+  const chatId = ctx.chat?.id ?? 0;
+  const userId = ctx.from?.id;
+
   if (isForegroundBusy()) {
     await replyBusyBlocked(ctx);
     return true;
@@ -218,14 +224,15 @@ export async function handleProjectSelect(ctx: Context): Promise<boolean> {
     }
 
     try {
-      const projects = await getProjects();
+      const projects =
+        userId != null ? await getProjectsForUser(userId) : await getProjects();
       if (projects.length === 0) {
         await ctx.answerCallbackQuery();
         await ctx.reply(t("projects.empty"));
         return true;
       }
 
-      const { text, keyboard } = buildProjectsMenuView(projects, page);
+      const { text, keyboard } = buildProjectsMenuView(projects, page, chatId);
       await ctx.answerCallbackQuery();
       await ctx.editMessageText(text, {
         reply_markup: appendInlineMenuCancelButton(keyboard, "project"),
@@ -250,7 +257,8 @@ export async function handleProjectSelect(ctx: Context): Promise<boolean> {
   }
 
   try {
-    const projects = await getProjects();
+    const projects =
+      userId != null ? await getProjectsForUser(userId) : await getProjects();
     const selectedProject = projects.find((p) => p.id === projectId);
 
     if (!selectedProject) {
@@ -261,33 +269,34 @@ export async function handleProjectSelect(ctx: Context): Promise<boolean> {
       `[Bot] Project selected: ${selectedProject.name || selectedProject.worktree} (id: ${projectId})`,
     );
 
-    setCurrentProject(selectedProject);
-    clearSession();
+    setCurrentProject(chatId, selectedProject);
+    clearSession(chatId);
     summaryAggregator.clear();
-    clearAllInteractionState("project_switched");
+    clearAllInteractionState(chatId, "project_switched");
 
     // Clear pinned message when switching projects
-    try {
-      await pinnedMessageManager.clear();
-    } catch (err) {
-      logger.error("[Bot] Error clearing pinned message:", err);
-    }
-
-    // Initialize keyboard manager if not already
     if (ctx.chat) {
+      try {
+        await pinnedMessageManager.clear(ctx.chat.id);
+      } catch (err) {
+        logger.error("[Bot] Error clearing pinned message:", err);
+      }
+
+      // Initialize keyboard manager if not already
       keyboardManager.initialize(ctx.api, ctx.chat.id);
+
+      // Refresh context limit for current model
+      await pinnedMessageManager.refreshContextLimit(ctx.chat.id);
+      const contextLimit = pinnedMessageManager.getContextLimit(ctx.chat.id);
+
+      // Reset context to 0 (no session selected) with current model's limit
+      keyboardManager.updateContext(ctx.chat.id, 0, contextLimit);
     }
-
-    // Refresh context limit for current model
-    await pinnedMessageManager.refreshContextLimit();
-    const contextLimit = pinnedMessageManager.getContextLimit();
-
-    // Reset context to 0 (no session selected) with current model's limit
-    keyboardManager.updateContext(0, contextLimit);
 
     // Get current state for keyboard (with context = 0)
-    const currentAgent = getStoredAgent();
-    const currentModel = getStoredModel();
+    const currentAgent = getStoredAgent(chatId);
+    const currentModel = getStoredModel(chatId);
+    const contextLimit = pinnedMessageManager.getContextLimit(chatId);
     const contextInfo = { tokensUsed: 0, tokensLimit: contextLimit };
     const variantName = formatVariantForButton(currentModel.variant || "default");
     const keyboard = createMainKeyboard(currentAgent, currentModel, contextInfo, variantName);
@@ -301,7 +310,7 @@ export async function handleProjectSelect(ctx: Context): Promise<boolean> {
 
     await ctx.deleteMessage();
   } catch (error) {
-    clearAllInteractionState("project_select_error");
+    clearAllInteractionState(chatId, "project_select_error");
     logger.error("[Bot] Error selecting project:", error);
     await ctx.answerCallbackQuery();
     await ctx.reply(t("projects.select_error"));

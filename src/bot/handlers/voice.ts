@@ -180,6 +180,8 @@ export async function handleVoiceMessage(ctx: Context, deps: VoiceMessageDeps): 
     return;
   }
 
+  const chatId = ctx.chat?.id ?? 0;
+
   // Send "recognizing..." status message (will be edited later)
   const statusMessage = await ctx.reply(t("stt.recognizing"));
 
@@ -188,7 +190,7 @@ export async function handleVoiceMessage(ctx: Context, deps: VoiceMessageDeps): 
     const fileData = await downloadFile(ctx, fileId);
     if (!fileData) {
       await ctx.api.editMessageText(
-        ctx.chat!.id,
+        chatId,
         statusMessage.message_id,
         t("stt.error", { error: "download failed" }),
       );
@@ -200,7 +202,7 @@ export async function handleVoiceMessage(ctx: Context, deps: VoiceMessageDeps): 
 
     const recognizedText = result.text.trim();
     if (!recognizedText) {
-      await ctx.api.editMessageText(ctx.chat!.id, statusMessage.message_id, t("stt.empty_result"));
+      await ctx.api.editMessageText(chatId, statusMessage.message_id, t("stt.empty_result"));
       return;
     }
 
@@ -209,7 +211,7 @@ export async function handleVoiceMessage(ctx: Context, deps: VoiceMessageDeps): 
     // we still send the recognized text to OpenCode as a prompt.
     try {
       await ctx.api.editMessageText(
-        ctx.chat!.id,
+        chatId,
         statusMessage.message_id,
         t("stt.recognized", { text: recognizedText }),
       );
@@ -227,7 +229,7 @@ export async function handleVoiceMessage(ctx: Context, deps: VoiceMessageDeps): 
 
     try {
       await ctx.api.editMessageText(
-        ctx.chat!.id,
+        chatId,
         statusMessage.message_id,
         t("stt.error", { error: errorMessage }),
       );

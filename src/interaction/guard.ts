@@ -128,12 +128,13 @@ function isAllowedTaskCallback(ctx: Context, state: InteractionState): boolean {
 }
 
 export function resolveInteractionGuardDecision(ctx: Context): GuardDecision {
-  const state = interactionManager.getSnapshot();
+  const chatId = ctx.chat?.id ?? 0;
+  const state = interactionManager.getSnapshot(chatId);
   const { inputType, command } = classifyIncomingInput(ctx);
   const isBusy = foregroundSessionState.isBusy();
 
-  if (state && interactionManager.isExpired()) {
-    interactionManager.clear("expired");
+  if (state && interactionManager.isExpired(chatId)) {
+    interactionManager.clear(chatId, "expired");
     return createBlockDecision(inputType, state, "expired", command, isBusy);
   }
 

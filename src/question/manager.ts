@@ -2,67 +2,76 @@ import { Question, QuestionState, QuestionAnswer } from "./types.js";
 import { logger } from "../utils/logger.js";
 
 class QuestionManager {
-  private state: QuestionState = {
-    questions: [],
-    currentIndex: 0,
-    selectedOptions: new Map(),
-    customAnswers: new Map(),
-    customInputQuestionIndex: null,
-    activeMessageId: null,
-    messageIds: [],
-    isActive: false,
-    requestID: null,
-  };
+  private states: Map<number, QuestionState> = new Map();
 
-  startQuestions(questions: Question[], requestID: string): void {
+  private getState(chatId: number): QuestionState {
+    let state = this.states.get(chatId);
+    if (!state) {
+      state = {
+        questions: [],
+        currentIndex: 0,
+        selectedOptions: new Map(),
+        customAnswers: new Map(),
+        customInputQuestionIndex: null,
+        activeMessageId: null,
+        messageIds: [],
+        isActive: false,
+        requestID: null,
+      };
+      this.states.set(chatId, state);
+    }
+    return state;
+  }
+
+  startQuestions(chatId: number, questions: Question[], requestID: string): void {
+    const state = this.getState(chatId);
     logger.debug(
-      `[QuestionManager] startQuestions called: isActive=${this.state.isActive}, currentQuestions=${this.state.questions.length}, newQuestions=${questions.length}, requestID=${requestID}`,
+      `[QuestionManager] startQuestions called: isActive=${state.isActive}, currentQuestions=${state.questions.length}, newQuestions=${questions.length}, requestID=${requestID}`,
     );
 
-    if (this.state.isActive) {
+    if (state.isActive) {
       logger.info(`[QuestionManager] Poll already active! Forcing reset before starting new poll.`);
-      // Force-reset the previous poll before starting a new one
-      this.clear();
+      this.clear(chatId);
     }
 
     logger.info(
       `[QuestionManager] Starting new poll with ${questions.length} questions, requestID=${requestID}`,
     );
-    this.state = {
-      questions,
-      currentIndex: 0,
-      selectedOptions: new Map(),
-      customAnswers: new Map(),
-      customInputQuestionIndex: null,
-      activeMessageId: null,
-      messageIds: [],
-      isActive: true,
-      requestID,
-    };
+    state.questions = questions;
+    state.currentIndex = 0;
+    state.selectedOptions = new Map();
+    state.customAnswers = new Map();
+    state.customInputQuestionIndex = null;
+    state.activeMessageId = null;
+    state.messageIds = [];
+    state.isActive = true;
+    state.requestID = requestID;
   }
 
-  getRequestID(): string | null {
-    return this.state.requestID;
+  getRequestID(chatId: number): string | null {
+    return this.getState(chatId).requestID;
   }
 
-  getCurrentQuestion(): Question | null {
-    if (this.state.currentIndex >= this.state.questions.length) {
+  getCurrentQuestion(chatId: number): Question | null {
+    const state = this.getState(chatId);
+    if (state.currentIndex >= state.questions.length) {
       return null;
     }
-    return this.state.questions[this.state.currentIndex];
+    return state.questions[state.currentIndex];
   }
 
-  selectOption(questionIndex: number, optionIndex: number): void {
-    if (!this.state.isActive) {
+  selectOption(chatId: number, questionIndex: number, optionIndex: number): void {
+    const state = this.getState(chatId);
+    if (!state.isActive) {
       return;
     }
 
-    const question = this.state.questions[questionIndex];
+    const question = state.questions[questionIndex];
     if (!question) {
       return;
     }
 
-    const selected = this.state.selectedOptions.get(questionIndex) || new Set();
+    const selected = state.selectedOptions.get(questionIndex) || new Set();
 
     if (question.multiple) {
       if (selected.has(optionIndex)) {
@@ -75,24 +84,25 @@ class QuestionManager {
       selected.add(optionIndex);
     }
 
-    this.state.selectedOptions.set(questionIndex, selected);
+    state.selectedOptions.set(questionIndex, selected);
 
     logger.debug(
       `[QuestionManager] Selected options for question ${questionIndex}: ${Array.from(selected).join(", ")}`,
     );
   }
 
-  getSelectedOptions(questionIndex: number): Set<number> {
-    return this.state.selectedOptions.get(questionIndex) || new Set();
+  getSelectedOptions(chatId: number, questionIndex: number): Set<number> {
+    return this.getState(chatId).selectedOptions.get(questionIndex) || new Set();
   }
 
-  getSelectedAnswer(questionIndex: number): string {
-    const question = this.state.questions[questionIndex];
+  getSelectedAnswer(chatId: number, questionIndex: number): string {
+    const state = this.getState(chatId);
+    const question = state.questions[questionIndex];
     if (!question) {
       return "";
     }
 
-    const selected = this.state.selectedOptions.get(questionIndex) || new Set();
+    const selected = state.selectedOptions.get(questionIndex) || new Set();
     const options = Array.from(selected)
       .map((idx) => question.options[idx])
       .filter((opt) => opt)
@@ -101,118 +111,123 @@ class QuestionManager {
     return options.join("\n");
   }
 
-  setCustomAnswer(questionIndex: number, answer: string): void {
+  setCustomAnswer(chatId: number, questionIndex: number, answer: string): void {
     logger.debug(
       `[QuestionManager] Custom answer received for question ${questionIndex}: ${answer}`,
     );
-    this.state.customAnswers.set(questionIndex, answer);
+    this.getState(chatId).customAnswers.set(questionIndex, answer);
   }
 
-  getCustomAnswer(questionIndex: number): string | undefined {
-    return this.state.customAnswers.get(questionIndex);
+  getCustomAnswer(chatId: number, questionIndex: number): string | undefined {
+    return this.getState(chatId).customAnswers.get(questionIndex);
   }
 
-  hasCustomAnswer(questionIndex: number): boolean {
-    return this.state.customAnswers.has(questionIndex);
+  hasCustomAnswer(chatId: number, questionIndex: number): boolean {
+    return this.getState(chatId).customAnswers.has(questionIndex);
   }
 
-  nextQuestion(): void {
-    this.state.currentIndex++;
-    this.state.customInputQuestionIndex = null;
-    this.state.activeMessageId = null;
+  nextQuestion(chatId: number): void {
+    const state = this.getState(chatId);
+    state.currentIndex++;
+    state.customInputQuestionIndex = null;
+    state.activeMessageId = null;
 
     logger.debug(
-      `[QuestionManager] Moving to next question: ${this.state.currentIndex}/${this.state.questions.length}`,
+      `[QuestionManager] Moving to next question: ${state.currentIndex}/${state.questions.length}`,
     );
   }
 
-  hasNextQuestion(): boolean {
-    return this.state.currentIndex < this.state.questions.length;
+  hasNextQuestion(chatId: number): boolean {
+    return this.getState(chatId).currentIndex < this.getState(chatId).questions.length;
   }
 
-  getCurrentIndex(): number {
-    return this.state.currentIndex;
+  getCurrentIndex(chatId: number): number {
+    return this.getState(chatId).currentIndex;
   }
 
-  getTotalQuestions(): number {
-    return this.state.questions.length;
+  getTotalQuestions(chatId: number): number {
+    return this.getState(chatId).questions.length;
   }
 
-  addMessageId(messageId: number): void {
-    this.state.messageIds.push(messageId);
+  addMessageId(chatId: number, messageId: number): void {
+    this.getState(chatId).messageIds.push(messageId);
   }
 
-  setActiveMessageId(messageId: number): void {
-    this.state.activeMessageId = messageId;
+  setActiveMessageId(chatId: number, messageId: number): void {
+    this.getState(chatId).activeMessageId = messageId;
   }
 
-  getActiveMessageId(): number | null {
-    return this.state.activeMessageId;
+  getActiveMessageId(chatId: number): number | null {
+    return this.getState(chatId).activeMessageId;
   }
 
-  isActiveMessage(messageId: number | null): boolean {
+  isActiveMessage(chatId: number, messageId: number | null): boolean {
+    const state = this.getState(chatId);
     return (
-      this.state.isActive &&
-      this.state.activeMessageId !== null &&
-      messageId === this.state.activeMessageId
+      state.isActive &&
+      state.activeMessageId !== null &&
+      messageId === state.activeMessageId
     );
   }
 
-  startCustomInput(questionIndex: number): void {
-    if (!this.state.isActive || !this.state.questions[questionIndex]) {
+  startCustomInput(chatId: number, questionIndex: number): void {
+    const state = this.getState(chatId);
+    if (!state.isActive || !state.questions[questionIndex]) {
       return;
     }
 
-    this.state.customInputQuestionIndex = questionIndex;
+    state.customInputQuestionIndex = questionIndex;
   }
 
-  clearCustomInput(): void {
-    this.state.customInputQuestionIndex = null;
+  clearCustomInput(chatId: number): void {
+    this.getState(chatId).customInputQuestionIndex = null;
   }
 
-  isWaitingForCustomInput(questionIndex: number): boolean {
-    return this.state.customInputQuestionIndex === questionIndex;
+  isWaitingForCustomInput(chatId: number, questionIndex: number): boolean {
+    return this.getState(chatId).customInputQuestionIndex === questionIndex;
   }
 
-  getMessageIds(): number[] {
-    return [...this.state.messageIds];
+  getMessageIds(chatId: number): number[] {
+    return [...this.getState(chatId).messageIds];
   }
 
-  isActive(): boolean {
+  isActive(chatId: number): boolean {
+    const state = this.getState(chatId);
     logger.debug(
-      `[QuestionManager] isActive check: ${this.state.isActive}, questions=${this.state.questions.length}, currentIndex=${this.state.currentIndex}`,
+      `[QuestionManager] isActive check: ${state.isActive}, questions=${state.questions.length}, currentIndex=${state.currentIndex}`,
     );
-    return this.state.isActive;
+    return state.isActive;
   }
 
-  cancel(): void {
+  cancel(chatId: number): void {
     logger.info("[QuestionManager] Poll cancelled");
-    this.state.isActive = false;
-    this.state.customInputQuestionIndex = null;
-    this.state.activeMessageId = null;
+    const state = this.getState(chatId);
+    state.isActive = false;
+    state.customInputQuestionIndex = null;
+    state.activeMessageId = null;
   }
 
-  clear(): void {
-    this.state = {
-      questions: [],
-      currentIndex: 0,
-      selectedOptions: new Map(),
-      customAnswers: new Map(),
-      customInputQuestionIndex: null,
-      activeMessageId: null,
-      messageIds: [],
-      isActive: false,
-      requestID: null,
-    };
+  clear(chatId: number): void {
+    const state = this.getState(chatId);
+    state.questions = [];
+    state.currentIndex = 0;
+    state.selectedOptions = new Map();
+    state.customAnswers = new Map();
+    state.customInputQuestionIndex = null;
+    state.activeMessageId = null;
+    state.messageIds = [];
+    state.isActive = false;
+    state.requestID = null;
   }
 
-  getAllAnswers(): QuestionAnswer[] {
+  getAllAnswers(chatId: number): QuestionAnswer[] {
+    const state = this.getState(chatId);
     const answers: QuestionAnswer[] = [];
 
-    for (let i = 0; i < this.state.questions.length; i++) {
-      const question = this.state.questions[i];
-      const selectedAnswer = this.getSelectedAnswer(i);
-      const customAnswer = this.getCustomAnswer(i);
+    for (let i = 0; i < state.questions.length; i++) {
+      const question = state.questions[i];
+      const selectedAnswer = this.getSelectedAnswer(chatId, i);
+      const customAnswer = this.getCustomAnswer(chatId, i);
 
       const finalAnswer = customAnswer || selectedAnswer;
 

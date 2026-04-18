@@ -11,7 +11,6 @@ import { PermissionRequest, PermissionReply } from "../../permission/types.js";
 import type { I18nKey } from "../../i18n/en.js";
 import { t } from "../../i18n/index.js";
 
-// Permission type display names
 const PERMISSION_NAME_KEYS: Record<string, I18nKey> = {
   bash: "permission.name.bash",
   edit: "permission.name.edit",
@@ -27,7 +26,6 @@ const PERMISSION_NAME_KEYS: Record<string, I18nKey> = {
   external_directory: "permission.name.external_directory",
 };
 
-// Permission type emojis
 const PERMISSION_EMOJIS: Record<string, string> = {
   bash: "⚡",
   edit: "✏️",
@@ -53,18 +51,21 @@ function getCallbackMessageId(ctx: Context): number | null {
   return typeof messageId === "number" ? messageId : null;
 }
 
-function clearPermissionInteraction(reason: string): void {
-  const state = interactionManager.getSnapshot();
+function clearPermissionInteraction(chatId: number, reason: string): void {
+  const state = interactionManager.getSnapshot(chatId);
   if (state?.kind === "permission") {
-    interactionManager.clear(reason);
+    interactionManager.clear(chatId, reason);
   }
 }
 
-function syncPermissionInteractionState(metadata: Record<string, unknown> = {}): void {
-  const pendingCount = permissionManager.getPendingCount();
+function syncPermissionInteractionState(
+  chatId: number,
+  metadata: Record<string, unknown> = {},
+): void {
+  const pendingCount = permissionManager.getPendingCount(chatId);
 
   if (pendingCount === 0) {
-    clearPermissionInteraction("permission_no_pending_requests");
+    clearPermissionInteraction(chatId, "permission_no_pending_requests");
     return;
   }
 
@@ -73,16 +74,16 @@ function syncPermissionInteractionState(metadata: Record<string, unknown> = {}):
     ...metadata,
   };
 
-  const state = interactionManager.getSnapshot();
+  const state = interactionManager.getSnapshot(chatId);
   if (state?.kind === "permission") {
-    interactionManager.transition({
+    interactionManager.transition(chatId, {
       expectedInput: "callback",
       metadata: nextMetadata,
     });
     return;
   }
 
-  interactionManager.start({
+  interactionManager.start(chatId, {
     kind: "permission",
     expectedInput: "callback",
     metadata: nextMetadata,
@@ -104,21 +105,24 @@ export async function handlePermissionCallback(ctx: Context): Promise<boolean> {
     return false;
   }
 
+  const chatId = ctx.chat?.id;
+  if (!chatId) return false;
+
   logger.debug(`[PermissionHandler] Received callback: ${data}`);
 
-  if (!permissionManager.isActive()) {
-    clearPermissionInteraction("permission_inactive_callback");
+  if (!permissionManager.isActive(chatId)) {
+    clearPermissionInteraction(chatId, "permission_inactive_callback");
     await ctx.answerCallbackQuery({ text: t("permission.inactive_callback"), show_alert: true });
     return true;
   }
 
   const callbackMessageId = getCallbackMessageId(ctx);
-  if (!permissionManager.isActiveMessage(callbackMessageId)) {
+  if (!permissionManager.isActiveMessage(chatId, callbackMessageId)) {
     await ctx.answerCallbackQuery({ text: t("permission.inactive_callback"), show_alert: true });
     return true;
   }
 
-  const requestID = permissionManager.getRequestID(callbackMessageId);
+  const requestID = permissionManager.getRequestID(chatId, callbackMessageId);
   if (!requestID) {
     await ctx.answerCallbackQuery({ text: t("permission.inactive_callback"), show_alert: true });
     return true;
@@ -157,14 +161,16 @@ async function handlePermissionReply(
   requestID: string,
   callbackMessageId: number | null,
 ): Promise<void> {
-  const currentProject = getCurrentProject();
-  const currentSession = getCurrentSession();
   const chatId = ctx.chat?.id;
+  if (!chatId) return;
+
+  const currentProject = getCurrentProject(chatId);
+  const currentSession = getCurrentSession(chatId);
   const directory = currentSession?.directory ?? currentProject?.worktree;
 
-  if (!directory || !chatId) {
-    permissionManager.clear();
-    clearPermissionInteraction("permission_invalid_runtime_context");
+  if (!directory) {
+    permissionManager.clear(chatId);
+    clearPermissionInteraction(chatId, "permission_invalid_runtime_context");
 
     await ctx.answerCallbackQuery({
       text: t("permission.no_active_request_callback"),
@@ -173,7 +179,6 @@ async function handlePermissionReply(
     return;
   }
 
-  // Reply labels for user feedback
   const replyLabels: Record<PermissionReply, string> = {
     once: t("permission.reply.once"),
     always: t("permission.reply.always"),
@@ -182,15 +187,12 @@ async function handlePermissionReply(
 
   await ctx.answerCallbackQuery({ text: replyLabels[reply] });
 
-  // Delete the permission message
   await ctx.deleteMessage().catch(() => {});
 
-  // Stop typing indicator since we're responding
   summaryAggregator.stopTypingIndicator();
 
   logger.info(`[PermissionHandler] Sending permission reply: ${reply}, requestID=${requestID}`);
 
-  // CRITICAL: Fire-and-forget! Do not block the handler
   safeBackgroundTask({
     taskName: "permission.reply",
     task: () =>
@@ -212,14 +214,14 @@ async function handlePermissionReply(
     },
   });
 
-  permissionManager.removeByMessageId(callbackMessageId);
+  permissionManager.removeByMessageId(chatId, callbackMessageId);
 
-  if (!permissionManager.isActive()) {
-    clearPermissionInteraction("permission_replied");
+  if (!permissionManager.isActive(chatId)) {
+    clearPermissionInteraction(chatId, "permission_replied");
     return;
   }
 
-  syncPermissionInteractionState({
+  syncPermissionInteractionState(chatId, {
     lastRepliedRequestID: requestID,
   });
 }
@@ -243,9 +245,9 @@ export async function showPermissionRequest(
     });
 
     logger.debug(`[PermissionHandler] Message sent, messageId=${message.message_id}`);
-    permissionManager.startPermission(request, message.message_id);
+    permissionManager.startPermission(chatId, request, message.message_id);
 
-    syncPermissionInteractionState({
+    syncPermissionInteractionState(chatId, {
       requestID: request.id,
       messageId: message.message_id,
     });
@@ -267,7 +269,6 @@ function formatPermissionText(request: PermissionRequest): string {
 
   let text = t("permission.header", { emoji, name });
 
-  // Show patterns (commands/files)
   if (request.patterns.length > 0) {
     request.patterns.forEach((pattern) => {
       text += `• ${pattern}\n`;

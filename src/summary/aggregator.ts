@@ -7,6 +7,8 @@ import type { PermissionRequest } from "../permission/types.js";
 import type { FileChange } from "../pinned/types.js";
 import { logger } from "../utils/logger.js";
 import { getCurrentProject } from "../settings/manager.js";
+import type { SubagentActivity } from "./subagent-formatter.js";
+import { formatSubagentList } from "./subagent-formatter.js";
 
 export interface SummaryInfo {
   sessionId: string;
@@ -97,6 +99,8 @@ type FileChangeCallback = (change: FileChange) => void;
 
 type ClearedCallback = () => void;
 
+type ThinkingUpdateCallback = (text: string) => void;
+
 interface PreparedToolFileContext {
   fileData: CodeFileData | null;
   fileChange: FileChange | null;
@@ -158,6 +162,8 @@ class SummaryAggregator {
   private onSessionDiffCallback: SessionDiffCallback | null = null;
   private onFileChangeCallback: FileChangeCallback | null = null;
   private onClearedCallback: ClearedCallback | null = null;
+  private onThinkingUpdateCallback: ThinkingUpdateCallback | null = null;
+  private subagents = new Map<string, SubagentActivity>();
   private processedToolStates: Set<string> = new Set();
   private thinkingFiredForMessages: Set<string> = new Set();
   private knownTextPartIds: Map<string, Set<string>> = new Map();
@@ -234,6 +240,47 @@ class SummaryAggregator {
 
   setOnCleared(callback: ClearedCallback): void {
     this.onClearedCallback = callback;
+  }
+
+  setOnThinkingUpdate(callback: ThinkingUpdateCallback): void {
+    this.onThinkingUpdateCallback = callback;
+  }
+
+  onSubagentStart(agentId: string, task: string | null): void {
+    this.subagents.set(agentId, { agentId, task, startedAt: Date.now() });
+    this.emitThinkingUpdate();
+  }
+
+  onSubagentEnd(agentId: string): void {
+    this.subagents.delete(agentId);
+    this.emitThinkingUpdate();
+  }
+
+  private emitThinkingUpdate(): void {
+    if (!this.onThinkingUpdateCallback) {
+      return;
+    }
+
+    const activities = [...this.subagents.values()];
+    const text = formatSubagentList(activities);
+    if (!text) {
+      return;
+    }
+
+    try {
+      this.onThinkingUpdateCallback(text);
+    } catch (err) {
+      logger.error("[Aggregator] Error in thinking update callback:", err);
+    }
+  }
+
+  // Getter methods for callbacks (allow chaining)
+  getOnComplete(): MessageCompleteCallback | null {
+    return this.onCompleteCallback;
+  }
+
+  getOnSessionError(): SessionErrorCallback | null {
+    return this.onSessionErrorCallback;
   }
 
   setTypingIndicatorEnabled(enabled: boolean): void {
@@ -355,6 +402,7 @@ class SummaryAggregator {
     this.knownTextPartIds.clear();
     this.processedToolStates.clear();
     this.thinkingFiredForMessages.clear();
+    this.subagents.clear();
     this.messageCount = 0;
     this.lastUpdated = 0;
 
@@ -459,6 +507,8 @@ class SummaryAggregator {
         if (this.textMessageStates.size === 0) {
           logger.debug("[Aggregator] No more active messages, stopping typing indicator");
           this.stopTypingIndicator();
+          this.subagents.clear();
+          this.emitThinkingUpdate();
         }
       }
 
@@ -509,6 +559,22 @@ class SummaryAggregator {
           }
         });
       }
+    } else if (part.type === "subtask") {
+      const subtask = part as {
+        id?: string;
+        agent?: string;
+        description?: string;
+        prompt?: string;
+      };
+      const agentName = subtask.agent || "unknown";
+      const taskDesc = subtask.description || subtask.prompt || null;
+      const subtaskId = subtask.id || agentName;
+
+      logger.debug(
+        `[Aggregator] Subtask part: id=${subtaskId}, agent=${agentName}, description=${taskDesc ?? "N/A"}`,
+      );
+
+      this.onSubagentStart(subtaskId, taskDesc);
     } else if (part.type === "text" && "text" in part && part.text) {
       const wasUpdated =
         messageInfo && messageInfo.role === "assistant"
@@ -943,7 +1009,9 @@ class SummaryAggregator {
 
     logger.info(`[Aggregator] Session became idle: ${sessionID}`);
 
-    // Stop typing indicator when session goes idle
+    this.subagents.clear();
+    this.emitThinkingUpdate();
+
     this.stopTypingIndicator();
   }
 
@@ -964,7 +1032,7 @@ class SummaryAggregator {
     // Reload context from history after compaction
     if (this.onSessionCompactedCallback) {
       setImmediate(() => {
-        const project = getCurrentProject();
+        const project = this.chatId ? getCurrentProject(this.chatId) : undefined;
         if (project) {
           this.onSessionCompactedCallback!(sessionID, project.worktree);
         }

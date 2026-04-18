@@ -39,18 +39,19 @@ export async function statusCommand(ctx: CommandContext<Context>) {
     }
 
     // Add agent mode information
-    const currentAgent = await fetchCurrentAgent();
+    const chatId = ctx.chat?.id ?? 0;
+    const currentAgent = await fetchCurrentAgent(chatId);
     const agentDisplay = currentAgent
       ? getAgentDisplayName(currentAgent)
       : t("status.agent_not_set");
     message += `${t("status.line.mode", { mode: agentDisplay })}\n`;
 
     // Add model information
-    const currentModel = fetchCurrentModel();
+    const currentModel = fetchCurrentModel(chatId);
     const modelDisplay = `🤖 ${currentModel.providerID}/${currentModel.modelID}`;
     message += `${t("status.line.model", { model: modelDisplay })}\n`;
 
-    const currentProject = getCurrentProject();
+    const currentProject = getCurrentProject(chatId);
     if (currentProject) {
       const projectName = currentProject.name || currentProject.worktree;
       message += `\n${t("status.project_selected", { project: projectName })}\n`;
@@ -59,7 +60,7 @@ export async function statusCommand(ctx: CommandContext<Context>) {
       message += t("status.project_hint");
     }
 
-    const currentSession = getCurrentSession();
+    const currentSession = getCurrentSession(chatId);
     if (currentSession) {
       message += `\n${t("status.session_selected", { title: currentSession.title })}\n`;
     } else {
@@ -68,21 +69,21 @@ export async function statusCommand(ctx: CommandContext<Context>) {
     }
 
     if (ctx.chat) {
-      if (!pinnedMessageManager.isInitialized()) {
+      if (!pinnedMessageManager.isInitialized(ctx.chat.id)) {
         pinnedMessageManager.initialize(ctx.api, ctx.chat.id);
       }
       // Fetch context limit if not yet loaded (e.g. fresh bot start)
-      if (pinnedMessageManager.getContextLimit() === 0) {
-        await pinnedMessageManager.refreshContextLimit();
+      if (pinnedMessageManager.getContextLimit(ctx.chat.id) === 0) {
+        await pinnedMessageManager.refreshContextLimit(ctx.chat.id);
       }
       keyboardManager.initialize(ctx.api, ctx.chat.id);
     }
     // Sync current context (tokens used + limit) into keyboard state
-    const contextInfo = pinnedMessageManager.getContextInfo();
+    const contextInfo = pinnedMessageManager.getContextInfo(ctx.chat?.id);
     if (contextInfo) {
-      keyboardManager.updateContext(contextInfo.tokensUsed, contextInfo.tokensLimit);
+      keyboardManager.updateContext(ctx.chat?.id ?? 0, contextInfo.tokensUsed, contextInfo.tokensLimit);
     }
-    const keyboard = keyboardManager.getKeyboard();
+    const keyboard = keyboardManager.getKeyboard(ctx.chat?.id);
     if (ctx.chat) {
       await sendBotText({
         api: ctx.api,

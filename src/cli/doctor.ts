@@ -3,8 +3,6 @@
  * Read-only, safe to run anytime
  */
 
-/* eslint-disable no-console */
-
 import { config } from "../config.js";
 import { getRuntimePaths } from "../runtime/paths.js";
 import { getRuntimeMode } from "../runtime/mode.js";
@@ -84,7 +82,10 @@ export async function runDoctor(): Promise<void> {
   try {
     const healthUrl = `${apiUrl}/global/health`;
     const curlCmd = `curl -s -o /dev/null -w "%{http_code}" --max-time 3 "${healthUrl}" 2>/dev/null`;
-    const statusCode = execSync(curlCmd, { encoding: "utf-8", stdio: ["pipe", "pipe", "ignore"] }).trim();
+    const statusCode = execSync(curlCmd, {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "ignore"],
+    }).trim();
 
     if (statusCode === "200" || statusCode === "401") {
       checks.push({

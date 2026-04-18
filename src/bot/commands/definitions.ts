@@ -21,9 +21,11 @@ interface BotCommandI18nDefinition {
  * Update this array when adding new commands
  */
 const COMMAND_DEFINITIONS: BotCommandI18nDefinition[] = [
+  { command: "start", descriptionKey: "cmd.description.start" },
   { command: "status", descriptionKey: "cmd.description.status" },
   { command: "new", descriptionKey: "cmd.description.new" },
   { command: "abort", descriptionKey: "cmd.description.stop" },
+  { command: "stop", descriptionKey: "cmd.description.stop" },
   { command: "sessions", descriptionKey: "cmd.description.sessions" },
   { command: "projects", descriptionKey: "cmd.description.projects" },
   { command: "task", descriptionKey: "cmd.description.task" },
@@ -33,6 +35,23 @@ const COMMAND_DEFINITIONS: BotCommandI18nDefinition[] = [
   { command: "opencode_start", descriptionKey: "cmd.description.opencode_start" },
   { command: "opencode_stop", descriptionKey: "cmd.description.opencode_stop" },
   { command: "help", descriptionKey: "cmd.description.help" },
+  { command: "shell", descriptionKey: "cmd.description.shell" },
+  { command: "ls", descriptionKey: "cmd.description.ls" },
+  { command: "read", descriptionKey: "cmd.description.read" },
+  { command: "tasks", descriptionKey: "cmd.description.tasks" },
+  { command: "logs", descriptionKey: "cmd.description.logs" },
+  { command: "health", descriptionKey: "cmd.description.health" },
+  { command: "journal", descriptionKey: "cmd.description.journal" },
+  { command: "sandbox", descriptionKey: "cmd.description.sandbox" },
+  { command: "cost", descriptionKey: "cmd.description.cost" },
+  { command: "export", descriptionKey: "cmd.description.export" },
+  { command: "messages", descriptionKey: "cmd.description.messages" },
+  { command: "skills", descriptionKey: "cmd.description.skills" },
+  { command: "mcps", descriptionKey: "cmd.description.mcps" },
+  { command: "models", descriptionKey: "cmd.description.models" },
+  { command: "compact", descriptionKey: "cmd.description.compact" },
+  { command: "steer", descriptionKey: "cmd.description.steer" },
+  { command: "tts", descriptionKey: "cmd.description.tts" },
 ];
 
 export function getLocalizedBotCommands(): BotCommandDefinition[] {

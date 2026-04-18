@@ -1,4 +1,5 @@
 import { en, type I18nKey } from "./en.js";
+export type { I18nKey };
 import { de } from "./de.js";
 import { es } from "./es.js";
 import { fr } from "./fr.js";

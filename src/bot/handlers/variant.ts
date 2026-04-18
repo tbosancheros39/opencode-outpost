@@ -38,20 +38,19 @@ export async function handleVariantSelect(ctx: Context): Promise<boolean> {
 
   logger.debug(`[VariantHandler] Received callback: ${callbackQuery.data}`);
 
+  const chatId = ctx.chat?.id;
+  if (!chatId) return false;
+
   try {
-    if (ctx.chat) {
-      keyboardManager.initialize(ctx.api, ctx.chat.id);
+    keyboardManager.initialize(ctx.api, chatId);
+
+    if (pinnedMessageManager.getContextLimit(chatId) === 0) {
+      await pinnedMessageManager.refreshContextLimit(chatId);
     }
 
-    if (pinnedMessageManager.getContextLimit() === 0) {
-      await pinnedMessageManager.refreshContextLimit();
-    }
-
-    // Parse callback data: "variant:variantId"
     const variantId = callbackQuery.data.replace("variant:", "");
 
-    // Get current model
-    const currentModel = getStoredModel();
+    const currentModel = getStoredModel(chatId);
 
     if (!currentModel.providerID || !currentModel.modelID) {
       logger.error("[VariantHandler] No model selected");
@@ -59,26 +58,22 @@ export async function handleVariantSelect(ctx: Context): Promise<boolean> {
       return false;
     }
 
-    // Set variant
-    setCurrentVariant(variantId);
+    setCurrentVariant(chatId, variantId);
 
-    // Re-read model after variant update
-    const updatedModel = getStoredModel();
+    const updatedModel = getStoredModel(chatId);
 
-    // Update keyboard manager state
-    keyboardManager.updateModel(updatedModel);
-    keyboardManager.updateVariant(variantId);
+    keyboardManager.updateModel(chatId, updatedModel);
+    keyboardManager.updateVariant(chatId, variantId);
 
-    // Build keyboard with correct context info
-    const currentAgent = getStoredAgent();
+    const currentAgent = getStoredAgent(chatId);
     const contextInfo =
-      pinnedMessageManager.getContextInfo() ??
-      (pinnedMessageManager.getContextLimit() > 0
-        ? { tokensUsed: 0, tokensLimit: pinnedMessageManager.getContextLimit() }
+      pinnedMessageManager.getContextInfo(chatId) ??
+      (pinnedMessageManager.getContextLimit(chatId) > 0
+        ? { tokensUsed: 0, tokensLimit: pinnedMessageManager.getContextLimit(chatId) }
         : null);
 
     if (contextInfo) {
-      keyboardManager.updateContext(contextInfo.tokensUsed, contextInfo.tokensLimit);
+      keyboardManager.updateContext(chatId, contextInfo.tokensUsed, contextInfo.tokensLimit);
     }
 
     const variantName = formatVariantForButton(variantId);
@@ -89,22 +84,20 @@ export async function handleVariantSelect(ctx: Context): Promise<boolean> {
       variantName,
     );
 
-    // Send confirmation message with updated keyboard
     const displayName = formatVariantForDisplay(variantId);
 
-    clearActiveInlineMenu("variant_selected");
+    clearActiveInlineMenu(chatId, "variant_selected");
 
     await ctx.answerCallbackQuery({ text: t("variant.changed_callback", { name: displayName }) });
     await ctx.reply(t("variant.changed_message", { name: displayName }), {
       reply_markup: keyboard,
     });
 
-    // Delete the inline menu message
     await ctx.deleteMessage().catch(() => {});
 
     return true;
   } catch (err) {
-    clearActiveInlineMenu("variant_select_error");
+    clearActiveInlineMenu(chatId, "variant_select_error");
     logger.error("[VariantHandler] Error handling variant select:", err);
     await ctx.answerCallbackQuery({ text: t("variant.change_error_callback") }).catch(() => {});
     return false;
@@ -116,12 +109,14 @@ export async function handleVariantSelect(ctx: Context): Promise<boolean> {
  * @param currentVariant Current variant for highlighting
  * @param providerID Provider ID
  * @param modelID Model ID
+ * @param chatId Chat ID for manager calls
  * @returns InlineKeyboard with variant selection buttons
  */
 export async function buildVariantSelectionMenu(
   currentVariant: string,
   providerID: string,
   modelID: string,
+  _chatId?: number,
 ): Promise<InlineKeyboard> {
   const keyboard = new InlineKeyboard();
   const variants = await getAvailableVariants(providerID, modelID);
@@ -131,17 +126,14 @@ export async function buildVariantSelectionMenu(
     return keyboard;
   }
 
-  // Filter only active variants (not disabled)
   const activeVariants = variants.filter((v) => !v.disabled);
 
   if (activeVariants.length === 0) {
     logger.warn("[VariantHandler] No active variants found");
-    // If no active variants, show default at least
     keyboard.text(`✅ ${formatVariantForDisplay("default")}`, "variant:default").row();
     return keyboard;
   }
 
-  // Add button for each variant (one per row)
   activeVariants.forEach((variant) => {
     const isActive = variant.id === currentVariant;
     const label = formatVariantForDisplay(variant.id);
@@ -158,19 +150,22 @@ export async function buildVariantSelectionMenu(
  * @param ctx grammY context
  */
 export async function showVariantSelectionMenu(ctx: Context): Promise<void> {
+  const chatId = ctx.chat?.id;
+
   try {
-    const currentModel = getStoredModel();
+    const currentModel = getStoredModel(chatId ?? 0);
 
     if (!currentModel.providerID || !currentModel.modelID) {
       await ctx.reply(t("variant.select_model_first"));
       return;
     }
 
-    const currentVariant = getCurrentVariant();
+    const currentVariant = getCurrentVariant(chatId ?? 0);
     const keyboard = await buildVariantSelectionMenu(
       currentVariant,
       currentModel.providerID,
       currentModel.modelID,
+      chatId,
     );
 
     if (keyboard.inline_keyboard.length === 0) {

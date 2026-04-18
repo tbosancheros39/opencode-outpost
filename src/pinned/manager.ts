@@ -1,5 +1,6 @@
 import type { Api } from "grammy";
 import { logger } from "../utils/logger.js";
+import { withTelegramRateLimitRetry } from "../utils/telegram-rate-limit-retry.js";
 import { opencodeClient } from "../opencode/client.js";
 import { getCurrentSession } from "../session/manager.js";
 import {
@@ -628,7 +629,11 @@ class PinnedMessageManager {
     try {
       const text = this.formatMessage(chatId);
 
-      await api.editMessageText(chatId, state.messageId, text);
+      const pinnedMessageId = state.messageId;
+      await withTelegramRateLimitRetry(
+        () => api.editMessageText(chatId, pinnedMessageId!, text),
+        "pinnedStatus.edit",
+      );
       state.lastUpdated = Date.now();
 
       logger.debug(`[PinnedManager] Updated pinned message: ${state.messageId}`);

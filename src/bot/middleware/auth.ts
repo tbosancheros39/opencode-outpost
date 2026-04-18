@@ -4,22 +4,28 @@ import { logger } from "../../utils/logger.js";
 
 export async function authMiddleware(ctx: Context, next: NextFunction): Promise<void> {
   const userId = ctx.from?.id;
+  const allowedUserIds = config.telegram.allowedUserIds;
+  const allowedChatIds = config.telegram.allowedChatIds;
+  const isAuthorizedUser = userId && allowedUserIds.includes(userId);
+  const isAuthorizedGroupChat =
+    ctx.chat && ctx.chat.type !== "private" && allowedChatIds.includes(ctx.chat.id);
 
   logger.debug(
-    `[Auth] Checking access: userId=${userId}, allowedUserId=${config.telegram.allowedUserId}, hasCallbackQuery=${!!ctx.callbackQuery}, hasMessage=${!!ctx.message}`,
+    `[Auth] Checking access: userId=${userId}, allowedUserIds=[${allowedUserIds.join(", ")}], chatId=${ctx.chat?.id}, chatType=${ctx.chat?.type}, allowedChatIds=[${allowedChatIds.join(", ")}], hasCallbackQuery=${!!ctx.callbackQuery}, hasMessage=${!!ctx.message}`,
   );
 
-  if (userId && userId === config.telegram.allowedUserId) {
-    logger.debug(`[Auth] Access granted for userId=${userId}`);
+  if (isAuthorizedUser || isAuthorizedGroupChat) {
+    logger.debug(`[Auth] Access granted for userId=${userId}, chatId=${ctx.chat?.id}`);
     await next();
   } else {
     // Silently ignore unauthorized users
-    logger.warn(`Unauthorized access attempt from user ID: ${userId}`);
+    logger.warn(`Unauthorized access attempt from user ID: ${userId}, chat ID: ${ctx.chat?.id}`);
 
     // Actively hide commands for unauthorized users by setting empty command list
-    // Only do this if the chat is NOT the authorized user's chat
+    // Only do this if the chat is NOT in the allowed list
     // (to avoid resetting commands when forwarded messages are received)
-    if (ctx.chat?.id && ctx.chat.id !== config.telegram.allowedUserId) {
+    const isInAllowedChat = ctx.chat?.id && allowedChatIds.includes(ctx.chat.id);
+    if (ctx.chat?.id && !isInAllowedChat) {
       try {
         // Set empty commands for this specific chat (more reliable than deleteMyCommands)
         await ctx.api.setMyCommands([], {

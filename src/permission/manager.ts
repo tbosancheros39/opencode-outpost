@@ -2,73 +2,62 @@ import { PermissionRequest, PermissionState } from "./types.js";
 import { logger } from "../utils/logger.js";
 
 class PermissionManager {
-  private state: PermissionState = {
-    requestsByMessageId: new Map(),
-  };
+  private states: Map<number, PermissionState> = new Map();
 
-  /**
-   * Register a new permission request message
-   */
-  startPermission(request: PermissionRequest, messageId: number): void {
+  private getState(chatId: number): PermissionState {
+    let state = this.states.get(chatId);
+    if (!state) {
+      state = {
+        requestsByMessageId: new Map(),
+      };
+      this.states.set(chatId, state);
+    }
+    return state;
+  }
+
+  startPermission(chatId: number, request: PermissionRequest, messageId: number): void {
+    const state = this.getState(chatId);
     logger.debug(
       `[PermissionManager] startPermission: id=${request.id}, permission=${request.permission}, messageId=${messageId}`,
     );
 
-    if (this.state.requestsByMessageId.has(messageId)) {
+    if (state.requestsByMessageId.has(messageId)) {
       logger.warn(`[PermissionManager] Message ID already tracked, replacing: ${messageId}`);
     }
 
-    this.state.requestsByMessageId.set(messageId, request);
+    state.requestsByMessageId.set(messageId, request);
 
     logger.info(
-      `[PermissionManager] New permission request: type=${request.permission}, patterns=${request.patterns.join(", ")}, pending=${this.state.requestsByMessageId.size}`,
+      `[PermissionManager] New permission request: type=${request.permission}, patterns=${request.patterns.join(", ")}, pending=${state.requestsByMessageId.size}`,
     );
   }
 
-  /**
-   * Get permission request by Telegram message ID
-   */
-  getRequest(messageId: number | null): PermissionRequest | null {
+  getRequest(chatId: number, messageId: number | null): PermissionRequest | null {
     if (messageId === null) {
       return null;
     }
 
-    return this.state.requestsByMessageId.get(messageId) ?? null;
+    return this.getState(chatId).requestsByMessageId.get(messageId) ?? null;
   }
 
-  /**
-   * Get request ID for API reply by Telegram message ID
-   */
-  getRequestID(messageId: number | null): string | null {
-    return this.getRequest(messageId)?.id ?? null;
+  getRequestID(chatId: number, messageId: number | null): string | null {
+    return this.getRequest(chatId, messageId)?.id ?? null;
   }
 
-  /**
-   * Get permission type (bash, edit, etc.) by message ID
-   */
-  getPermissionType(messageId: number | null): string | null {
-    return this.getRequest(messageId)?.permission ?? null;
+  getPermissionType(chatId: number, messageId: number | null): string | null {
+    return this.getRequest(chatId, messageId)?.permission ?? null;
   }
 
-  /**
-   * Get patterns (commands/files) by message ID
-   */
-  getPatterns(messageId: number | null): string[] {
-    return this.getRequest(messageId)?.patterns ?? [];
+  getPatterns(chatId: number, messageId: number | null): string[] {
+    return this.getRequest(chatId, messageId)?.patterns ?? [];
   }
 
-  /**
-   * Check if callback message ID belongs to active permission request
-   */
-  isActiveMessage(messageId: number | null): boolean {
-    return messageId !== null && this.state.requestsByMessageId.has(messageId);
+  isActiveMessage(chatId: number, messageId: number | null): boolean {
+    return messageId !== null && this.getState(chatId).requestsByMessageId.has(messageId);
   }
 
-  /**
-   * Get latest Telegram message ID
-   */
-  getMessageId(): number | null {
-    const messageIds = this.getMessageIds();
+  getMessageId(chatId: number): number | null {
+    const messageIds = this.getMessageIds(chatId);
     if (messageIds.length === 0) {
       return null;
     }
@@ -76,56 +65,40 @@ class PermissionManager {
     return messageIds[messageIds.length - 1];
   }
 
-  /**
-   * Get Telegram message IDs for all active requests
-   */
-  getMessageIds(): number[] {
-    return Array.from(this.state.requestsByMessageId.keys());
+  getMessageIds(chatId: number): number[] {
+    return Array.from(this.getState(chatId).requestsByMessageId.keys());
   }
 
-  /**
-   * Remove permission request by Telegram message ID
-   */
-  removeByMessageId(messageId: number | null): PermissionRequest | null {
-    const request = this.getRequest(messageId);
+  removeByMessageId(chatId: number, messageId: number | null): PermissionRequest | null {
+    const request = this.getRequest(chatId, messageId);
     if (!request || messageId === null) {
       return null;
     }
 
-    this.state.requestsByMessageId.delete(messageId);
+    this.getState(chatId).requestsByMessageId.delete(messageId);
 
     logger.debug(
-      `[PermissionManager] Removed permission request: id=${request.id}, messageId=${messageId}, pending=${this.state.requestsByMessageId.size}`,
+      `[PermissionManager] Removed permission request: id=${request.id}, messageId=${messageId}, pending=${this.getState(chatId).requestsByMessageId.size}`,
     );
 
     return request;
   }
 
-  /**
-   * Get number of active permission requests
-   */
-  getPendingCount(): number {
-    return this.state.requestsByMessageId.size;
+  getPendingCount(chatId: number): number {
+    return this.getState(chatId).requestsByMessageId.size;
   }
 
-  /**
-   * Check if there are active permission requests
-   */
-  isActive(): boolean {
-    return this.state.requestsByMessageId.size > 0;
+  isActive(chatId: number): boolean {
+    return this.getState(chatId).requestsByMessageId.size > 0;
   }
 
-  /**
-   * Clear state after reply
-   */
-  clear(): void {
+  clear(chatId: number): void {
+    const state = this.getState(chatId);
     logger.debug(
-      `[PermissionManager] Clearing permission state: pending=${this.state.requestsByMessageId.size}`,
+      `[PermissionManager] Clearing permission state: pending=${state.requestsByMessageId.size}`,
     );
 
-    this.state = {
-      requestsByMessageId: new Map(),
-    };
+    state.requestsByMessageId = new Map();
   }
 }
 
