@@ -2,7 +2,7 @@ import { Bot, Context, InputFile, NextFunction } from "grammy";
 import { sequentialize } from "@grammyjs/runner";
 import { promises as fs } from "fs";
 import * as path from "path";
-import { fileURLToPath } from "url";
+import { tmpdir } from "os";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { config } from "../config.js";
@@ -16,6 +16,7 @@ import { statusCommand } from "./commands/status.js";
 import { shellCommand, handleShellCallback } from "./commands/shell.js";
 import { sandboxCommand } from "./commands/sandbox.js";
 import { costCommand } from "./commands/cost.js";
+import { feCommand } from "./commands/fe.js";
 import { exportCommand } from "./commands/export.js";
 import { lsCommand } from "./commands/ls.js";
 import { readCommand } from "./commands/read.js";
@@ -52,6 +53,9 @@ import { mcpsCommand, handleMcpsCallback } from "./commands/mcps.js";
 import { modelsCommand } from "./commands/models.js";
 import { compactCommand } from "./commands/compact.js";
 import { ttsCommand } from "./commands/tts.js";
+import { branchCommand } from "./commands/branch.js";
+import { commitCommand } from "./commands/commit.js";
+import { diffCommand } from "./commands/diff.js";
 import {
   handleQuestionCallback,
   showCurrentQuestion,
@@ -167,9 +171,7 @@ const RESPONSE_STREAM_THROTTLE_MS = 200;
 const DRAFT_THROTTLE_MS = 150; // Slightly faster than edit throttle, conservative start
 const RESPONSE_STREAM_TEXT_LIMIT = 3800;
 const SESSION_RETRY_PREFIX = "🔁";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const TEMP_DIR = path.join(__dirname, "..", ".tmp");
+const TEMP_DIR = path.join(tmpdir(), "opencode-outpost");
 const SIMPLE_USER_COMMANDS = [
   { command: "new", description: "Start new chat" },
   { command: "abort", description: "Stop response" },
@@ -1250,6 +1252,7 @@ export async function createBot(): Promise<Bot<Context>> {
   bot.command("journal", journalCommand);
   bot.command("sandbox", sandboxCommand);
   bot.command("cost", costCommand);
+  bot.command("fe", feCommand);
   bot.command("export", exportCommand);
   bot.command("messages", messagesCommand);
   bot.command("skills", skillsCommand);
@@ -1257,6 +1260,9 @@ export async function createBot(): Promise<Bot<Context>> {
   bot.command("models", modelsCommand);
   bot.command("compact", compactCommand);
   bot.command("tts", ttsCommand);
+  bot.command("branch", branchCommand);
+  bot.command("commit", commitCommand);
+  bot.command("diff", diffCommand);
 
   // Register slash command handlers for inline mode commands.
   // When a user taps an inline result (e.g. @bot feynman: some text), the bot

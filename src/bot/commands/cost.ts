@@ -1,6 +1,7 @@
 import { CommandContext, Context } from "grammy";
 import { pinnedMessageManager } from "../../pinned/manager.js";
 import { logger } from "../../utils/logger.js";
+import { t } from "../../i18n/index.js";
 import { getCostHistory, addCostEntry, type CostEntry } from "../../settings/manager.js";
 
 function formatTokenCount(count: number): string {
@@ -27,7 +28,7 @@ export async function costCommand(ctx: CommandContext<Context>) {
   try {
     const chatId = ctx.chat?.id;
     if (!chatId) {
-      await ctx.reply("❌ Unable to identify chat.");
+      await ctx.reply(t("cost.no_chat"));
       return;
     }
 
@@ -58,18 +59,18 @@ export async function costCommand(ctx: CommandContext<Context>) {
     const avgPerDay = weekCost / weekDays;
 
     const lines = [
-      "💰 <b>Cost &amp; Usage Report</b>",
+      t("cost.header"),
       "",
-      "📊 <b>Current Session:</b>",
+      t("cost.current_session"),
       `  Tokens: ${formatTokenCount(state.tokensUsed)} / ${formatTokenCount(state.tokensLimit)}`,
       `  Cost: $${(state.cost || 0).toFixed(2)}`,
       "",
-      "📅 <b>Today:</b>",
+      t("cost.today"),
       `  Sessions: ${todayEntries.length}`,
       `  Total tokens: ${formatTokenCount(todayTokensIn)}`,
       `  Total cost: $${todayCost.toFixed(2)}`,
       "",
-      "📆 <b>This Week:</b>",
+      t("cost.week"),
       `  Total cost: $${weekCost.toFixed(2)}`,
       `  Avg per day: $${avgPerDay.toFixed(2)}`,
     ];
@@ -82,7 +83,7 @@ export async function costCommand(ctx: CommandContext<Context>) {
     }
 
     if (modelCosts.size > 0) {
-      lines.push("", "🏷️ <b>By Model (Today):</b>");
+      lines.push("", t("cost.by_model"));
       for (const [model, cost] of modelCosts) {
         const percent = todayCost > 0 ? Math.round((cost / todayCost) * 100) : 0;
         lines.push(`  ${model}: $${cost.toFixed(2)} (${percent}%)`);
@@ -94,6 +95,6 @@ export async function costCommand(ctx: CommandContext<Context>) {
     logger.info(`[Cost] Cost report sent for chat ${chatId}`);
   } catch (error) {
     logger.error("[Bot] Cost command error:", error);
-    await ctx.reply("❌ Failed to generate cost report.").catch(() => {});
+    await ctx.reply(t("cost.error")).catch(() => {});
   }
 }

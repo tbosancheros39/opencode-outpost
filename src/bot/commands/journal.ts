@@ -1,21 +1,19 @@
 import { CommandContext, Context } from "grammy";
 import { logger } from "../../utils/logger.js";
-import { getJournalErrors } from "../../monitoring/journal-monitor.js";
 import { escapeHtml } from "../../utils/html.js";
+import { t } from "../../i18n/index.js";
+import { getJournalErrors } from "../../monitoring/journal-monitor.js";
 
 export async function journalCommand(ctx: CommandContext<Context>) {
   const args = (ctx.match as string)?.trim() || "";
   const isWatchMode = args.toLowerCase() === "watch" || args.toLowerCase() === "start";
 
   if (isWatchMode) {
-    await ctx.reply(
-      "👀 <b>Journal Watch Mode Started</b>\n\nI'll watch for new system errors and notify you when they appear.\n\nUse /journal to check recent errors.",
-      { parse_mode: "HTML" }
-    );
+    await ctx.reply(t("journal.watch_started"), { parse_mode: "HTML" });
     return;
   }
 
-  const statusMsg = await ctx.reply("📋 <i>Fetching recent system errors...</i>", {
+  const statusMsg = await ctx.reply(t("journal.fetching"), {
     parse_mode: "HTML",
   });
 
@@ -38,7 +36,7 @@ export async function journalCommand(ctx: CommandContext<Context>) {
     await ctx.api.editMessageText(
       chatId,
       statusMsg.message_id,
-      `❌ <b>Error fetching journal:</b>\n<pre>${safeMessage}</pre>`,
+      t("journal.error", { message: safeMessage }),
       { parse_mode: "HTML" }
     ).catch(() => {});
   }

@@ -1,5 +1,5 @@
 import { CommandContext, Context, InputFile } from "grammy";
-import { fileURLToPath } from "url";
+import { tmpdir } from "os";
 import * as path from "path";
 import { promises as fs } from "fs";
 import { opencodeClient } from "../../opencode/client.js";
@@ -7,9 +7,7 @@ import { getCurrentSession } from "../../session/manager.js";
 import { logger } from "../../utils/logger.js";
 import { t } from "../../i18n/index.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const TEMP_DIR = path.join(__dirname, "..", "..", ".tmp");
+const TEMP_DIR = path.join(tmpdir(), "opencode-outpost");
 
 interface SessionMessage {
   info: {

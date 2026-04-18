@@ -9,28 +9,24 @@ import { t } from "../../i18n/index.js";
 import { chunkOutput } from "../utils/chunk.js";
 import { quoteShellArg, validateShellPathInput, extractShellOutput } from "../utils/shell-security.js";
 
-export async function readCommand(ctx: CommandContext<Context>) {
+export async function diffCommand(ctx: CommandContext<Context>) {
   if (!ctx.chat) {
     return;
   }
 
-  const targetFile = (ctx.match as string)?.trim();
+  const targetPath = (ctx.match as string)?.trim() || "";
   const chatId = ctx.chat.id;
 
-  if (!targetFile) {
-    await ctx.reply(t("read.usage"), {
-      parse_mode: "HTML",
-    });
-    return;
+  // Validate path if provided
+  if (targetPath) {
+    const pathValidationError = validateShellPathInput(targetPath);
+    if (pathValidationError) {
+      await ctx.reply(`⚠️ ${pathValidationError}`, { parse_mode: "HTML" });
+      return;
+    }
   }
 
-  const pathValidationError = validateShellPathInput(targetFile);
-  if (pathValidationError) {
-    await ctx.reply(`⚠️ ${pathValidationError}`, { parse_mode: "HTML" });
-    return;
-  }
-
-  const statusMsg = await ctx.reply(t("read.reading", { file: escapeHtml(targetFile) }), {
+  const statusMsg = await ctx.reply(t("git.diff.checking"), {
     parse_mode: "HTML",
   });
 
@@ -55,9 +51,12 @@ export async function readCommand(ctx: CommandContext<Context>) {
     }
 
     const currentAgent = getStoredAgent(chatId) ?? "build";
+    const gitCommand = targetPath
+      ? `git diff ${quoteShellArg(targetPath)}`
+      : "git diff";
     const { data, error } = await opencodeClient.session.shell({
       sessionID: session.id,
-      command: `cat ${quoteShellArg(targetFile)}`,
+      command: gitCommand,
       agent: currentAgent,
     });
 
@@ -66,27 +65,66 @@ export async function readCommand(ctx: CommandContext<Context>) {
     }
 
     const rawOutput = extractShellOutput(data, "");
-    const chunks = chunkOutput(rawOutput || "(empty file)");
 
+    // If no output, check staged changes
+    if (!rawOutput || rawOutput.trim() === "") {
+      const { data: stagedData, error: stagedError } = await opencodeClient.session.shell({
+        sessionID: session.id,
+        command: "git diff --staged",
+        agent: currentAgent,
+      });
+
+      if (stagedError) {
+        throw stagedError instanceof Error ? stagedError : new Error(String(stagedError));
+      }
+
+      const stagedOutput = extractShellOutput(stagedData, "");
+
+      if (!stagedOutput || stagedOutput.trim() === "") {
+        await ctx.api.editMessageText(
+          chatId,
+          statusMsg.message_id,
+          t("git.diff.no_changes"),
+          { parse_mode: "HTML" },
+        );
+        return;
+      }
+
+      const chunks = chunkOutput(stagedOutput);
+      await ctx.api.deleteMessage(chatId, statusMsg.message_id);
+
+      for (let i = 0; i < chunks.length; i++) {
+        const header =
+          chunks.length > 1
+            ? t("git.diff.staged_header_part", { part: String(i + 1), total: String(chunks.length) })
+            : t("git.diff.staged_header");
+        await ctx.reply(`${header}\n<pre><code>${chunks[i]}</code></pre>`, {
+          parse_mode: "HTML",
+        });
+      }
+      return;
+    }
+
+    const chunks = chunkOutput(rawOutput);
     await ctx.api.deleteMessage(chatId, statusMsg.message_id);
 
     for (let i = 0; i < chunks.length; i++) {
       const header =
         chunks.length > 1
-          ? t("read.header_part", { file: escapeHtml(targetFile), part: String(i + 1), total: String(chunks.length) })
-          : t("read.header", { file: escapeHtml(targetFile) });
+          ? t("git.diff.header_part", { part: String(i + 1), total: String(chunks.length) })
+          : t("git.diff.header");
       await ctx.reply(`${header}\n<pre><code>${chunks[i]}</code></pre>`, {
         parse_mode: "HTML",
       });
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    logger.error("[Bot] Read command error:", error);
+    logger.error("[Bot] Diff command error:", error);
     await ctx.api
       .editMessageText(
         chatId,
         statusMsg.message_id,
-        t("read.error", { message: escapeHtml(message) }),
+        t("git.diff.error", { message: escapeHtml(message) }),
         { parse_mode: "HTML" },
       )
       .catch(() => {});

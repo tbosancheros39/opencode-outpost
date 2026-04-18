@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for contributing to OpenCode Telegram Bot.
+Thanks for contributing to OpenCode Outpost.
 
 ## Before You Start Work
 

@@ -1,5 +1,7 @@
 import { CommandContext, Context } from "grammy";
 import { logger } from "../../utils/logger.js";
+import { escapeHtml } from "../../utils/html.js";
+import { t } from "../../i18n/index.js";
 import { chunkOutput } from "../utils/chunk.js";
 import {
   isBwrapAvailable,
@@ -13,16 +15,7 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
   const input = (ctx.match as string)?.trim();
 
   if (!input) {
-    await ctx.reply(
-      "🔒 <b>Sandbox Analyzer</b>\n\n" +
-        "Execute scripts/URLs in an isolated bubblewrap sandbox with security analysis.\n\n" +
-        "Usage:\n" +
-        "<code>/sandbox curl https://example.com/script.sh | sh</code>\n" +
-        "<code>/sandbox https://example.com/malware.sh</code>\n" +
-        "<code>/sandbox cat /etc/passwd</code>\n\n" +
-        "Network is disabled by default. Use /sandbox --network to allow network access.",
-      { parse_mode: "HTML" }
-    );
+    await ctx.reply(t("sandbox.usage"), { parse_mode: "HTML" });
     return;
   }
 
@@ -30,17 +23,12 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
   const command = allowNetwork ? input.slice(10).trim() : input;
 
   if (!command) {
-    await ctx.reply("⚠️ Please provide a command or URL to analyze.");
+    await ctx.reply(t("sandbox.no_command"));
     return;
   }
 
   if (!isBwrapAvailable()) {
-    await ctx.reply(
-      "❌ <b>bubblewrap is not available</b>\n\n" +
-        "This command requires bubblewrap (bwrap) to be installed on the system.\n" +
-        "Install with: sudo apt install bubblewrap",
-      { parse_mode: "HTML" }
-    );
+    await ctx.reply(t("sandbox.no_bwrap"), { parse_mode: "HTML" });
     return;
   }
 
@@ -48,7 +36,10 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
   const isScript = /\.sh$/i.test(command) || /\|\s*(sh|bash)/.test(command);
 
   const statusMsg = await ctx.reply(
-    `🔒 <i>Running in sandbox${allowNetwork ? " (with network)" : ""}: <code>${escapeHtml(command.slice(0, 100))}${command.length > 100 ? "..." : ""}</code>...</i>`,
+    t("sandbox.running", {
+      network: allowNetwork ? " (with network)" : "",
+      command: `${escapeHtml(command.slice(0, 100))}${command.length > 100 ? "..." : ""}`,
+    }),
     { parse_mode: "HTML" }
   );
 
@@ -72,22 +63,22 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
 
     const securityPreview = formatSecurityPreview(result.securityReport);
 
-    const header = `🔒 <b>Sandbox Analysis</b> [${elapsedStr}]\n`;
+    const header = t("sandbox.header", { elapsed: elapsedStr });
     const cmdLine = `Command: <code>${escapeHtml(command)}</code>\n`;
     const exitLine = result.timedOut
-      ? `⏱️ <i>Timed out after ${30}s</i>\n`
-      : `Exit code: ${result.exitCode ?? "N/A"}\n`;
+      ? t("sandbox.timed_out", { seconds: "30" }) + "\n"
+      : t("sandbox.exit_code", { code: String(result.exitCode ?? "N/A") }) + "\n";
 
-    const fullReport = `${header}${securityPreview}\n\n${cmdLine}${exitLine}`;
+    const fullReport = `${header}\n${securityPreview}\n\n${cmdLine}${exitLine}`;
 
     if (result.stdout) {
       const chunks = chunkOutput(result.stdout);
       for (let i = 0; i < chunks.length; i++) {
         const chunkHeader =
           chunks.length > 1
-            ? `📤 <b>Output (${i + 1}/${chunks.length})</b>\n<pre><code>${chunks[i]}</code></pre>\n`
-            : `📤 <b>Output</b>\n<pre><code>${chunks[i]}</code></pre>\n`;
-        await ctx.reply(chunkHeader, { parse_mode: "HTML" });
+            ? t("sandbox.output_part", { part: String(i + 1), total: String(chunks.length) })
+            : t("sandbox.output");
+        await ctx.reply(`${chunkHeader}\n<pre><code>${chunks[i]}</code></pre>`, { parse_mode: "HTML" });
       }
     }
 
@@ -96,9 +87,9 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
       for (let i = 0; i < chunks.length; i++) {
         const chunkHeader =
           chunks.length > 1
-            ? `📕 <b>Stderr (${i + 1}/${chunks.length})</b>\n<pre><code>${chunks[i]}</code></pre>\n`
-            : `📕 <b>Stderr</b>\n<pre><code>${chunks[i]}</code></pre>\n`;
-        await ctx.reply(chunkHeader, { parse_mode: "HTML" });
+            ? t("sandbox.stderr_part", { part: String(i + 1), total: String(chunks.length) })
+            : t("sandbox.stderr");
+        await ctx.reply(`${chunkHeader}\n<pre><code>${chunks[i]}</code></pre>`, { parse_mode: "HTML" });
       }
     }
 
@@ -110,18 +101,9 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
       .editMessageText(
         ctx.chat?.id ?? 0,
         statusMsg.message_id,
-        `❌ <b>Sandbox Error:</b>\n<pre>${escapeHtml(message)}</pre>`,
+        t("sandbox.error", { message: escapeHtml(message) }),
         { parse_mode: "HTML" }
       )
       .catch(() => {});
   }
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }

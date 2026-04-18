@@ -7,30 +7,24 @@ import { logger } from "../../utils/logger.js";
 import { escapeHtml } from "../../utils/html.js";
 import { t } from "../../i18n/index.js";
 import { chunkOutput } from "../utils/chunk.js";
-import { quoteShellArg, validateShellPathInput, extractShellOutput } from "../utils/shell-security.js";
+import { quoteShellArg, extractShellOutput } from "../utils/shell-security.js";
 
-export async function readCommand(ctx: CommandContext<Context>) {
+export async function commitCommand(ctx: CommandContext<Context>) {
   if (!ctx.chat) {
     return;
   }
 
-  const targetFile = (ctx.match as string)?.trim();
+  const message = (ctx.match as string)?.trim();
   const chatId = ctx.chat.id;
 
-  if (!targetFile) {
-    await ctx.reply(t("read.usage"), {
+  if (!message) {
+    await ctx.reply(t("git.commit.usage"), {
       parse_mode: "HTML",
     });
     return;
   }
 
-  const pathValidationError = validateShellPathInput(targetFile);
-  if (pathValidationError) {
-    await ctx.reply(`⚠️ ${pathValidationError}`, { parse_mode: "HTML" });
-    return;
-  }
-
-  const statusMsg = await ctx.reply(t("read.reading", { file: escapeHtml(targetFile) }), {
+  const statusMsg = await ctx.reply(t("git.commit.committing"), {
     parse_mode: "HTML",
   });
 
@@ -57,7 +51,7 @@ export async function readCommand(ctx: CommandContext<Context>) {
     const currentAgent = getStoredAgent(chatId) ?? "build";
     const { data, error } = await opencodeClient.session.shell({
       sessionID: session.id,
-      command: `cat ${quoteShellArg(targetFile)}`,
+      command: `git commit -m ${quoteShellArg(message)}`,
       agent: currentAgent,
     });
 
@@ -65,28 +59,28 @@ export async function readCommand(ctx: CommandContext<Context>) {
       throw error instanceof Error ? error : new Error(String(error));
     }
 
-    const rawOutput = extractShellOutput(data, "");
-    const chunks = chunkOutput(rawOutput || "(empty file)");
+    const rawOutput = extractShellOutput(data, t("git.commit.success"));
+    const chunks = chunkOutput(rawOutput || t("git.commit.success"));
 
     await ctx.api.deleteMessage(chatId, statusMsg.message_id);
 
     for (let i = 0; i < chunks.length; i++) {
       const header =
         chunks.length > 1
-          ? t("read.header_part", { file: escapeHtml(targetFile), part: String(i + 1), total: String(chunks.length) })
-          : t("read.header", { file: escapeHtml(targetFile) });
+          ? t("git.commit.header_part", { part: String(i + 1), total: String(chunks.length) })
+          : t("git.commit.header");
       await ctx.reply(`${header}\n<pre><code>${chunks[i]}</code></pre>`, {
         parse_mode: "HTML",
       });
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    logger.error("[Bot] Read command error:", error);
+    const errMessage = error instanceof Error ? error.message : String(error);
+    logger.error("[Bot] Commit command error:", error);
     await ctx.api
       .editMessageText(
         chatId,
         statusMsg.message_id,
-        t("read.error", { message: escapeHtml(message) }),
+        t("git.commit.error", { message: escapeHtml(errMessage) }),
         { parse_mode: "HTML" },
       )
       .catch(() => {});

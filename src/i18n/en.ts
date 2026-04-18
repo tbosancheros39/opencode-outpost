@@ -1,6 +1,5 @@
 export const en = {
   // === Command Descriptions ===
-  "cmd.description.ask_and_leave": "Ask in group and leave",
   "cmd.description.branch": "Git branch manager",
   "cmd.description.commands": "Custom commands",
   "cmd.description.commit": "Interactive git commit",
@@ -8,6 +7,7 @@ export const en = {
   "cmd.description.cost": "Cost and token usage analytics",
   "cmd.description.diff": "Show git diff of current project",
   "cmd.description.export": "Export session as file",
+  "cmd.description.fe": "File explorer",
   "cmd.description.health": "Check system health status",
   "cmd.description.help": "Help",
   "cmd.description.journal": "View systemd journal errors",
@@ -17,7 +17,6 @@ export const en = {
   "cmd.description.messages": "Browse session history",
   "cmd.description.models": "Browse and select models",
   "cmd.description.new": "Create a new session",
-  "cmd.description.notify": "Notification preferences",
   "cmd.description.opencode_start": "Start OpenCode server",
   "cmd.description.opencode_stop": "Stop OpenCode server",
   "cmd.description.projects": "List projects",
@@ -561,6 +560,89 @@ export const en = {
   "runtime.wizard.tty_required":
     "Interactive wizard requires a TTY terminal. Run `opencode-telegram config` in an interactive shell.",
   "runtime.wizard.user_id_invalid": "Enter a positive integer (> 0).\n",
+
+  // === Tasks Command ===
+  "tasks.no_user": "❌ Unable to identify user.",
+  "tasks.empty": "📋 No tasks found. Send a prompt to create a task!",
+  "tasks.header": "📋 <b>Your Recent Tasks</b>",
+  "tasks.error": "❌ Failed to retrieve tasks.",
+
+  // === Shell Command ===
+  "shell.usage": "⚠️ Please provide a command.\nUsage: <code>/shell ls -la</code>",
+  "shell.expired": "Command expired. Please retry.",
+  "shell.executing": "Executing...",
+  "shell.cancelled": "Cancelled",
+  "shell.cancelled_msg": "❌ Command cancelled by user.",
+  "shell.running": "⏳ <i>Running locally: <code>{command}</code>...</i>",
+  "shell.running_elapsed":
+    "⏳ <i>Running locally: <code>{command}</code>...\n⏱️ {elapsed} elapsed</i>",
+  "shell.output": "💻 <b>Shell Output</b> [{elapsed}]",
+  "shell.output_part": "💻 <b>Shell Output ({part}/{total})</b> [{elapsed}]",
+  "shell.error": "❌ <b>Error:</b>\n<pre>{message}</pre>",
+
+  // === Sandbox Command ===
+  "sandbox.usage":
+    "🔒 <b>Sandbox Analyzer</b>\n\nExecute scripts/URLs in an isolated bubblewrap sandbox with security analysis.\n\nUsage:\n<code>/sandbox curl https://example.com/script.sh | sh</code>\n<code>/sandbox https://example.com/malware.sh</code>\n<code>/sandbox cat /etc/passwd</code>\n\nNetwork is disabled by default. Use /sandbox --network to allow network access.",
+  "sandbox.no_command": "⚠️ Please provide a command or URL to analyze.",
+  "sandbox.no_bwrap":
+    "❌ <b>bubblewrap is not available</b>\n\nThis command requires bubblewrap (bwrap) to be installed on the system.\nInstall with: sudo apt install bubblewrap",
+  "sandbox.running":
+    "🔒 <i>Running in sandbox{network}: <code>{command}</code>...</i>",
+  "sandbox.header": "🔒 <b>Sandbox Analysis</b> [{elapsed}]",
+  "sandbox.timed_out": "⏱️ <i>Timed out after {seconds}s</i>",
+  "sandbox.exit_code": "Exit code: {code}",
+  "sandbox.output": "📤 <b>Output</b>",
+  "sandbox.output_part": "📤 <b>Output ({part}/{total})</b>",
+  "sandbox.stderr": "📕 <b>Stderr</b>",
+  "sandbox.stderr_part": "📕 <b>Stderr ({part}/{total})</b>",
+  "sandbox.error": "❌ <b>Sandbox Error:</b>\n<pre>{message}</pre>",
+
+  // === Read Command ===
+  "read.usage":
+    "⚠️ Please provide a file path.\nUsage: <code>/read src/index.ts</code>",
+  "read.reading": "📄 <i>Reading: {file}...</i>",
+  "read.header": "📄 <b>{file}:</b>",
+  "read.header_part": "📄 <b>{file} (Part {part}/{total}):</b>",
+  "read.error": "❌ <b>Error reading file:</b>\n<pre>{message}</pre>",
+
+  // === Journal Command ===
+  "journal.watch_started":
+    "👀 <b>Journal Watch Mode Started</b>\n\nI'll watch for new system errors and notify you when they appear.\n\nUse /journal to check recent errors.",
+  "journal.fetching": "📋 <i>Fetching recent system errors...</i>",
+  "journal.error": "❌ <b>Error fetching journal:</b>\n<pre>{message}</pre>",
+
+  // === Health Command ===
+  "health.checking": "📊 Checking system health...",
+  "health.error": "❌ Failed to check system health.",
+
+  // === Git Commands ===
+  "git.branch.checking": "🌿 Checking branches...",
+  "git.branch.empty": "No branches found.",
+  "git.branch.header": "🌿 <b>Git Branches</b>",
+  "git.branch.header_part": "🌿 <b>Git Branches ({part}/{total})</b>",
+  "git.branch.error": "❌ <b>Git branch error:</b>\n<pre>{message}</pre>",
+  "git.commit.usage": "⚠️ Please provide a commit message.\nUsage: <code>/commit Your message here</code>",
+  "git.commit.committing": "📝 Committing changes...",
+  "git.commit.success": "Changes committed successfully.",
+  "git.commit.header": "📝 <b>Git Commit</b>",
+  "git.commit.header_part": "📝 <b>Git Commit ({part}/{total})</b>",
+  "git.commit.error": "❌ <b>Git commit error:</b>\n<pre>{message}</pre>",
+  "git.diff.checking": "📊 Checking for changes...",
+  "git.diff.no_changes": "📊 No changes to show. Working tree clean.",
+  "git.diff.header": "📊 <b>Git Diff</b>",
+  "git.diff.header_part": "📊 <b>Git Diff ({part}/{total})</b>",
+  "git.diff.staged_header": "📊 <b>Git Diff (Staged)</b>",
+  "git.diff.staged_header_part": "📊 <b>Git Diff (Staged) ({part}/{total})</b>",
+  "git.diff.error": "❌ <b>Git diff error:</b>\n<pre>{message}</pre>",
+
+  // === Cost Command ===
+  "cost.no_chat": "❌ Unable to identify chat.",
+  "cost.header": "💰 <b>Cost &amp; Usage Report</b>",
+  "cost.current_session": "📊 <b>Current Session:</b>",
+  "cost.today": "📅 <b>Today:</b>",
+  "cost.week": "📆 <b>This Week:</b>",
+  "cost.by_model": "🏷️ <b>By Model (Today):</b>",
+  "cost.error": "❌ Failed to generate cost report.",
 
   // === Errors ===
   "error.context_button": "❌ Failed to process context button",

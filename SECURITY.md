@@ -1,6 +1,6 @@
 # Security Policy
 
-This document describes the security model, access controls, and best practices for the **OpenCode Telegram Bot**.
+This document describes the security model, access controls, and best practices for the **OpenCode Outpost**.
 
 ---
 
@@ -21,7 +21,7 @@ This document describes the security model, access controls, and best practices 
 
 ### Design Principles
 
-The **OpenCode Telegram Bot** is designed as a **single-user, local-first** tool that acts as a mobile bridge to an OpenCode server running on your own machine. The security model is built around these assumptions:
+The **OpenCode Outpost** is designed as a **single-user, local-first** tool that acts as a mobile bridge to an OpenCode server running on your own machine. The security model is built around these assumptions:
 
 - **Single User:** The bot is intended for individual use, not multi-tenant scenarios.
 - **Local Server:** Both the bot and OpenCode server run on `localhost` or the same trusted local network.
@@ -275,7 +275,7 @@ The bot warns on startup if Redis is configured but unreachable.
 When deploying as a systemd service, use the provided templates:
 
 **Service Files:**
-- `opencode-telegram-bot.service`
+- `opencode-outpost.service`
 - `opencode-serve.service`
 
 **Security Hardening (Recommended):**
@@ -288,7 +288,7 @@ Group=opencode-bot
 # Restrict filesystem access
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/home/opencode-bot/.local/share/opencode-telegram-bot
+ReadWritePaths=/home/opencode-bot/.local/share/opencode-outpost
 
 # Restrict capabilities
 NoNewPrivileges=true
@@ -363,7 +363,7 @@ CapabilityBoundingSet=
 If you discover a security vulnerability:
 
 1. **Do NOT open a public GitHub issue**
-2. **Email:** security@opencode-telegram-bot.dev
+2. **Email:** security@opencode-outpost.dev
 3. **Include:**
    - Vulnerability description
    - Steps to reproduce
@@ -396,6 +396,6 @@ We follow **coordinated disclosure**:
 
 ---
 
-**Last Updated:** 2026-04-17 (P1+P2 Security Hardening)  
+**Last Updated:** 2026-04-18 (P1+P2 Security Hardening)  
 **Maintained By:** OpenCode Telegram Bot Contributors  
 **Version:** 0.14.0

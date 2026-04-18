@@ -12,7 +12,7 @@ function getDefaultTestHome(): string {
   } catch {
     const fallbackPath = path.join(
       os.tmpdir(),
-      "opencode-telegram-bot",
+      "opencode-outpost",
       "test-home",
       `${process.pid}-${workerId}`,
     );

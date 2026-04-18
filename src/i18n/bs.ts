@@ -18,6 +18,7 @@ export const bs = {
   "cmd.description.health": "Provjeri zdravlje sistema",
   "cmd.description.journal": "Pregledaj systemd journal greške",
   "cmd.description.sandbox": "Pokreni komandu u bubblewrap sandbox okruženju",
+  "cmd.description.fe": "Preglednik datoteka",
   "cmd.description.cost": "Cost and token usage analytics",
   "cmd.description.diff": "Show git diff of current project",
   "cmd.description.branch": "Git branch manager",
@@ -28,9 +29,10 @@ export const bs = {
   "cmd.description.mcps": "Pregled MCP servera",
   "cmd.description.models": "Pregled i odabir modela",
   "cmd.description.compact": "Compact session context to free up tokens",
-  "cmd.description.notify": "Notification preferences",
-  "cmd.description.ask_and_leave": "Ask in group and leave",
   "cmd.description.steer": "Interrupt and redirect the agent",
+  "cmd.description.start": "Start or reset the bot",
+  "cmd.description.rename": "Preimenuj trenutnu sesiju",
+  "cmd.description.tts": "Uključi/isključi text-to-speech za odgovore",
 
   "ask_and_leave.error.groups_only":
     "Ova komanda funkcioniše samo u grupnim četovima.\n\nDodajte bota u grupu i tamo koristite /ask_and_leave <pitanje>.",
@@ -431,8 +433,6 @@ export const bs = {
   "commands.page_empty_callback": "Nema komandi na ovoj stranici",
   "commands.page_load_error_callback": "Ne može se učitati ova stranica. Pokušajte ponovo.",
 
-  "cmd.description.rename": "Preimenuj trenutnu sesiju",
-
   "cli.usage":
     "Upotreba:\n  opencode-telegram [start] [--mode sources|installed]\n  opencode-telegram status\n  opencode-telegram stop\n  opencode-telegram config\n\nNapomene:\n  - Bez komande podrazumijeva se `start`\n  - `--mode` je trenutno podržan samo za `start`",
   "cli.placeholder.status":
@@ -571,11 +571,93 @@ export const bs = {
   "llm.guard.queue_failed":
     '<b>/{command}</b>: "{query}"\n\n⚠️ Neuspješno dodavanje u red. Pokušati ponovo?',
   "llm.guard.fallback_query": "Koji je vaš upit?",
-  "cmd.description.tts": "Uključi/isključi text-to-speech za odgovore",
   "tts.enabled": "🔊 Text-to-speech uključen",
   "tts.disabled": "🔇 Text-to-speech isključen",
   "tts.error": "❌ TTS greška",
   "tts.failed": "❌ Neuspješno generisanje audio odgovora.",
   "tts.not_configured": "⚠️ TTS nije konfigurisan. Postavite TTS_API_URL i TTS_API_KEY.",
   "tts.text_too_long": "⚠️ Tekst previše dugačak za TTS (maksimalno {max} karaktera)",
+
+  // === Tasks Command ===
+  "tasks.no_user": "❌ Nije moguće identificirati korisnika.",
+  "tasks.empty": "📋 Nije pronađen nijedan zadatak. Pošaljite poruku da kreirate zadatak!",
+  "tasks.header": "📋 <b>Vaši nedavni zadaci</b>",
+  "tasks.error": "❌ Nije moguće dohvatiti zadatke.",
+
+  // === Shell Command ===
+  "shell.usage": "⚠️ Molimo navedite komandu.\nUpotreba: <code>/shell ls -la</code>",
+  "shell.expired": "Komanda je istekla. Molimo pokušajte ponovo.",
+  "shell.executing": "Izvršava se...",
+  "shell.cancelled": "Otkazano",
+  "shell.cancelled_msg": "❌ Komanda otkazana od strane korisnika.",
+  "shell.running": "⏳ <i>Lokalno izvršavanje: <code>{command}</code>...</i>",
+  "shell.running_elapsed":
+    "⏳ <i>Lokalno izvršavanje: <code>{command}</code>...\n⏱️ {elapsed} prošlo</i>",
+  "shell.output": "💻 <b>Shell izlaz</b> [{elapsed}]",
+  "shell.output_part": "💻 <b>Shell izlaz ({part}/{total})</b> [{elapsed}]",
+  "shell.error": "❌ <b>Greška:</b>\n<pre>{message}</pre>",
+
+  // === Sandbox Command ===
+  "sandbox.usage":
+    "🔒 <b>Sandbox analizator</b>\n\nIzvršite skripte/URL-ove u izoliranom bubblewrap sandbox-u sa analizom sigurnosti.\n\nUpotreba:\n<code>/sandbox curl https://example.com/script.sh | sh</code>\n<code>/sandbox https://example.com/malware.sh</code>\n<code>/sandbox cat /etc/passwd</code>\n\nMreža je onemogućena po defaultu. Koristite /sandbox --network za dozvolu pristupa mreži.",
+  "sandbox.no_command": "⚠️ Molimo navedite komandu ili URL za analizu.",
+  "sandbox.no_bwrap":
+    "❌ <b>bubblewrap nije dostupan</b>\n\nOva komanda zahtijeva bubblewrap (bwrap) instaliran na sistemu.\nInstalacija: sudo apt install bubblewrap",
+  "sandbox.running":
+    "🔒 <i>Izvršavanje u sandbox-u{network}: <code>{command}</code>...</i>",
+  "sandbox.header": "🔒 <b>Sandbox analiza</b> [{elapsed}]",
+  "sandbox.timed_out": "⏱️ <i>Vrijeme isteklo nakon {seconds}s</i>",
+  "sandbox.exit_code": "Kod izlaza: {code}",
+  "sandbox.output": "📤 <b>Izlaz</b>",
+  "sandbox.output_part": "📤 <b>Izlaz ({part}/{total})</b>",
+  "sandbox.stderr": "📕 <b>Stderr</b>",
+  "sandbox.stderr_part": "📕 <b>Stderr ({part}/{total})</b>",
+  "sandbox.error": "❌ <b>Sandbox greška:</b>\n<pre>{message}</pre>",
+
+  // === Read Command ===
+  "read.usage":
+    "⚠️ Molimo navedite putanju do fajla.\nUpotreba: <code>/read src/index.ts</code>",
+  "read.reading": "📄 <i>Čitanje: {file}...</i>",
+  "read.header": "📄 <b>{file}:</b>",
+  "read.header_part": "📄 <b>{file} (Dio {part}/{total}):</b>",
+  "read.error": "❌ <b>Greška pri čitanju fajla:</b>\n<pre>{message}</pre>",
+
+  // === Journal Command ===
+  "journal.watch_started":
+    "👀 <b>Journal način praćenja pokrenut</b>\n\nPratit ću nove sistemske greške i obavještavati vas.\n\nKoristite /journal za provjeru nedavnih grešaka.",
+  "journal.fetching": "📋 <i>Dohvaćanje nedavnih sistemskih grešaka...</i>",
+  "journal.error": "❌ <b>Greška pri dohvaćanju journal-a:</b>\n<pre>{message}</pre>",
+
+  // === Health Command ===
+  "health.checking": "📊 Provjera stanja sistema...",
+  "health.error": "❌ Nije moguće provjeriti stanje sistema.",
+
+  // === Cost Command ===
+  "cost.no_chat": "❌ Nije moguće identificirati chat.",
+  "cost.header": "💰 <b>Izvještaj o troškovima &amp; korištenju</b>",
+  "cost.current_session": "📊 <b>Trenutna sesija:</b>",
+  "cost.today": "📅 <b>Danas:</b>",
+  "cost.week": "📆 <b>Ove sedmice:</b>",
+  "cost.by_model": "🏷️ <b>Po modelu (Danas):</b>",
+  "cost.error": "❌ Nije moguće generisati izvještaj o troškovima.",
+
+  // === Git Commands ===
+  "git.branch.checking": "🌿 Provjera grana...",
+  "git.branch.empty": "Nema pronađenih grana.",
+  "git.branch.header": "🌿 <b>Git grane</b>",
+  "git.branch.header_part": "🌿 <b>Git grane ({part}/{total})</b>",
+  "git.branch.error": "❌ <b>Git branch greška:</b>\n<pre>{message}</pre>",
+  "git.commit.usage": "⚠️ Molimo navedite poruku za commit.\nUpotreba: <code>/commit Vaša poruka</code>",
+  "git.commit.committing": "📝 Commitovanje promjena...",
+  "git.commit.success": "Promjene uspješno commitovane.",
+  "git.commit.header": "📝 <b>Git Commit</b>",
+  "git.commit.header_part": "📝 <b>Git Commit ({part}/{total})</b>",
+  "git.commit.error": "❌ <b>Git commit greška:</b>\n<pre>{message}</pre>",
+  "git.diff.checking": "📊 Provjera promjena...",
+  "git.diff.no_changes": "📊 Nema promjena. Radno stablo je čisto.",
+  "git.diff.header": "📊 <b>Git Diff</b>",
+  "git.diff.header_part": "📊 <b>Git Diff ({part}/{total})</b>",
+  "git.diff.staged_header": "📊 <b>Git Diff (Staged)</b>",
+  "git.diff.staged_header_part": "📊 <b>Git Diff (Staged) ({part}/{total})</b>",
+  "git.diff.error": "❌ <b>Git diff greška:</b>\n<pre>{message}</pre>",
 } as const;

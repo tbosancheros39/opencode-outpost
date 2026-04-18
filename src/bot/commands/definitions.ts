@@ -44,6 +44,7 @@ const COMMAND_DEFINITIONS: BotCommandI18nDefinition[] = [
   { command: "journal", descriptionKey: "cmd.description.journal" },
   { command: "sandbox", descriptionKey: "cmd.description.sandbox" },
   { command: "cost", descriptionKey: "cmd.description.cost" },
+  { command: "fe", descriptionKey: "cmd.description.fe" },
   { command: "export", descriptionKey: "cmd.description.export" },
   { command: "messages", descriptionKey: "cmd.description.messages" },
   { command: "skills", descriptionKey: "cmd.description.skills" },
@@ -52,6 +53,9 @@ const COMMAND_DEFINITIONS: BotCommandI18nDefinition[] = [
   { command: "compact", descriptionKey: "cmd.description.compact" },
   { command: "steer", descriptionKey: "cmd.description.steer" },
   { command: "tts", descriptionKey: "cmd.description.tts" },
+  { command: "branch", descriptionKey: "cmd.description.branch" },
+  { command: "commit", descriptionKey: "cmd.description.commit" },
+  { command: "diff", descriptionKey: "cmd.description.diff" },
 ];
 
 export function getLocalizedBotCommands(): BotCommandDefinition[] {

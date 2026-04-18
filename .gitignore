@@ -41,3 +41,10 @@ scratch_*.ts
 
 # Packaging artifacts
 *.tgz
+
+# Session/audit files
+*_F*_2026-*.md
+SESSION_*.md
+session*.md
+PLAN_*.md
+PublishPolishing.md

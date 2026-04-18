@@ -13,6 +13,10 @@ export const zh: I18nDictionary = {
   "cmd.description.opencode_stop": "停止 OpenCode 服务器",
   "cmd.description.help": "帮助",
   "cmd.description.start": "启动或重置机器人",
+  "cmd.description.fe": "文件管理器",
+  "cmd.description.branch": "Git 分支管理器",
+  "cmd.description.commit": "交互式 Git 提交",
+  "cmd.description.diff": "显示当前项目的 Git 差异",
 
   "callback.unknown_command": "未知命令",
   "callback.processing_error": "处理错误",
@@ -400,17 +404,12 @@ export const zh: I18nDictionary = {
   "cmd.description.journal": "View systemd journal errors",
   "cmd.description.sandbox": "Run command in bubblewrap sandbox",
   "cmd.description.cost": "Cost and token usage analytics",
-  "cmd.description.diff": "Show git diff of current project",
-  "cmd.description.branch": "Git branch manager",
-  "cmd.description.commit": "Interactive git commit",
   "cmd.description.export": "Export session as file",
   "cmd.description.messages": "Browse session history",
   "cmd.description.skills": "Browse available skills",
   "cmd.description.mcps": "Browse MCP servers",
   "cmd.description.models": "Browse and select models",
   "cmd.description.compact": "Compact session context to free up tokens",
-  "cmd.description.notify": "Notification preferences",
-  "cmd.description.ask_and_leave": "Ask in group and leave",
   "cmd.description.steer": "Interrupt and redirect the agent",
 
   "export.error_no_session": "❌ No active session. Start a new session first.",
@@ -551,4 +550,87 @@ export const zh: I18nDictionary = {
   "open.no_subfolders": "No subfolders",
   "open.subfolder_count": "{count} subfolder",
   "open.subfolders_count": "{count} subfolders",
+
+  // === Tasks Command ===
+  "tasks.no_user": "❌ 无法识别用户。",
+  "tasks.empty": "📋 未找到任务。发送消息以创建任务！",
+  "tasks.header": "📋 <b>您最近的任务</b>",
+  "tasks.error": "❌ 无法获取任务。",
+
+  // === Shell Command ===
+  "shell.usage": "⚠️ 请提供命令。\n用法：<code>/shell ls -la</code>",
+  "shell.expired": "命令已过期。请重试。",
+  "shell.executing": "执行中...",
+  "shell.cancelled": "已取消",
+  "shell.cancelled_msg": "❌ 命令已被用户取消。",
+  "shell.running": "⏳ <i>本地执行：<code>{command}</code>...</i>",
+  "shell.running_elapsed":
+    "⏳ <i>本地执行：<code>{command}</code>...\n⏱️ 已用时 {elapsed}</i>",
+  "shell.output": "💻 <b>Shell 输出</b> [{elapsed}]",
+  "shell.output_part": "💻 <b>Shell 输出 ({part}/{total})</b> [{elapsed}]",
+  "shell.error": "❌ <b>错误：</b>\n<pre>{message}</pre>",
+
+  // === Sandbox Command ===
+  "sandbox.usage":
+    "🔒 <b>Sandbox 分析器</b>\n\n在隔离的 bubblewrap sandbox 中执行脚本/URL 并进行安全分析。\n\n用法：\n<code>/sandbox curl https://example.com/script.sh | sh</code>\n<code>/sandbox https://example.com/malware.sh</code>\n<code>/sandbox cat /etc/passwd</code>\n\n默认禁用网络。使用 /sandbox --network 允许网络访问。",
+  "sandbox.no_command": "⚠️ 请提供要分析的命令或 URL。",
+  "sandbox.no_bwrap":
+    "❌ <b>bubblewrap 不可用</b>\n\n此命令需要系统上安装 bubblewrap (bwrap)。\n安装：sudo apt install bubblewrap",
+  "sandbox.running":
+    "🔒 <i>在 sandbox{network} 中执行：<code>{command}</code>...</i>",
+  "sandbox.header": "🔒 <b>Sandbox 分析</b> [{elapsed}]",
+  "sandbox.timed_out": "⏱️ <i>超时 {seconds}秒后</i>",
+  "sandbox.exit_code": "退出代码：{code}",
+  "sandbox.output": "📤 <b>输出</b>",
+  "sandbox.output_part": "📤 <b>输出 ({part}/{total})</b>",
+  "sandbox.stderr": "📕 <b>Stderr</b>",
+  "sandbox.stderr_part": "📕 <b>Stderr ({part}/{total})</b>",
+  "sandbox.error": "❌ <b>Sandbox 错误：</b>\n<pre>{message}</pre>",
+
+  // === Read Command ===
+  "read.usage":
+    "⚠️ 请提供文件路径。\n用法：<code>/read src/index.ts</code>",
+  "read.reading": "📄 <i>读取：{file}...</i>",
+  "read.header": "📄 <b>{file}：</b>",
+  "read.header_part": "📄 <b>{file}（第 {part}/{total} 部分）：</b>",
+  "read.error": "❌ <b>读取文件错误：</b>\n<pre>{message}</pre>",
+
+  // === Journal Command ===
+  "journal.watch_started":
+    "👀 <b>Journal 监视模式已启动</b>\n\n我将监视新的系统错误并在出现时通知您。\n\n使用 /journal 检查最近的错误。",
+  "journal.fetching": "📋 <i>正在获取最近的系统错误...</i>",
+  "journal.error": "❌ <b>获取 journal 错误：</b>\n<pre>{message}</pre>",
+
+  // === Health Command ===
+  "health.checking": "📊 正在检查系统健康状态...",
+  "health.error": "❌ 无法检查系统健康状态。",
+
+  // === Cost Command ===
+  "cost.no_chat": "❌ 无法识别聊天。",
+  "cost.header": "💰 <b>费用 &amp; 使用报告</b>",
+  "cost.current_session": "📊 <b>当前会话：</b>",
+  "cost.today": "📅 <b>今天：</b>",
+  "cost.week": "📆 <b>本周：</b>",
+  "cost.by_model": "🏷️ <b>按模型（今天）：</b>",
+  "cost.error": "❌ 无法生成费用报告。",
+
+  // === Git Commands ===
+  "git.branch.checking": "🌿 正在检查分支...",
+  "git.branch.empty": "未找到分支。",
+  "git.branch.header": "🌿 <b>Git 分支</b>",
+  "git.branch.header_part": "🌿 <b>Git 分支 ({part}/{total})</b>",
+  "git.branch.error": "❌ <b>Git branch 错误：</b>\n<pre>{message}</pre>",
+  "git.commit.usage": "⚠️ 请提供提交消息。\n用法：<code>/commit 您的消息</code>",
+  "git.commit.committing": "📝 正在提交更改...",
+  "git.commit.success": "更改已成功提交。",
+  "git.commit.header": "📝 <b>Git Commit</b>",
+  "git.commit.header_part": "📝 <b>Git Commit ({part}/{total})</b>",
+  "git.commit.error": "❌ <b>Git commit 错误：</b>\n<pre>{message}</pre>",
+  "git.diff.checking": "📊 正在检查更改...",
+  "git.diff.no_changes": "📊 没有更改。工作区干净。",
+  "git.diff.header": "📊 <b>Git Diff</b>",
+  "git.diff.header_part": "📊 <b>Git Diff ({part}/{total})</b>",
+  "git.diff.staged_header": "📊 <b>Git Diff (Staged)</b>",
+  "git.diff.staged_header_part": "📊 <b>Git Diff (Staged) ({part}/{total})</b>",
+  "git.diff.error": "❌ <b>Git diff 错误：</b>\n<pre>{message}</pre>",
 };

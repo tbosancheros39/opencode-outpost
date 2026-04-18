@@ -1,24 +1,25 @@
 import { CommandContext, Context } from "grammy";
 import { getTasksByUser } from "../../task-queue/store.js";
 import { logger } from "../../utils/logger.js";
+import { t } from "../../i18n/index.js";
 import type { TaskStatus } from "../../task-queue/types.js";
 
 export async function tasksCommand(ctx: CommandContext<Context>) {
   try {
     const userId = ctx.from?.id;
     if (!userId) {
-      await ctx.reply("❌ Unable to identify user.");
+      await ctx.reply(t("tasks.no_user"));
       return;
     }
-    
+
     const tasks = getTasksByUser(userId, 10);
-    
+
     if (tasks.length === 0) {
-      await ctx.reply("📋 No tasks found. Send a prompt to create a task!");
+      await ctx.reply(t("tasks.empty"));
       return;
     }
-    
-    const lines: string[] = ["📋 <b>Your Recent Tasks</b>", ""];
+
+    const lines: string[] = [t("tasks.header"), ""];
     
     const statusEmojis: Record<TaskStatus, string> = {
       queued: "⏳",
@@ -52,6 +53,6 @@ export async function tasksCommand(ctx: CommandContext<Context>) {
     
   } catch (err) {
     logger.error("[Bot] tasksCommand error:", err);
-    await ctx.reply("❌ Failed to retrieve tasks.");
+    await ctx.reply(t("tasks.error"));
   }
 }

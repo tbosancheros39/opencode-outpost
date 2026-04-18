@@ -5,6 +5,7 @@ import { getStoredAgent } from "../../agent/manager.js";
 import { getCurrentProject } from "../../settings/manager.js";
 import { logger } from "../../utils/logger.js";
 import { escapeHtml } from "../../utils/html.js";
+import { t } from "../../i18n/index.js";
 import { chunkOutput } from "../utils/chunk.js";
 import {
   classifyCommand,
@@ -26,7 +27,7 @@ export async function shellCommand(ctx: CommandContext<Context>) {
   const command = (ctx.match as string)?.trim();
 
   if (!command) {
-    await ctx.reply("⚠️ Please provide a command.\nUsage: <code>/shell ls -la</code>", {
+    await ctx.reply(t("shell.usage"), {
       parse_mode: "HTML",
     });
     return;
@@ -40,11 +41,11 @@ export async function shellCommand(ctx: CommandContext<Context>) {
       const pending = getPendingCommand(messageId);
 
       if (!pending) {
-        await ctx.answerCallbackQuery({ text: "Command expired. Please retry." });
+        await ctx.answerCallbackQuery({ text: t("shell.expired") });
         return;
       }
 
-      await ctx.answerCallbackQuery({ text: "Executing..." });
+      await ctx.answerCallbackQuery({ text: t("shell.executing") });
       await executeShellCommand(ctx, pending.command, messageId);
       removePendingCommand(messageId);
       return;
@@ -53,8 +54,8 @@ export async function shellCommand(ctx: CommandContext<Context>) {
     if (callbackData?.startsWith("shell:cancel:")) {
       const messageId = parseInt(callbackData.split(":")[2], 10);
       removePendingCommand(messageId);
-      await ctx.answerCallbackQuery({ text: "Cancelled" });
-      await ctx.editMessageText("❌ Command cancelled by user.");
+      await ctx.answerCallbackQuery({ text: t("shell.cancelled") });
+      await ctx.editMessageText(t("shell.cancelled_msg"));
       return;
     }
   }
@@ -104,7 +105,7 @@ async function executeShellCommand(
 
   const statusMsg = messageId
     ? { message_id: messageId }
-    : await ctx.reply(`⏳ <i>Running locally: <code>${escapeHtml(command)}</code>...</i>`, {
+    : await ctx.reply(t("shell.running", { command: escapeHtml(command) }), {
         parse_mode: "HTML",
       });
 
@@ -119,7 +120,7 @@ async function executeShellCommand(
       await ctx.api.editMessageText(
         chatId,
         statusMsg.message_id,
-        `⏳ <i>Running locally: <code>${escapeHtml(command)}</code>...\n⏱️ ${elapsedStr} elapsed</i>`,
+        t("shell.running_elapsed", { command: escapeHtml(command), elapsed: elapsedStr }),
         { parse_mode: "HTML" },
       );
     } catch {
@@ -185,9 +186,9 @@ async function executeShellCommand(
     for (let i = 0; i < chunks.length; i++) {
       const header =
         chunks.length > 1
-          ? `💻 <b>Shell Output (${i + 1}/${chunks.length})</b> [${elapsedStr}]\n`
-          : `💻 <b>Shell Output</b> [${elapsedStr}]\n`;
-      await ctx.reply(`${header}<pre><code>${chunks[i]}</code></pre>`, {
+          ? t("shell.output_part", { part: String(i + 1), total: String(chunks.length), elapsed: elapsedStr })
+          : t("shell.output", { elapsed: elapsedStr });
+      await ctx.reply(`${header}\n<pre><code>${chunks[i]}</code></pre>`, {
         parse_mode: "HTML",
       });
     }
@@ -199,7 +200,7 @@ async function executeShellCommand(
       .editMessageText(
         chatId,
         statusMsg.message_id,
-        `❌ <b>Error:</b>\n<pre>${escapeHtml(message)}</pre>`,
+        t("shell.error", { message: escapeHtml(message) }),
         { parse_mode: "HTML" },
       )
       .catch(() => {});

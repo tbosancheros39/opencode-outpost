@@ -13,6 +13,10 @@ export const ru: I18nDictionary = {
   "cmd.description.opencode_stop": "Остановить OpenCode сервер",
   "cmd.description.help": "Справка",
   "cmd.description.start": "Запуск или сброс бота",
+  "cmd.description.fe": "Проводник",
+  "cmd.description.branch": "Управление ветками Git",
+  "cmd.description.commit": "Интерактивный Git commit",
+  "cmd.description.diff": "Git diff текущего проекта",
 
   "callback.unknown_command": "Неизвестная команда",
   "callback.processing_error": "Ошибка обработки",
@@ -442,17 +446,12 @@ export const ru: I18nDictionary = {
   "cmd.description.journal": "View systemd journal errors",
   "cmd.description.sandbox": "Run command in bubblewrap sandbox",
   "cmd.description.cost": "Cost and token usage analytics",
-  "cmd.description.diff": "Show git diff of current project",
-  "cmd.description.branch": "Git branch manager",
-  "cmd.description.commit": "Interactive git commit",
   "cmd.description.export": "Export session as file",
   "cmd.description.messages": "Browse session history",
   "cmd.description.skills": "Browse available skills",
   "cmd.description.mcps": "Browse MCP servers",
   "cmd.description.models": "Browse and select models",
   "cmd.description.compact": "Compact session context to free up tokens",
-  "cmd.description.notify": "Notification preferences",
-  "cmd.description.ask_and_leave": "Ask in group and leave",
   "cmd.description.steer": "Interrupt and redirect the agent",
 
   "export.error_no_session": "❌ No active session. Start a new session first.",
@@ -593,4 +592,87 @@ export const ru: I18nDictionary = {
   "open.no_subfolders": "No subfolders",
   "open.subfolder_count": "{count} subfolder",
   "open.subfolders_count": "{count} subfolders",
+
+  // === Tasks Command ===
+  "tasks.no_user": "❌ Не удалось идентифицировать пользователя.",
+  "tasks.empty": "📋 Задачи не найдены. Отправьте сообщение, чтобы создать задачу!",
+  "tasks.header": "📋 <b>Ваши последние задачи</b>",
+  "tasks.error": "❌ Не удалось получить задачи.",
+
+  // === Shell Command ===
+  "shell.usage": "⚠️ Пожалуйста, укажите команду.\nИспользование: <code>/shell ls -la</code>",
+  "shell.expired": "Команда истекла. Пожалуйста, повторите.",
+  "shell.executing": "Выполняется...",
+  "shell.cancelled": "Отменено",
+  "shell.cancelled_msg": "❌ Команда отменена пользователем.",
+  "shell.running": "⏳ <i>Локальное выполнение: <code>{command}</code>...</i>",
+  "shell.running_elapsed":
+    "⏳ <i>Локальное выполнение: <code>{command}</code>...\n⏱️ {elapsed} прошло</i>",
+  "shell.output": "💻 <b>Вывод Shell</b> [{elapsed}]",
+  "shell.output_part": "💻 <b>Вывод Shell ({part}/{total})</b> [{elapsed}]",
+  "shell.error": "❌ <b>Ошибка:</b>\n<pre>{message}</pre>",
+
+  // === Sandbox Command ===
+  "sandbox.usage":
+    "🔒 <b>Анализатор Sandbox</b>\n\nВыполнение скриптов/URL в изолированном sandbox bubblewrap с анализом безопасности.\n\nИспользование:\n<code>/sandbox curl https://example.com/script.sh | sh</code>\n<code>/sandbox https://example.com/malware.sh</code>\n<code>/sandbox cat /etc/passwd</code>\n\nСеть отключена по умолчанию. Используйте /sandbox --network для доступа к сети.",
+  "sandbox.no_command": "⚠️ Пожалуйста, укажите команду или URL для анализа.",
+  "sandbox.no_bwrap":
+    "❌ <b>bubblewrap недоступен</b>\n\nЭта команда требует bubblewrap (bwrap), установленный в системе.\nУстановка: sudo apt install bubblewrap",
+  "sandbox.running":
+    "🔒 <i>Выполнение в sandbox{network}: <code>{command}</code>...</i>",
+  "sandbox.header": "🔒 <b>Анализ Sandbox</b> [{elapsed}]",
+  "sandbox.timed_out": "⏱️ <i>Таймаут после {seconds}с</i>",
+  "sandbox.exit_code": "Код выхода: {code}",
+  "sandbox.output": "📤 <b>Вывод</b>",
+  "sandbox.output_part": "📤 <b>Вывод ({part}/{total})</b>",
+  "sandbox.stderr": "📕 <b>Stderr</b>",
+  "sandbox.stderr_part": "📕 <b>Stderr ({part}/{total})</b>",
+  "sandbox.error": "❌ <b>Ошибка Sandbox:</b>\n<pre>{message}</pre>",
+
+  // === Read Command ===
+  "read.usage":
+    "⚠️ Пожалуйста, укажите путь к файлу.\nИспользование: <code>/read src/index.ts</code>",
+  "read.reading": "📄 <i>Чтение: {file}...</i>",
+  "read.header": "📄 <b>{file}:</b>",
+  "read.header_part": "📄 <b>{file} (Часть {part}/{total}):</b>",
+  "read.error": "❌ <b>Ошибка чтения файла:</b>\n<pre>{message}</pre>",
+
+  // === Journal Command ===
+  "journal.watch_started":
+    "👀 <b>Режим мониторинга Journal запущен</b>\n\nЯ буду отслеживать новые системные ошибки и уведомлять вас.\n\nИспользуйте /journal для проверки последних ошибок.",
+  "journal.fetching": "📋 <i>Получение последних системных ошибок...</i>",
+  "journal.error": "❌ <b>Ошибка получения journal:</b>\n<pre>{message}</pre>",
+
+  // === Health Command ===
+  "health.checking": "📊 Проверка состояния системы...",
+  "health.error": "❌ Не удалось проверить состояние системы.",
+
+  // === Cost Command ===
+  "cost.no_chat": "❌ Не удалось идентифицировать чат.",
+  "cost.header": "💰 <b>Отчет о расходах &amp; использовании</b>",
+  "cost.current_session": "📊 <b>Текущая сессия:</b>",
+  "cost.today": "📅 <b>Сегодня:</b>",
+  "cost.week": "📆 <b>На этой неделе:</b>",
+  "cost.by_model": "🏷️ <b>По модели (Сегодня):</b>",
+  "cost.error": "❌ Не удалось создать отчет о расходах.",
+
+  // === Git Commands ===
+  "git.branch.checking": "🌿 Проверка веток...",
+  "git.branch.empty": "Ветки не найдены.",
+  "git.branch.header": "🌿 <b>Ветки Git</b>",
+  "git.branch.header_part": "🌿 <b>Ветки Git ({part}/{total})</b>",
+  "git.branch.error": "❌ <b>Ошибка Git branch:</b>\n<pre>{message}</pre>",
+  "git.commit.usage": "⚠️ Пожалуйста, укажите сообщение коммита.\nИспользование: <code>/commit Ваше сообщение</code>",
+  "git.commit.committing": "📝 Создание коммита...",
+  "git.commit.success": "Изменения успешно закоммичены.",
+  "git.commit.header": "📝 <b>Git Commit</b>",
+  "git.commit.header_part": "📝 <b>Git Commit ({part}/{total})</b>",
+  "git.commit.error": "❌ <b>Ошибка Git commit:</b>\n<pre>{message}</pre>",
+  "git.diff.checking": "📊 Проверка изменений...",
+  "git.diff.no_changes": "📊 Нет изменений. Рабочая директория чиста.",
+  "git.diff.header": "📊 <b>Git Diff</b>",
+  "git.diff.header_part": "📊 <b>Git Diff ({part}/{total})</b>",
+  "git.diff.staged_header": "📊 <b>Git Diff (Staged)</b>",
+  "git.diff.staged_header_part": "📊 <b>Git Diff (Staged) ({part}/{total})</b>",
+  "git.diff.error": "❌ <b>Ошибка Git diff:</b>\n<pre>{message}</pre>",
 };

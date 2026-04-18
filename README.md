@@ -1,118 +1,272 @@
-# OpenCode Telegram Bot (Production Edition)
+# OpenCode Outpost
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+> A Telegram bot client for [OpenCode](https://opencode.ai) — run and monitor coding tasks from your phone.
+
+**Fork of [grinev/opencode-telegram-bot](https://github.com/grinev/opencode-telegram-bot)** by Ruslan Grinev, significantly expanded with multi-user support, task queues, sandboxing, and 35 commands.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](https://nodejs.org)
-
-OpenCode Telegram Bot is a **production-grade, multi-user Telegram client** for the [OpenCode](https://opencode.ai) CLI that runs locally on your machine.
-This fork significantly expands the capabilities of the original skeleton by bringing multi-chat processing, heavy concurrency scaling via BullMQ+Redis, Bubblewrap execution sandboxing, and a robust suite of system and file-interaction commands right to your chat.
-
-Run AI coding tasks, monitor background progress, execute bash/git commands interactively, browse file systems, switch LLM models dynamically, and collaborate with secure bounded environments all from your phone.
 
 <p align="center">
   <img src="assets/screencast.gif" width="45%" alt="OpenCode Telegram Bot screencast" />
+  <img src="assets/Screenshot-1.png" width="45%" alt="OpenCode Telegram Bot screenshot 1" />
+  <img src="assets/Screenshot-2.png" width="45%" alt="OpenCode Telegram Bot screenshot 2" />
+  <img src="assets/Screenshot-3.png" width="45%" alt="OpenCode Telegram Bot screenshot 3" />
 </p>
 
-## 🔥 Feature Highlights
+## Features
 
-- **Multi-Role User Architecture** — Securely handle requests from an array of allowed users rather than a single hardcoded ID. Defines granular roles ranging from `Super User` (auto-approval) to `Restricted`.
-- **Advanced Concurrency Queue (BullMQ + Redis)** — Handles parallel processing reliably and safely. Run heavy scheduled and background tasks smoothly without UI blocking, allowing dynamic session recovery.
-- **Bubblewrap Execution Sandboxing** — System commands and file integrations executed via Telegram are bound to isolated sandboxes ensuring zero host-system breakout vulnerabilities.
-- **System & File Management Layer** — Full system toolkit added mapping directly to your session context. Directly manage directories with `/fe` (File Explorer), check journal telemetry with `/journal`, and view repository tree details.
-- **Git Integration** — Advanced branching, commit evaluation, and repository tracking right through Telegram (`/diff`, `/branch`, `/commit`).
-- **Live Streaming Sub-system** — High-end event sourcing tracks OpenCode responses and renders contextual UI meters, tracking token cost, active pinned status panels, streaming draft arrays, and intelligently batching tool executions.
-- **Voice Transcription + STT** — Fully supports speech recognition by transcribing Whisper-compatible API calls (OpenAI/Groq/Together) directly to intelligent OpenCode task objectives.
-- **Localized Internationalization** — Complete translation schema covering English, Deutsch, Español, Français, Русский, 简体中文, and Bosnian (`bs`).
+- Multi-user access control with role-based permissions
+- BullMQ + Redis task queue for scheduled background tasks
+- Bubblewrap execution sandboxing for shell commands
+- 35 commands including /shell, /sandbox, /fe, /cost, /tts
+- Streaming responses with live draft updates
+- Voice transcription via Whisper-compatible APIs
+- Text-to-speech replies
+- Inline mode commands (@bot feynman: explain X)
+- 7 locales (en, de, es, fr, ru, zh, bs)
+- Proxy support (SOCKS5, HTTP/HTTPS)
+- MarkdownV2 rendering with remark-gfm
 
----
+## Commands
 
-## 🛠 Prerequisites & Dependencies
+35 commands organized by function:
 
-To host and manage this advanced bot environment, ensure you have:
-- **Node.js 20+**
-- **Redis Server** (Extremely critical requirement for BullMQ background synchronization)
-- **OpenCode** (installed globally either via Web UI or GitHub source)
-- **Telegram Bot Token** (Provided by [@BotFather](https://t.me/BotFather))
+### Session & Project
+| Command | Description |
+| ------- | ----------- |
+| `/new` | Start a new session |
+| `/sessions` | List all cached sessions |
+| `/projects` | List all projects |
+| `/status` | Show current session status |
+| `/abort` | Abort the current task |
+| `/stop` | Stop OpenCode |
+| `/rename` | Rename the current session |
+| `/messages` | Show session messages |
 
-## 🚀 Installation & Setup
+### Task Execution
+| Command | Description |
+| ------- | ----------- |
+| `/task` | Queue a background task |
+| `/tasklist` | List pending tasks |
+| `/compact` | Request prompt compaction |
+| `/steer` | Steer the current task |
 
-1. **Obtain Telegram Tokens:**
-   Create a bot with [@BotFather](https://t.me/BotFather) and receive your API Token. Reach out to [@userinfobot](https://t.me/userinfobot) to get your numerical system ID.
+### Local Operations
+| Command | Description |
+| ------- | ----------- |
+| `/shell` | Execute bash in sandbox |
+| `/ls` | List directory contents |
+| `/read` | Read file contents |
+| `/fe` | File explorer |
+| `/logs` | Show process logs |
+| `/health` | Show system health |
+| `/journal` | Show journal telemetry |
+| `/sandbox` | Show sandbox status |
+| `/export` | Export session data |
 
-2. **Launch Redis + OpenCode Local Service:**
-   Since this orchestrates production-level queues, Redis must be bound:
-   ```bash
-   # Ensure your Redis instance is running locally 
-   systemctl start redis
-   
-   # Boot up your OpenCode listener on default port 4096
-   opencode serve
+### Browsing & Selection
+| Command | Description |
+| ------- | ----------- |
+| `/skills` | Manage skills |
+| `/mcps` | Manage MCP servers |
+| `/models` | Switch LLM models |
+| `/commands` | List available commands |
+
+### Bot Control
+| Command | Description |
+| ------- | ----------- |
+| `/start` | Start the bot |
+| `/help` | Show help |
+| `/opencode_start` | Start OpenCode server |
+| `/opencode_stop` | Stop OpenCode server |
+| `/cost` | Show token cost |
+| `/tts` | Text-to-speech reply |
+
+### Inline Commands (via @bot)
+Type in any chat: `@botname <command>: <query>`
+
+| Command | Description |
+| ------- | ----------- |
+| `summarise:` | Summarize text to bullet points |
+| `eli5:` | Explain like I'm 5 |
+| `deep-research:` | Deep research with sources |
+| `steel-man:` | Strongest argument FOR position |
+| `feynman:` | Feynman technique explanation |
+| `devil's-advocate:` | Argue opposite position |
+
+## Prerequisites
+
+- Node.js 20+
+- Redis
+- OpenCode CLI
+- Telegram Bot Token
+- (Optional) API keys for STT/TTS providers
+
+## Installation
+
+### 1. Get Telegram Bot Token & Enable Inline Mode
+
+1. Message [@BotFather](https://t.me/BotFather) on Telegram
+2. Send `/newbot` command
+3. Follow prompts: name your bot, choose username (must end in `bot`)
+4. BotFather sends token: `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`
+5. **Enable Inline Mode:** Send `/setinline` to BotFather, select your bot, enter placeholder text (e.g., "Type your query...")
+6. Save token — you'll need it in `.env`
+
+**Group Support:** Add bot to groups and type `@botname ` (with space) to see 6 inline command options.
+
+### 2. Install OpenCode CLI
+
+```bash
+# Install via npm (recommended)
+npm install -g @opencode-ai/cli
+
+# Or download from https://opencode.ai
+# Verify installation
+opencode --version
+```
+
+### 3. Clone and Setup
+
+```bash
+git clone https://github.com/anini39/opencode-outpost.git
+cd opencode-outpost
+npm install
+cp .env.example .env
+```
+
+### 4. Configure Environment
+
+Edit `.env` file:
+
+```bash
+# Required
+TELEGRAM_BOT_TOKEN=your_token_from_botfather
+TELEGRAM_ALLOWED_USER_IDS=your_telegram_user_id
+OPENCODE_MODEL_PROVIDER=opencode
+OPENCODE_MODEL_ID=big-pickle
+
+# Optional: Speech-to-Text (for voice messages)
+STT_API_URL=https://api.openai.com/v1
+STT_API_KEY=your_openai_key
+
+# Optional: Text-to-Speech
+TTS_ENABLED=true
+TTS_API_URL=https://api.openai.com/v1
+TTS_API_KEY=your_openai_key
+```
+
+**Get your Telegram User ID:** Message [@userinfobot](https://t.me/userinfobot)
+
+**Group Chat Setup:**
+1. Add bot to your group
+2. Get group chat ID: Send `/chatid` in group (or check message details)
+3. Add to `.env`: `TELEGRAM_ALLOWED_CHAT_IDS=-1001234567890`
+4. **Note:** All allowed users can use bot in group. Responses visible to all members.
+
+### Multi-Chat Setup
+
+By default, the bot operates in **single-chat mode** — one private DM per user. To run multiple concurrent chats (e.g., separate sessions for different projects), you must use **Telegram groups**.
+
+**How it works:**
+- Each chat (DM or group) gets its own independent session with separate context and history
+- `MAX_CONCURRENT_CHATS` (default: 3) limits active chats per user
+- Inactive chats auto-close after 5 minutes
+
+**Step-by-step:**
+
+1. **Disable Privacy Mode** (required for groups):
+   - Message [@BotFather](https://t.me/BotFather)
+   - Send `/setprivacy`
+   - Select your bot → choose **Disable**
+   - This allows the bot to read all messages in groups (not just commands)
+
+2. **Create groups and add the bot:**
+   - Create **Group A** in Telegram (e.g., "Project Alpha")
+   - Add your bot as a member
+   - Promote bot to **Admin** (required for message editing and file access)
+   - Repeat for **Group B** (e.g., "Project Beta")
+
+3. **Get group chat IDs:**
+   - Send `/status` in each group — the bot will show the chat ID
+   - Or add [@userinfobot](https://t.me/userinfobot) to the group temporarily
+
+4. **Update `.env`:**
+   ```env
+   # Allowed chat IDs (comma-separated, groups start with -100)
+   TELEGRAM_ALLOWED_CHAT_IDS=-1001234567890,-1009876543210
+
+   # Max concurrent active chats per user (default: 3)
+   MAX_CONCURRENT_CHATS=3
    ```
 
-3. **Install & Run from Source:**
-   Clone this repo and bind the environment variables.
-   ```bash
-   git clone https://github.com/your-username/opencode-telegram-bot.git
-   cd opencode-telegram-bot
-   
-   npm install
-   
-   # Duplicate the robust environment schema
-   cp .env.example .env
-   ```
-   > ⚠️ Edit `.env` and assign your `REDIS_URL`, `TELEGRAM_BOT_TOKEN`, and crucially, arrays for `TELEGRAM_ALLOWED_USER_IDS` and any `TELEGRAM_SUPER_USER_IDS`.
+5. **Restart the bot** for changes to take effect.
 
-4. **Verify TypeScript & Start up:**
-   ```bash
-   # Confirm zero compilation errors
-   npm run build
-   
-   # Run the development daemon
-   npm run dev
-   ```
+**Example setup for 3 concurrent chats:**
 
-## 📚 Core Commands Reference (34 Total)
+| Chat | Type | Session |
+|------|------|---------|
+| Private DM | Direct message to bot | Personal tasks |
+| Group A | Telegram group with bot | Project Alpha |
+| Group B | Telegram group with bot | Project Beta |
 
-This suite offers 34 comprehensive commands scaling far beyond basic integrations. Highlights include:
+Each chat maintains its own session. Switch between them freely — the bot tracks context independently per chat.
 
-### Essential Bot Interfacing
-| Command           | Description                                             |
-| ----------------- | ------------------------------------------------------- |
-| `/start`          | Initialize engine bindings                              |
-| `/status`         | Advanced health visualization and pinned state polling  |
-| `/sessions`       | Browse and restore cached project intervals             |
-| `/projects`       | Hot-Swap active environments                            |
-| `/task`           | Queue up a scheduled background execution block         |
+**API Providers for STT/TTS:**
+- OpenAI: https://platform.openai.com/api-keys
+- Groq: https://console.groq.com/keys
+- Together AI: https://api.together.xyz/settings/api-keys
 
-### Technical Execution & Diagnostics
-| Command           | Description                                             |
-| ----------------- | ------------------------------------------------------- |
-| `/fe`             | Interactive file explorer and browser within Telegram   |
-| `/shell`          | Execute bash within the Bubblewrap bound sandbox        |
-| `/ls` / `/read`   | Interactively visualize isolated directory/file scopes  |
-| `/logs`           | Expose detailed process telemetry                       |
-| `/diff`           | Compare remote Git indexes                              |
-| `/commit`         | Interactively evaluate/push Git records                 |
-| `/sandbox`        | View Bubblewrap binding isolations                      |
+See `.env.example` for all 41 supported environment variables.
 
-### Agent Tiers & Setup
-| Command           | Description                                             |
-| ----------------- | ------------------------------------------------------- |
-| `/skills`         | Setup or inject specific custom AI contexts             |
-| `/mcps`           | Inject Model Context Protocol external servers dynamically|
-| `/models`         | Adjust OpenCode LLMs between favorites and recents      |
-| `/compact`        | Request prompt compaction dynamically to save tokens    |
+## Deployment
 
----
+### Start services
 
-## 🔒 Security Posture
+```bash
+# Terminal 1: Start Redis
+redis-server
+# Or: systemctl start redis
 
-Unlike the original templates, this version incorporates military-grade perimeter checks out-of-the-box:
-1. **Multi-layer Whitelisting:** Access controls filter purely off numerical `userid` assignments preventing bypass spoofing.
-2. **Directory Isolation:** Interactive bot tool executions strictly invoke through `path-validation` limiting directory traversal possibilities on the host filesystem.
-3. **Environment Sanitization:** Automated redacting scrubs host SECRETS out of any stdout terminal outputs before displaying them to any Telegram chat screens.
+# Terminal 2: Start OpenCode
+opencode serve
 
-## 🤝 Contribution Guidelines
-Ensure your developments run correctly over our expanded CI layers. Follow conventional commits for branches (e.g. `feat/...` or `fix/...`). Run `npm run lint` and `npm run build` locally prior to opening PRs. 
+# Terminal 3: Run the bot
+npm run build
+npm run dev
+```
 
-## 📜 License
-[MIT](LICENSE) (Built expanding upon original work licensed under `MIT` implicitly referencing [@grinev])
+### Systemd service example
+
+```ini
+[Unit]
+Description=OpenCode Telegram Bot
+After=network.target redis.service
+
+[Service]
+Type=simple
+User=your-user
+WorkingDirectory=/path/to/opencode-outpost
+ExecStart=/usr/bin/node dist/cli.js
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for access control, sandboxing, and environment sanitization details.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing, and commit conventions.
+
+## License
+
+MIT License
+
+Forked from [grinev/opencode-telegram-bot](https://github.com/grinev/opencode-telegram-bot) by Ruslan Grinev.

@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
-## [Unreleased]
+## [0.14.0] - 2026-04-18
 
 ### Added
 
@@ -35,6 +35,13 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - Added Redis requirement for BullMQ task scheduling
 - Enhanced security with environment sanitization for child processes
 - Improved pinned status message with real-time context usage tracking
+- Migrated to OpenCode SDK v2 with flat params
+- Replaced telegram-markdown-v2 with remark-gfm MarkdownV2 renderer
+- Serialized TTS responses (no fire-and-forget)
+- Upgraded https-proxy-agent to 9.0.0 and socks-proxy-agent to 10.0.0
+- Temp directory now uses `os.tmpdir()` instead of project-relative path
+- All user-facing strings now use i18n `t()` function (7 locales)
+- Removed duplicate `escapeHtml` in sandbox.ts (now imports from utils)
 
 ### Security
 
@@ -42,6 +49,14 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - Environment variable sanitization (`sanitizeEnv()`) for child processes
 - Command confirmation for dangerous operations (`/shell`, `/sandbox`)
 - Bubblewrap sandbox with network isolation and read-only filesystem
+
+### Fixed
+
+- All 122 test failures resolved (chatId params, mock updates, context objects)
+- i18n compliance: 40+ hardcoded strings replaced with `t()` calls across 7 command files
+- Hardcoded temp directory paths replaced with `os.tmpdir()`
+- ESLint config migrated from `.eslintrc.cjs` to `eslint.config.js`
+- Removed unused `remark` and `opencode-wakatime` dependencies
 
 ## [0.13.2] - 2026-04-16
 

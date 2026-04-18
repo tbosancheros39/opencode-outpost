@@ -153,18 +153,18 @@ Model picker behavior:
 
 Open tasks for upcoming iterations:
 
-- [ ] `/messages` command: browse session messages with fork/revert actions
-- [ ] `/skills` command: browse skills and choose one for usage
-- [ ] `/mcps` command: browse available MCP servers
-- [ ] Dynamic subagent activity display during task execution
+- [x] `/messages` command: browse session messages with fork/revert actions
+- [x] `/skills` command: browse skills and choose one for usage
+- [x] `/mcps` command: browse available MCP servers
+- [x] Dynamic subagent activity display during task execution
 - [ ] Git tree support
 - [ ] Docker runtime support and deployment guide
-- [ ] OpenCode server monitoring with automatic restart on stop/crash
+- [x] OpenCode server monitoring with automatic restart on stop/crash
 
 ## Possible Improvements
 
 Optional or longer-term enhancements:
 
-- [ ] Create new OpenCode projects directly from Telegram
+- [x] Create new OpenCode projects directly from Telegram
 - [ ] Add project file browsing helpers (for example, `ls` and `open` flows)
 - [ ] Add a bot settings command with in-chat UI

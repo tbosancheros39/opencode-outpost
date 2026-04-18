@@ -121,6 +121,7 @@ export const config = {
   superUserIds: new Set(getCommaSeparatedIntsEnvVar("TELEGRAM_SUPER_USER_IDS")),
   opencode: {
     apiUrl: getEnvVar("OPENCODE_API_URL", false) || "http://localhost:4096",
+    apiKey: getEnvVar("OPENCODE_API_KEY", false),
     username: getEnvVar("OPENCODE_SERVER_USERNAME", false) || "opencode",
     password: getEnvVar("OPENCODE_SERVER_PASSWORD", false),
     model: {

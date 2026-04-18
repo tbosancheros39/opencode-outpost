@@ -13,6 +13,10 @@ export const es: I18nDictionary = {
   "cmd.description.opencode_stop": "Detener servidor OpenCode",
   "cmd.description.help": "Ayuda",
   "cmd.description.start": "Iniciar o reiniciar el bot",
+  "cmd.description.fe": "Explorador de archivos",
+  "cmd.description.branch": "Gestor de ramas Git",
+  "cmd.description.commit": "Commit interactivo de Git",
+  "cmd.description.diff": "Git diff del proyecto actual",
 
   "callback.unknown_command": "Comando desconocido",
   "callback.processing_error": "Error de procesamiento",
@@ -452,17 +456,12 @@ export const es: I18nDictionary = {
   "cmd.description.journal": "View systemd journal errors",
   "cmd.description.sandbox": "Run command in bubblewrap sandbox",
   "cmd.description.cost": "Cost and token usage analytics",
-  "cmd.description.diff": "Show git diff of current project",
-  "cmd.description.branch": "Git branch manager",
-  "cmd.description.commit": "Interactive git commit",
   "cmd.description.export": "Export session as file",
   "cmd.description.messages": "Browse session history",
   "cmd.description.skills": "Browse available skills",
   "cmd.description.mcps": "Browse MCP servers",
   "cmd.description.models": "Browse and select models",
   "cmd.description.compact": "Compact session context to free up tokens",
-  "cmd.description.notify": "Notification preferences",
-  "cmd.description.ask_and_leave": "Ask in group and leave",
   "cmd.description.steer": "Interrupt and redirect the agent",
 
   "export.error_no_session": "❌ No active session. Start a new session first.",
@@ -605,4 +604,87 @@ export const es: I18nDictionary = {
   "open.no_subfolders": "No subfolders",
   "open.subfolder_count": "{count} subfolder",
   "open.subfolders_count": "{count} subfolders",
+
+  // === Tasks Command ===
+  "tasks.no_user": "❌ No se pudo identificar al usuario.",
+  "tasks.empty": "📋 No se encontraron tareas. ¡Envíe un mensaje para crear una tarea!",
+  "tasks.header": "📋 <b>Sus tareas recientes</b>",
+  "tasks.error": "❌ No se pudieron obtener las tareas.",
+
+  // === Shell Command ===
+  "shell.usage": "⚠️ Por favor proporcione un comando.\nUso: <code>/shell ls -la</code>",
+  "shell.expired": "Comando expirado. Por favor reintente.",
+  "shell.executing": "Ejecutando...",
+  "shell.cancelled": "Cancelado",
+  "shell.cancelled_msg": "❌ Comando cancelado por el usuario.",
+  "shell.running": "⏳ <i>Ejecutando localmente: <code>{command}</code>...</i>",
+  "shell.running_elapsed":
+    "⏳ <i>Ejecutando localmente: <code>{command}</code>...\n⏱️ {elapsed} transcurrido</i>",
+  "shell.output": "💻 <b>Salida del Shell</b> [{elapsed}]",
+  "shell.output_part": "💻 <b>Salida del Shell ({part}/{total})</b> [{elapsed}]",
+  "shell.error": "❌ <b>Error:</b>\n<pre>{message}</pre>",
+
+  // === Sandbox Command ===
+  "sandbox.usage":
+    "🔒 <b>Analizador de Sandbox</b>\n\nEjecute scripts/URLs en un sandbox bubblewrap aislado con análisis de seguridad.\n\nUso:\n<code>/sandbox curl https://example.com/script.sh | sh</code>\n<code>/sandbox https://example.com/malware.sh</code>\n<code>/sandbox cat /etc/passwd</code>\n\nLa red está deshabilitada por defecto. Use /sandbox --network para permitir acceso a la red.",
+  "sandbox.no_command": "⚠️ Por favor proporcione un comando o URL para analizar.",
+  "sandbox.no_bwrap":
+    "❌ <b>bubblewrap no está disponible</b>\n\nEste comando requiere bubblewrap (bwrap) instalado en el sistema.\nInstalar con: sudo apt install bubblewrap",
+  "sandbox.running":
+    "🔒 <i>Ejecutando en sandbox{network}: <code>{command}</code>...</i>",
+  "sandbox.header": "🔒 <b>Análisis de Sandbox</b> [{elapsed}]",
+  "sandbox.timed_out": "⏱️ <i>Tiempo agotado después de {seconds}s</i>",
+  "sandbox.exit_code": "Código de salida: {code}",
+  "sandbox.output": "📤 <b>Salida</b>",
+  "sandbox.output_part": "📤 <b>Salida ({part}/{total})</b>",
+  "sandbox.stderr": "📕 <b>Stderr</b>",
+  "sandbox.stderr_part": "📕 <b>Stderr ({part}/{total})</b>",
+  "sandbox.error": "❌ <b>Error de Sandbox:</b>\n<pre>{message}</pre>",
+
+  // === Read Command ===
+  "read.usage":
+    "⚠️ Por favor proporcione una ruta de archivo.\nUso: <code>/read src/index.ts</code>",
+  "read.reading": "📄 <i>Leyendo: {file}...</i>",
+  "read.header": "📄 <b>{file}:</b>",
+  "read.header_part": "📄 <b>{file} (Parte {part}/{total}):</b>",
+  "read.error": "❌ <b>Error al leer archivo:</b>\n<pre>{message}</pre>",
+
+  // === Journal Command ===
+  "journal.watch_started":
+    "👀 <b>Modo de vigilancia del Journal iniciado</b>\n\nVigilaré nuevos errores del sistema y le notificaré.\n\nUse /journal para verificar errores recientes.",
+  "journal.fetching": "📋 <i>Obteniendo errores recientes del sistema...</i>",
+  "journal.error": "❌ <b>Error al obtener journal:</b>\n<pre>{message}</pre>",
+
+  // === Health Command ===
+  "health.checking": "📊 Verificando estado del sistema...",
+  "health.error": "❌ No se pudo verificar el estado del sistema.",
+
+  // === Cost Command ===
+  "cost.no_chat": "❌ No se pudo identificar el chat.",
+  "cost.header": "💰 <b>Informe de Costos &amp; Uso</b>",
+  "cost.current_session": "📊 <b>Sesión actual:</b>",
+  "cost.today": "📅 <b>Hoy:</b>",
+  "cost.week": "📆 <b>Esta semana:</b>",
+  "cost.by_model": "🏷️ <b>Por modelo (Hoy):</b>",
+  "cost.error": "❌ No se pudo generar el informe de costos.",
+
+  // === Git Commands ===
+  "git.branch.checking": "🌿 Verificando ramas...",
+  "git.branch.empty": "No se encontraron ramas.",
+  "git.branch.header": "🌿 <b>Ramas Git</b>",
+  "git.branch.header_part": "🌿 <b>Ramas Git ({part}/{total})</b>",
+  "git.branch.error": "❌ <b>Error de Git branch:</b>\n<pre>{message}</pre>",
+  "git.commit.usage": "⚠️ Por favor proporcione un mensaje de commit.\nUso: <code>/commit Su mensaje aquí</code>",
+  "git.commit.committing": "📝 Haciendo commit...",
+  "git.commit.success": "Cambios commiteados exitosamente.",
+  "git.commit.header": "📝 <b>Git Commit</b>",
+  "git.commit.header_part": "📝 <b>Git Commit ({part}/{total})</b>",
+  "git.commit.error": "❌ <b>Error de Git commit:</b>\n<pre>{message}</pre>",
+  "git.diff.checking": "📊 Verificando cambios...",
+  "git.diff.no_changes": "📊 No hay cambios. Working tree limpio.",
+  "git.diff.header": "📊 <b>Git Diff</b>",
+  "git.diff.header_part": "📊 <b>Git Diff ({part}/{total})</b>",
+  "git.diff.staged_header": "📊 <b>Git Diff (Staged)</b>",
+  "git.diff.staged_header_part": "📊 <b>Git Diff (Staged) ({part}/{total})</b>",
+  "git.diff.error": "❌ <b>Error de Git diff:</b>\n<pre>{message}</pre>",
 };
