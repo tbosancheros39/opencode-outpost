@@ -18,6 +18,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+*.kate-swp
 
 # Local AI tooling
 .claude/
@@ -29,6 +30,14 @@ logs/
 run/
 settings.json
 .tmp/
+.data/
+
+# Build artifacts and temp files
+src.zip
+stderr
+test-results.txt
+scratch_*.js
+scratch_*.ts
 
 # Packaging artifacts
 *.tgz
