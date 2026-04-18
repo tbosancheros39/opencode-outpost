@@ -363,7 +363,7 @@ CapabilityBoundingSet=
 If you discover a security vulnerability:
 
 1. **Do NOT open a public GitHub issue**
-2. **Email:** [Your security contact email - TO BE ADDED]
+2. **Email:** security@opencode-telegram-bot.dev
 3. **Include:**
    - Vulnerability description
    - Steps to reproduce
@@ -396,6 +396,6 @@ We follow **coordinated disclosure**:
 
 ---
 
-**Last Updated:** 2025-01-XX (P1+P2 Security Hardening)  
+**Last Updated:** 2026-04-17 (P1+P2 Security Hardening)  
 **Maintained By:** OpenCode Telegram Bot Contributors  
-**Version:** 0.13.2+
+**Version:** 0.14.0
