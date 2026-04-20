@@ -1,0 +1,50 @@
+# Node
+node_modules/
+dist/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.kate-swp
+
+# Local AI tooling
+.claude/
+.kilocode/
+.opencode/
+
+# Project specific
+logs/
+run/
+settings.json
+.tmp/
+.data/
+
+# Build artifacts and temp files
+src.zip
+stderr
+test-results.txt
+scratch_*.js
+scratch_*.ts
+
+# Packaging artifacts
+*.tgz
+
+# Session/audit files
+*_F*_2026-*.md
+SESSION_*.md
+session*.md
+PLAN_*.md
+PublishPolishing.md

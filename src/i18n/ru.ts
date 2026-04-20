@@ -1,0 +1,678 @@
+import type { I18nDictionary } from "./en.js";
+
+export const ru: I18nDictionary = {
+  "cmd.description.status": "Статус сервера и сессии",
+  "cmd.description.new": "Создать новую сессию",
+  "cmd.description.stop": "Прервать текущее действие",
+  "cmd.description.sessions": "Список сессий",
+  "cmd.description.projects": "Список проектов",
+  "cmd.description.task": "Создать задачу по расписанию",
+  "cmd.description.tasklist": "Список задач по расписанию",
+  "cmd.description.commands": "Пользовательские команды",
+  "cmd.description.opencode_start": "Запустить OpenCode сервер",
+  "cmd.description.opencode_stop": "Остановить OpenCode сервер",
+  "cmd.description.help": "Справка",
+  "cmd.description.start": "Запуск или сброс бота",
+  "cmd.description.fe": "Проводник",
+  "cmd.description.branch": "Управление ветками Git",
+  "cmd.description.commit": "Интерактивный Git commit",
+  "cmd.description.diff": "Git diff текущего проекта",
+
+  "callback.unknown_command": "Неизвестная команда",
+  "callback.processing_error": "Ошибка обработки",
+
+  "error.load_agents": "❌ Ошибка при загрузке списка агентов",
+  "error.load_models": "❌ Ошибка при загрузке списка моделей",
+  "error.load_variants": "❌ Ошибка при загрузке списка вариантов",
+  "error.context_button": "❌ Ошибка при обработке кнопки контекста",
+  "error.generic": "🔴 Произошла ошибка.",
+
+  "interaction.blocked.expired": "⚠️ Текущая интеракция устарела. Запустите ее снова.",
+  "interaction.blocked.expected_callback":
+    "⚠️ Для этого шага используйте inline-кнопки или нажмите Отмена.",
+  "interaction.blocked.expected_text": "⚠️ Для этого шага отправьте текстовое сообщение.",
+  "interaction.blocked.expected_command": "⚠️ Для этого шага отправьте команду.",
+  "interaction.blocked.command_not_allowed": "⚠️ Эта команда недоступна на текущем шаге.",
+  "interaction.blocked.finish_current":
+    "⚠️ Сначала завершите текущую интеракцию (ответьте или отмените), затем откройте другое меню.",
+
+  "inline.blocked.expected_choice": "⚠️ Выберите вариант через inline-кнопки или нажмите Отмена.",
+  "inline.blocked.command_not_allowed": "⚠️ Эта команда недоступна, пока активно inline-меню.",
+
+  "question.blocked.expected_answer":
+    "⚠️ Ответьте на текущий вопрос кнопками, через Свой ответ, или нажмите Отмена.",
+  "question.blocked.command_not_allowed":
+    "⚠️ Эта команда недоступна, пока не завершен текущий опрос.",
+
+  "inline.button.cancel": "❌ Отмена",
+  "inline.inactive_callback": "Это меню уже неактивно",
+  "inline.cancelled_callback": "Отменено",
+
+  "common.unknown": "неизвестна",
+  "common.unknown_error": "неизвестная ошибка",
+
+  "start.welcome":
+    "👋 Добро пожаловать в OpenCode Telegram Bot!\n\nИспользуйте команды:\n/projects — выбрать проект\n/sessions — список сессий\n/new — новая сессия\n/task — задача по расписанию\n/tasklist — список задач по расписанию\n/status — статус\n/help — справка\n\nРежим, модель и вариант выбираются кнопками внизу.",
+  "help.keyboard_hint":
+    "💡 Режим, модель, вариант и действия с контекстом доступны через нижние кнопки клавиатуры.",
+  "help.text":
+    "📖 **Справка**\n\n/status - Проверить статус сервера\n/sessions - Список сессий\n/new - Создать новую сессию\n/help - Справка",
+
+  "bot.thinking": "💭 Думаю...",
+  "bot.project_not_selected": "🏗 Проект не выбран.\n\nСначала выберите проект командой /projects.",
+  "bot.creating_session": "🔄 Создаю новую сессию...",
+  "bot.create_session_error":
+    "🔴 Не удалось создать сессию. Попробуйте команду /new или проверьте статус сервера /status.",
+  "bot.session_created": "✅ Сессия создана: {title}",
+  "bot.session_busy":
+    "⏳ Агент уже выполняет задачу. Дождитесь завершения или используйте /abort, чтобы прервать текущий запуск.",
+  "bot.session_reset_project_mismatch":
+    "⚠️ Активная сессия не соответствует выбранному проекту, поэтому была сброшена. Используйте /sessions для выбора или /new для создания новой сессии.",
+  "bot.prompt_send_error": "Не удалось отправить запрос в OpenCode.",
+  "bot.session_error": "🔴 OpenCode вернул ошибку: {message}",
+  "bot.session_retry":
+    "🔁 {message}\n\nПровайдер возвращает одну и ту же ошибку при повторных запросах. Используйте /abort для остановки.",
+  "bot.unknown_command": "⚠️ Неизвестная команда: {command}. Используйте /help для списка команд.",
+  "bot.photo_downloading": "⏳ Скачиваю фото...",
+  "bot.photo_too_large": "⚠️ Фото слишком большое (макс. {maxSizeMb}МБ)",
+  "bot.photo_model_no_image":
+    "⚠️ Текущая модель не поддерживает изображения. Отправляю только текст.",
+  "bot.photo_download_error": "🔴 Не удалось скачать фото",
+  "bot.photo_no_caption": "💡 Совет: Добавьте подпись, чтобы описать, что делать с этим фото.",
+  "bot.file_downloading": "⏳ Скачиваю файл...",
+  "bot.file_too_large": "⚠️ Файл слишком большой (макс. {maxSizeMb}МБ)",
+  "bot.file_download_error": "🔴 Не удалось скачать файл",
+  "bot.model_no_pdf": "⚠️ Текущая модель не поддерживает PDF. Отправляю только текст.",
+  "bot.text_file_too_large": "⚠️ Текстовый файл слишком большой (макс. {maxSizeKb}КБ)",
+  "chat_limit.exceeded": "⚠️ Too many active chats. Wait for previous conversations to finish.",
+  "rate_limit.exceeded": "⚠️ Too many messages. Please slow down.",
+
+  "status.header_running": "🟢 OpenCode Server запущен",
+  "status.health.healthy": "Здоров",
+  "status.health.unhealthy": "Не здоров",
+  "status.health.checking": "Проверка...",
+  "status.line.health": "Статус: {health}",
+  "status.line.version": "Версия: {version}",
+  "status.line.managed_yes": "Запущен ботом: Да",
+  "status.line.managed_no": "Запущен ботом: Нет",
+  "status.line.pid": "PID: {pid}",
+  "status.line.uptime_sec": "Uptime: {seconds} сек",
+  "status.line.mode": "Режим: {mode}",
+  "status.line.model": "Модель: {model}",
+  "status.agent_not_set": "не установлен",
+  "status.project_selected": "Проект: {project}",
+  "status.project_not_selected": "Проект: не выбран",
+  "status.project_hint": "Используйте /projects для выбора проекта",
+  "status.session_selected": "Текущая сессия: {title}",
+  "status.session_not_selected": "Текущая сессия: не выбрана",
+  "status.session_hint": "Используйте /sessions для выбора или /new для создания",
+  "status.server_unavailable":
+    "🔴 OpenCode Server недоступен\n\nИспользуйте /opencode_start для запуска сервера.",
+
+  "projects.empty":
+    "📭 Проектов нет.\n\nОткройте директорию в OpenCode и создайте хотя бы одну сессию, после этого она появится здесь.",
+  "projects.select": "Выберите проект:",
+  "projects.select_with_current": "Выберите проект:\n\nТекущий: 🏗 {project}",
+  "projects.page_indicator": "Страница {current}/{total}",
+  "projects.prev_page": "⬅️ Назад",
+  "projects.next_page": "Вперёд ➡️",
+  "projects.fetch_error":
+    "🔴 OpenCode Server недоступен или произошла ошибка при получении списка проектов.",
+  "projects.page_load_error": "Не удалось загрузить эту страницу. Попробуйте снова.",
+  "projects.selected":
+    "✅ Проект выбран: {project}\n\n📋 Сессия сброшена. Используйте /sessions или /new для работы с этим проектом.",
+  "projects.select_error": "🔴 Ошибка при выборе проекта.",
+
+  "sessions.project_not_selected":
+    "🏗 Проект не выбран.\n\nСначала выберите проект командой /projects.",
+  "sessions.empty": "📭 Сессий нет.\n\nСоздайте новую сессию командой /new.",
+  "sessions.select": "Выберите сессию:",
+  "sessions.select_page": "Выберите сессию (страница {page}):",
+  "sessions.fetch_error":
+    "🔴 OpenCode Server недоступен или произошла ошибка при получении списка сессий.",
+  "sessions.select_project_first": "🔴 Проект не выбран. Используйте /projects.",
+  "sessions.page_empty_callback": "На этой странице нет сессий",
+  "sessions.page_load_error_callback":
+    "Не удалось загрузить эту страницу. Пожалуйста, попробуйте снова.",
+  "sessions.button.prev_page": "⬅️ Назад",
+  "sessions.button.next_page": "Вперёд ➡️",
+  "sessions.loading_context": "⏳ Загружаю контекст и последние сообщения...",
+  "sessions.selected": "✅ Сессия выбрана: {title}",
+  "sessions.select_error": "🔴 Ошибка при выборе сессии.",
+  "sessions.preview.empty": "Последних сообщений нет.",
+  "sessions.preview.title": "Последние сообщения:",
+  "sessions.preview.you": "Вы:",
+  "sessions.preview.agent": "Агент:",
+
+  "new.project_not_selected": "🏗 Проект не выбран.\n\nСначала выберите проект командой /projects.",
+  "new.created": "✅ Создана новая сессия: {title}",
+  "new.create_error": "🔴 OpenCode Server недоступен или произошла ошибка при создании сессии.",
+
+  "stop.no_active_session":
+    "🛑 Агент не был запущен\n\nСначала создайте сессию командой /new или выберите существующую через /sessions.",
+  "stop.in_progress":
+    "🛑 Отключил поток событий и отправляю сигнал прерывания...\n\nОжидание остановки агента.",
+  "stop.warn_unconfirmed":
+    "⚠️ Поток событий остановлен, но сервер не подтвердил прерывание.\n\nПроверьте /status и повторите /abort через пару секунд.",
+  "stop.warn_maybe_finished":
+    "⚠️ Поток событий остановлен, но агент мог уже завершиться к моменту запроса.",
+  "stop.success":
+    "✅ Действие агента прервано. Новые сообщения от текущего запуска больше не придут.",
+  "stop.warn_still_busy":
+    "⚠️ Сигнал отправлен, но агент еще busy.\n\nПоток событий уже отключен, поэтому бот не будет присылать промежуточные сообщения.",
+  "stop.warn_timeout":
+    "⚠️ Таймаут запроса на прерывание.\n\nПоток событий уже отключен, повторите /abort через пару секунд.",
+  "stop.warn_local_only":
+    "⚠️ Поток событий остановлен локально, но при прерывании на сервере произошла ошибка.",
+  "stop.error":
+    "🔴 Ошибка при прерывании действия.\n\nПоток событий остановлен, попробуйте /abort еще раз.",
+
+  "opencode_start.already_running_managed":
+    "⚠️ OpenCode Server уже запущен\n\nPID: {pid}\nUptime: {seconds} секунд",
+  "opencode_start.already_running_external":
+    "✅ OpenCode Server уже запущен внешним процессом\n\nВерсия: {version}\n\nЭтот сервер не был запущен через бота, поэтому команда /opencode-stop не сможет его остановить.",
+  "opencode_start.starting": "🔄 Запускаю OpenCode Server...",
+  "opencode_start.start_error":
+    "🔴 Не удалось запустить OpenCode Server\n\nОшибка: {error}\n\nПроверьте, что OpenCode CLI установлен и доступен в PATH:\nopencode --version\nnpm install -g @opencode-ai/cli",
+  "opencode_start.started_not_ready":
+    "⚠️ OpenCode Server запущен, но не отвечает\n\nPID: {pid}\n\nСервер может запускаться. Попробуйте /status через несколько секунд.",
+  "opencode_start.success": "✅ OpenCode Server успешно запущен\n\nPID: {pid}\nВерсия: {version}",
+  "opencode_start.error":
+    "🔴 Произошла ошибка при запуске сервера.\n\nПроверьте логи приложения для подробностей.",
+  "opencode_stop.external_running":
+    "⚠️ OpenCode Server запущен внешним процессом\n\nЭтот сервер не был запущен через /opencode-start.\nОстановите его вручную или используйте /status для проверки состояния.",
+  "opencode_stop.not_running": "⚠️ OpenCode Server не запущен",
+  "opencode_stop.stopping": "🛑 Останавливаю OpenCode Server...\n\nPID: {pid}",
+  "opencode_stop.stop_error": "🔴 Не удалось остановить OpenCode Server\n\nОшибка: {error}",
+  "opencode_stop.success": "✅ OpenCode Server успешно остановлен",
+  "opencode_stop.error":
+    "🔴 Произошла ошибка при остановке сервера.\n\nПроверьте логи приложения для подробностей.",
+
+  "agent.changed_callback": "Режим изменен: {name}",
+  "agent.changed_message": "✅ Режим изменен на: {name}",
+  "agent.change_error_callback": "Ошибка при смене режима",
+  "agent.menu.current": "Текущий режим: {name}\n\nВыберите режим:",
+  "agent.menu.select": "Выберите режим работы:",
+  "agent.menu.empty": "⚠️ Нет доступных агентов",
+  "agent.menu.error": "🔴 Не удалось получить список агентов",
+
+  "model.changed_callback": "Модель изменена: {name}",
+  "model.changed_message": "✅ Модель изменена на: {name}",
+  "model.change_error_callback": "Ошибка при смене модели",
+  "model.menu.empty": "⚠️ Нет доступных моделей",
+  "model.menu.select": "Выберите модель:",
+  "model.menu.current": "Текущая модель: {name}\n\nВыберите модель:",
+  "model.menu.favorites_title": "⭐ Избранное (Добавляйте модели в избранное через OpenCode CLI)",
+  "model.menu.favorites_empty": "— Список пуст.",
+  "model.menu.recent_title": "🕘 Недавние",
+  "model.menu.recent_empty": "— Список пуст.",
+  "model.menu.favorites_hint":
+    "ℹ️ Добавляйте модели в избранное через OpenCode CLI, чтобы они были вверху списка.",
+  "model.menu.error": "🔴 Не удалось получить список моделей",
+
+  "variant.model_not_selected_callback": "Ошибка: модель не выбрана",
+  "variant.changed_callback": "Вариант изменен: {name}",
+  "variant.changed_message": "✅ Вариант изменен на: {name}",
+  "variant.change_error_callback": "Ошибка при смене варианта",
+  "variant.select_model_first": "⚠️ Сначала выберите модель",
+  "variant.menu.empty": "⚠️ Нет доступных вариантов",
+  "variant.menu.current": "Текущий вариант: {name}\n\nВыберите вариант:",
+  "variant.menu.error": "🔴 Не удалось получить список вариантов",
+
+  "context.button.confirm": "✅ Да, сжать контекст",
+  "context.no_active_session": "⚠️ Нет активной сессии. Создайте сессию командой /new",
+  "context.confirm_text":
+    '📊 Сжатие контекста для сессии "{title}"\n\nЭто уменьшит использование контекста, удалив старые сообщения из истории. Текущая задача не будет прервана.\n\nПродолжить?',
+  "context.callback_session_not_found": "Сессия не найдена",
+  "context.callback_compacting": "Сжатие контекста...",
+  "context.progress": "⏳ Сжимаю контекст...",
+  "context.error": "❌ Ошибка при сжатии контекста",
+  "context.success": "✅ Контекст успешно сжат",
+
+  "permission.inactive_callback": "Запрос разрешения неактивен",
+  "permission.processing_error_callback": "Ошибка при обработке",
+  "permission.no_active_request_callback": "Ошибка: нет активного запроса",
+  "permission.reply.once": "Разрешено однократно",
+  "permission.reply.always": "Разрешено всегда",
+  "permission.reply.reject": "Отклонено",
+  "permission.send_reply_error": "❌ Не удалось отправить ответ на запрос разрешения",
+  "permission.blocked.expected_reply": "⚠️ Сначала ответьте на запрос разрешения кнопками выше.",
+  "permission.blocked.command_not_allowed":
+    "⚠️ Эта команда недоступна, пока вы не ответите на запрос разрешения.",
+  "permission.header": "{emoji} Запрос разрешения: {name}\n\n",
+  "permission.button.allow": "✅ Разрешить один раз",
+  "permission.button.always": "🔓 Разрешить всегда",
+  "permission.button.reject": "❌ Отклонить",
+  "permission.name.bash": "Bash",
+  "permission.name.edit": "Edit",
+  "permission.name.write": "Write",
+  "permission.name.read": "Read",
+  "permission.name.webfetch": "Web Fetch",
+  "permission.name.websearch": "Web Search",
+  "permission.name.glob": "File Search",
+  "permission.name.grep": "Content Search",
+  "permission.name.list": "List Directory",
+  "permission.name.task": "Task",
+  "permission.name.lsp": "LSP",
+  "permission.name.external_directory": "Внешняя директория",
+
+  "question.inactive_callback": "Опрос неактивен",
+  "question.processing_error_callback": "Ошибка при обработке",
+  "question.select_one_required_callback": "Выберите хотя бы один вариант",
+  "question.enter_custom_callback": "Введите свой ответ сообщением",
+  "question.cancelled": "❌ Опрос отменен",
+  "question.answer_already_received": "Ответ уже получен, подождите...",
+  "question.completed_no_answers": "✅ Опрос завершен (без ответов)",
+  "question.no_active_project": "❌ Нет активного проекта",
+  "question.no_active_request": "❌ Нет активного запроса",
+  "question.send_answers_error": "❌ Не удалось отправить ответы агенту",
+  "question.multi_hint": "\n(Можно выбрать несколько вариантов)",
+  "question.button.submit": "✅ Готово",
+  "question.button.custom": "🔤 Свой ответ",
+  "question.button.cancel": "❌ Отмена",
+  "question.use_custom_button_first":
+    '⚠️ Чтобы отправить текст, сначала нажмите кнопку "Свой ответ" для текущего вопроса.',
+  "question.summary.title": "✅ Опрос завершен!\n\n",
+  "question.summary.question": "Вопрос {index}:\n{question}\n\n",
+  "question.summary.answer": "Ответ:\n{answer}\n\n",
+
+  "keyboard.agent_mode": "{emoji} {name} Mode",
+  "keyboard.context": "📊 {used} / {limit} ({percent}%)",
+  "keyboard.context_empty": "📊 0",
+  "keyboard.variant": "💭 {name}",
+  "keyboard.variant_default": "💡 Default",
+  "keyboard.updated": "⌨️ Клавиатура обновлена",
+
+  "pinned.default_session_title": "новая сессия",
+  "pinned.unknown": "Неизвестно",
+  "pinned.line.project": "Проект: {project}",
+  "pinned.line.model": "Модель: {model}",
+  "pinned.line.context": "Контекст: {used} / {limit} ({percent}%)",
+  "pinned.line.cost": "Стоимость: {cost} потрачено",
+  "pinned.files.title": "Файлы ({count}):",
+  "pinned.files.item": "  {path}{diff}",
+  "pinned.files.more": "  ... и еще {count}",
+
+  "tool.todo.overflow": "*(ещё {count} задач)*",
+  "tool.file_header.write":
+    "Write File/Path: {path}\n============================================================\n\n",
+  "tool.file_header.edit":
+    "Edit File/Path: {path}\n============================================================\n\n",
+
+  "runtime.wizard.ask_token": "Введите токен Telegram-бота (получить у @BotFather).\n> ",
+  "runtime.wizard.ask_language":
+    "Выберите язык интерфейса.\nВведите номер языка из списка или код локали.\nНажмите Enter, чтобы оставить язык по умолчанию: {defaultLocale}\n{options}\n> ",
+  "runtime.wizard.language_invalid":
+    "Введите номер языка из списка или поддерживаемый код локали.\n",
+  "runtime.wizard.language_selected": "Выбран язык: {language}\n",
+  "runtime.wizard.token_required": "Токен обязателен. Попробуйте еще раз.\n",
+  "runtime.wizard.token_invalid":
+    "Похоже на невалидный токен (ожидается формат <id>:<secret>). Попробуйте еще раз.\n",
+  "runtime.wizard.ask_user_id": "Введите ваш Telegram User ID (можно узнать у @userinfobot).\n> ",
+  "runtime.wizard.user_id_invalid": "Введите положительное целое число (> 0).\n",
+  "runtime.wizard.ask_api_url":
+    "Введите URL OpenCode API (опционально).\nНажмите Enter для значения по умолчанию: {defaultUrl}\n> ",
+  "runtime.wizard.ask_server_username":
+    "Введите логин OpenCode сервера (опционально).\nНажмите Enter для значения по умолчанию: {defaultUsername}\n> ",
+  "runtime.wizard.ask_server_password":
+    "Введите пароль OpenCode сервера (опционально).\nНажмите Enter, чтобы оставить пустым.\n> ",
+  "runtime.wizard.api_url_invalid":
+    "Введите корректный URL (http/https) или нажмите Enter для значения по умолчанию.\n",
+  "runtime.wizard.start": "Настройка OpenCode Telegram Bot.\n",
+  "runtime.wizard.saved": "Конфигурация сохранена:\n- {envPath}\n- {settingsPath}\n",
+  "runtime.wizard.not_configured_starting":
+    "Приложение еще не сконфигурировано. Запускаю wizard...\n",
+  "runtime.wizard.tty_required":
+    "Интерактивный wizard требует TTY-терминал. Запустите `opencode-telegram config` в интерактивной оболочке.",
+
+  "rename.no_session": "⚠️ Нет активной сессии. Сначала создайте или выберите сессию.",
+  "rename.prompt": "📝 Введите новое название сессии:\n\nТекущее: {title}",
+  "rename.empty_title": "⚠️ Название не может быть пустым.",
+  "rename.success": "✅ Сессия переименована в: {title}",
+  "rename.error": "🔴 Не удалось переименовать сессию.",
+  "rename.cancelled": "❌ Переименование отменено.",
+  "rename.inactive_callback": "Запрос переименования неактивен",
+  "rename.inactive": "⚠️ Запрос переименования неактивен. Выполните /rename снова.",
+  "rename.blocked.expected_name":
+    "⚠️ Введите новое название текстом или нажмите Отмена в сообщении переименования.",
+  "rename.blocked.command_not_allowed":
+    "⚠️ Эта команда недоступна, пока ожидается новое название сессии.",
+  "rename.button.cancel": "❌ Отмена",
+
+  "task.prompt.schedule":
+    "⏰ Отправьте расписание задачи обычным языком.\n\nПримеры:\n- каждые 5 минут\n- каждый день в 17:00\n- завтра в 12:00",
+  "task.schedule_empty": "⚠️ Расписание не может быть пустым.",
+  "task.parse.in_progress": "⏳ Распознаю расписание...",
+  "task.parse_error":
+    "🔴 Не удалось распознать расписание.\n\n{message}\n\nОтправьте период еще раз в более явном виде.",
+  "task.schedule_preview":
+    "✅ Расписание распознано\n\nКак я понял: {summary}\n{cronLine}Часовой пояс: {timezone}\nТип: {kind}\nСледующий запуск: {nextRunAt}",
+  "task.schedule_preview.cron": "Cron: {cron}",
+  "task.prompt.body": "📝 Теперь отправьте текст задачи, которую нужно выполнять по расписанию.",
+  "task.prompt_empty": "⚠️ Текст задачи не может быть пустым.",
+  "task.created":
+    "✅ Задача по расписанию создана\n\nЗадача: {description}\nПроект: {project}\nМодель: {model}\nРасписание: {schedule}\n{cronLine}Следующий запуск: {nextRunAt}",
+  "task.created.cron": "Cron: {cron}",
+  "task.button.retry_schedule": "🔁 Ввести период заново",
+  "task.button.cancel": "❌ Отмена",
+  "task.retry_schedule_callback": "Возвращаю ввод периода...",
+  "task.cancel_callback": "Отменяю...",
+  "task.cancelled": "❌ Создание задачи по расписанию отменено.",
+  "task.inactive_callback": "Этот сценарий создания задачи уже неактивен",
+  "task.inactive": "⚠️ Сценарий создания задачи неактивен. Запустите /task снова.",
+  "task.blocked.expected_input":
+    "⚠️ Сначала завершите создание задачи по расписанию: отправьте текст или используйте кнопку в сообщении с расписанием.",
+  "task.blocked.command_not_allowed":
+    "⚠️ Эта команда недоступна, пока идет создание задачи по расписанию.",
+  "task.limit_reached":
+    "⚠️ Достигнут лимит задач ({limit}). Сначала удалите одну из существующих задач по расписанию.",
+  "task.schedule_too_frequent":
+    "Повторяющееся расписание слишком частое. Минимально допустимый интервал - один запуск в 5 минут.",
+  "task.kind.cron": "повторяющаяся",
+  "task.kind.once": "однократная",
+  "task.run.success": "⏰ Задача по расписанию выполнена: {description}",
+  "task.run.error": "🔴 Ошибка выполнения задачи по расписанию: {description}\n\nОшибка: {error}",
+
+  "tasklist.empty": "📭 Задач по расписанию пока нет.",
+  "tasklist.select": "Выберите задачу по расписанию:",
+  "tasklist.details":
+    "⏰ Задача по расписанию\n\nЗадача: {prompt}\nПроект: {project}\nРасписание: {schedule}\n{cronLine}Часовой пояс: {timezone}\nСледующий запуск: {nextRunAt}\nПоследний запуск: {lastRunAt}\nКоличество запусков: {runCount}",
+  "tasklist.details.cron": "Cron: {cron}",
+  "tasklist.button.delete": "🗑 Удалить",
+  "tasklist.button.cancel": "❌ Отмена",
+  "tasklist.deleted_callback": "Удалено",
+  "tasklist.cancelled_callback": "Отменено",
+  "tasklist.inactive_callback": "Это меню задач по расписанию уже неактивно",
+  "tasklist.load_error": "🔴 Не удалось загрузить задачи по расписанию.",
+
+  "commands.select": "Выберите команду OpenCode:",
+  "commands.empty": "📭 Для этого проекта нет доступных команд OpenCode.",
+  "commands.fetch_error": "🔴 Не удалось загрузить список команд OpenCode.",
+  "commands.no_description": "Без описания",
+  "commands.button.execute": "✅ Выполнить",
+  "commands.button.cancel": "❌ Отмена",
+  "commands.confirm":
+    "Подтвердите выполнение команды {command}. Для выполнения с аргументами отправьте аргументы отдельным сообщением.",
+  "commands.inactive_callback": "Это меню команд уже неактивно",
+  "commands.cancelled_callback": "Отменено",
+  "commands.execute_callback": "Запускаю команду...",
+  "commands.executing_prefix": "⚡ Выполнение команды:",
+  "commands.arguments_empty":
+    "⚠️ Аргументы не могут быть пустыми. Отправьте текст или нажмите Выполнить.",
+  "commands.execute_error": "🔴 Не удалось выполнить команду OpenCode.",
+  "commands.select_page": "Выберите команду OpenCode (страница {page}):",
+  "commands.button.prev_page": "⬅️ Назад",
+  "commands.button.next_page": "Вперёд ➡️",
+  "commands.page_empty_callback": "На этой странице нет команд",
+  "commands.page_load_error_callback":
+    "Не удалось загрузить эту страницу. Пожалуйста, попробуйте снова.",
+
+  "cmd.description.rename": "Переименовать текущую сессию",
+
+  "cli.usage":
+    "Использование:\n  opencode-telegram [start] [--mode sources|installed]\n  opencode-telegram status\n  opencode-telegram stop\n  opencode-telegram config\n\nЗаметки:\n  - Без команды по умолчанию используется `start`\n  - `--mode` сейчас поддерживается только для `start`",
+  "cli.placeholder.status":
+    "Команда `status` пока работает как заглушка. Реальная проверка статуса появится на этапе service-слоя (Этап 5).",
+  "cli.placeholder.stop":
+    "Команда `stop` пока работает как заглушка. Реальная остановка фонового процесса появится на этапе service-слоя (Этап 5).",
+  "cli.placeholder.unavailable": "Команда недоступна.",
+  "cli.error.prefix": "CLI error: {message}",
+  "cli.args.unknown_command": "Неизвестная команда: {value}",
+  "cli.args.mode_requires_value": "Опция --mode требует значение: sources|installed",
+  "cli.args.invalid_mode": "Некорректное значение --mode: {value}. Ожидается sources|installed",
+  "cli.args.unknown_option": "Неизвестная опция: {value}",
+  "cli.args.mode_only_start": "Опция --mode поддерживается только для команды start",
+
+  "legacy.models.fetch_error":
+    "🔴 Не удалось получить список моделей. Проверьте статус сервера /status.",
+  "legacy.models.empty": "📋 Нет доступных моделей. Настройте провайдеры через OpenCode.",
+  "legacy.models.header": "📋 Доступные модели:\n\n",
+  "legacy.models.no_provider_models": "  ⚠️ Нет доступных моделей\n",
+  "legacy.models.env_hint": "💡 Для использования модели в .env:\n",
+  "legacy.models.error": "🔴 Произошла ошибка при получении списка моделей.",
+
+  "stt.recognizing": "🎤 Распознаю аудио...",
+  "stt.recognized": "🎤 Распознано:\n{text}",
+  "stt.not_configured":
+    "🎤 Распознавание голоса не настроено.\n\nУстановите STT_API_URL и STT_API_KEY в .env для включения.",
+  "stt.error": "🔴 Не удалось распознать аудио: {error}",
+  "stt.empty_result": "🎤 В аудиосообщении не обнаружена речь.",
+  "cmd.description.shell": "Execute a shell command on this PC",
+  "cmd.description.ls": "List directory contents on this PC",
+  "cmd.description.read": "Read a local file's contents",
+  "cmd.description.tasks": "List your recent prompt tasks",
+  "cmd.description.logs": "View system logs for a service",
+  "cmd.description.health": "Check system health status",
+  "cmd.description.journal": "View systemd journal errors",
+  "cmd.description.sandbox": "Run command in bubblewrap sandbox",
+  "cmd.description.cost": "Cost and token usage analytics",
+  "cmd.description.export": "Export session as file",
+  "cmd.description.messages": "Browse session history",
+  "cmd.description.skills": "Browse available skills",
+  "cmd.description.mcps": "Browse MCP servers",
+  "cmd.description.models": "Browse and select models",
+  "cmd.description.compact": "Compact session context to free up tokens",
+  "cmd.description.steer": "Interrupt and redirect the agent",
+
+  "export.error_no_session": "❌ No active session. Start a new session first.",
+  "export.no_session": "❌ No active session to export.",
+  "export.exporting": "📤 Exporting session...",
+  "export.success": "✅ Session exported to {path}",
+  "export.error": "🔴 Export failed: {error}",
+
+  "fe.error_no_session": "❌ No active session. Start a new session first.",
+  "fe.error_no_project": "❌ No active project. Select a project first.",
+  "fe.empty_directory": "📭 Empty directory",
+  "fe.select_hint": "Select a file to read, or back to go up",
+  "fe.error_listing": "🔴 Failed to list directory: {error}",
+  "fe.inactive_callback": "This file explorer is inactive",
+  "fe.closed": "✅ File explorer closed",
+  "fe.reading_file": "📖 Reading file...",
+  "fe.error_reading": "🔴 Failed to read file: {error}",
+  "fe.selected_path": "📄 Selected: {path}",
+
+  "mcps.status.connected": "🟢 Connected",
+  "mcps.status.disabled": "⚪ Disabled",
+  "mcps.status.failed": "🔴 Failed",
+  "mcps.status.needs_auth": "🔐 Needs Auth",
+  "mcps.status.needs_client_registration": "📝 Needs Registration",
+  "mcps.status.unknown": "❓ Unknown",
+  "mcps.header": "🖥 MCP Servers",
+  "mcps.button.disconnect": "Disconnect",
+  "mcps.button.connect": "Connect",
+  "mcps.button.cancel": "Cancel",
+  "mcps.error_no_chat": "❌ Cannot connect MCP server: no active chat",
+  "mcps.no_project": "❌ No active project. Select a project first.",
+  "mcps.empty": "📭 No MCP servers configured",
+  "mcps.hint": "💡 Connect to browse MCP servers",
+  "mcps.error_load": "🔴 Failed to load MCP servers: {error}",
+  "mcps.inactive_callback": "This MCP menu is inactive",
+  "mcps.cancelled_callback": "Cancelled",
+  "mcps.not_found": "❌ MCP server not found: {name}",
+  "mcps.disconnecting": "🔄 Disconnecting {name}...",
+  "mcps.disconnected": "✅ Disconnected {name}",
+  "mcps.disconnect_error": "🔴 Failed to disconnect {name}: {error}",
+  "mcps.connecting": "🔄 Connecting {name}...",
+  "mcps.connected": "✅ Connected {name}",
+  "mcps.connect_error": "🔴 Failed to connect {name}: {error}",
+
+  "messages.header": "💬 Session Messages",
+  "messages.button.fork": "Fork",
+  "messages.button.revert": "Revert",
+  "messages.button.prev": "⬅️ Prev",
+  "messages.button.next": "Next ➡️",
+  "messages.button.cancel": "Cancel",
+  "messages.error_no_session": "❌ No active session. Start a new session first.",
+  "messages.no_session": "❌ No active session.",
+  "messages.no_project": "❌ No active project. Select a project first.",
+  "messages.empty": "📭 No messages in this session",
+  "messages.error_load": "🔴 Failed to load messages: {error}",
+  "messages.inactive_callback": "This messages menu is inactive",
+  "messages.cancelled_callback": "Cancelled",
+  "messages.forking": "🔄 Forking session...",
+  "messages.fork_error": "🔴 Failed to fork session: {error}",
+  "messages.fork_success": "✅ Session forked",
+  "messages.reverting": "🔄 Reverting to message...",
+  "messages.revert_error": "🔴 Failed to revert: {error}",
+  "messages.revert_success": "✅ Reverted to message",
+
+  "skills.no_description": "No description",
+  "skills.header": "🛠 Available Skills",
+  "skills.button.prev": "⬅️ Prev",
+  "skills.button.next": "Next ➡️",
+  "skills.button.cancel": "Cancel",
+  "skills.error_no_session": "❌ No active session. Start a new session first.",
+  "skills.no_project": "❌ No active project. Select a project first.",
+  "skills.empty": "📭 No skills available",
+  "skills.hint": "💡 Activate a skill to use it",
+  "skills.error_load": "🔴 Failed to load skills: {error}",
+  "skills.inactive_callback": "This skills menu is inactive",
+  "skills.cancelled_callback": "Cancelled",
+  "skills.not_found": "❌ Skill not found: {name}",
+  "skills.activating": "🔄 Activating {name}...",
+  "skills.activation_notice": "✅ Skill {name} activated. It will be loaded for the next prompt.",
+  "skills.no_session_warning": "⚠️ No active session. Activate after starting a session.",
+
+  "steer.usage": "📖 Usage: /steer <message> — Interrupt and redirect the agent with your message",
+  "steer.abort_failed": "🔴 Failed to abort current task: {error}",
+
+  "ask_and_leave.usage": "📖 Usage: /ask_and_leave <question> — Ask in group and leave",
+  "ask_and_leave.no_group": "❌ This command only works in groups",
+  "ask_and_leave.sending": "📨 Sending question to group admins...",
+  "ask_and_leave.success": "✅ Question sent to group admins",
+  "ask_and_leave.error": "🔴 Failed to send question: {error}",
+  "ask_and_leave.error.groups_only": "❌ This command only works in groups",
+  "ask_and_leave.error.no_query": "❌ Please provide a question to ask",
+
+  "llm.guard.blocked": "⛔️ Command blocked: {reason}",
+  "llm.guard.command_blocked": "⛔️ This command is not allowed by the LLM guard",
+  "llm.guard.not_allowed": "⛔️ Not allowed",
+  "llm.guard.fallback_query": "💭 Fallback query triggered",
+  "llm.guard.query_timeout": "⏰ Query timeout",
+  "llm.guard.query_too_short": "⚠️ Query too short",
+  "llm.guard.nothing_pending": "ℹ️ Nothing pending",
+  "llm.guard.confirm_timeout": "⏰ Confirmation timeout",
+  "llm.guard.cancelled": "Cancelled",
+  "llm.guard.edit_prompt": "Edit prompt",
+  "llm.guard.queue_failed": "Failed to queue command",
+
+  "permission.denied.super_user_only": "⛔️ This action is restricted to super users only",
+
+  "inline.cmd.button.generate": "Generate",
+  "inline.cmd.button.edit": "Edit",
+  "inline.cmd.suggestion.usage": "Usage: @{bot_username} <command>:<args>",
+  "inline.cmd.error.query_too_short": "Query too short",
+  "inline.cmd.error.callback_invalid": "Invalid callback",
+  "inline.cmd.error.callback_expired": "Callback expired",
+  "inline.cmd.error.resolution_failed": "Resolution failed",
+  "inline.cmd.summarise.title": "Summarize",
+  "inline.cmd.summarise.description": "Summarize the conversation",
+  "inline.cmd.eli5.title": "Explain Like I'm 5",
+  "inline.cmd.eli5.description": "Explain in simple terms",
+  "inline.cmd.deep_research.title": "Deep Research",
+  "inline.cmd.deep_research.description": "Research a topic thoroughly",
+  "inline.cmd.steel_man.title": "Steel Man",
+  "inline.cmd.steel_man.description": "Present the strongest argument for an opposing view",
+  "inline.cmd.feynman.title": "Feynman",
+  "inline.cmd.feynman.description": "Explain a concept as if teaching to a beginner",
+  "inline.cmd.devils_advocate.title": "Devil's Advocate",
+  "inline.cmd.devils_advocate.description": "Argue against the current position",
+
+  "inline.thinking": "💭 Thinking...",
+
+  "bot.working_on_it": "⏳ Working on it...",
+  "bot.session_reset_to_global": "Session was reset to global default",
+  "tts.enabled": "🔊 Text-to-speech enabled",
+  "tts.disabled": "🔇 Text-to-speech disabled",
+  "tts.error": "❌ Ошибка TTS",
+  "tts.failed": "❌ Failed to generate audio reply.",
+  "tts.not_configured": "⚠️ TTS is not configured. Set TTS_API_URL and TTS_API_KEY.",
+  "tts.text_too_long": "⚠️ Текст слишком длинный для TTS (максимум {max} символов)",
+  "cmd.description.tts": "Toggle text-to-speech for responses",
+  "open.no_subfolders": "No subfolders",
+  "open.subfolder_count": "{count} subfolder",
+  "open.subfolders_count": "{count} subfolders",
+
+  // === Tasks Command ===
+  "tasks.no_user": "❌ Не удалось идентифицировать пользователя.",
+  "tasks.empty": "📋 Задачи не найдены. Отправьте сообщение, чтобы создать задачу!",
+  "tasks.header": "📋 <b>Ваши последние задачи</b>",
+  "tasks.error": "❌ Не удалось получить задачи.",
+
+  // === Shell Command ===
+  "shell.usage": "⚠️ Пожалуйста, укажите команду.\nИспользование: <code>/shell ls -la</code>",
+  "shell.expired": "Команда истекла. Пожалуйста, повторите.",
+  "shell.executing": "Выполняется...",
+  "shell.cancelled": "Отменено",
+  "shell.cancelled_msg": "❌ Команда отменена пользователем.",
+  "shell.running": "⏳ <i>Локальное выполнение: <code>{command}</code>...</i>",
+  "shell.running_elapsed":
+    "⏳ <i>Локальное выполнение: <code>{command}</code>...\n⏱️ {elapsed} прошло</i>",
+  "shell.output": "💻 <b>Вывод Shell</b> [{elapsed}]",
+  "shell.output_part": "💻 <b>Вывод Shell ({part}/{total})</b> [{elapsed}]",
+  "shell.error": "❌ <b>Ошибка:</b>\n<pre>{message}</pre>",
+
+  // === Sandbox Command ===
+  "sandbox.usage":
+    "🔒 <b>Анализатор Sandbox</b>\n\nВыполнение скриптов/URL в изолированном sandbox bubblewrap с анализом безопасности.\n\nИспользование:\n<code>/sandbox curl https://example.com/script.sh | sh</code>\n<code>/sandbox https://example.com/malware.sh</code>\n<code>/sandbox cat /etc/passwd</code>\n\nСеть отключена по умолчанию. Используйте /sandbox --network для доступа к сети.",
+  "sandbox.no_command": "⚠️ Пожалуйста, укажите команду или URL для анализа.",
+  "sandbox.no_bwrap":
+    "❌ <b>bubblewrap недоступен</b>\n\nЭта команда требует bubblewrap (bwrap), установленный в системе.\nУстановка: sudo apt install bubblewrap",
+  "sandbox.running":
+    "🔒 <i>Выполнение в sandbox{network}: <code>{command}</code>...</i>",
+  "sandbox.header": "🔒 <b>Анализ Sandbox</b> [{elapsed}]",
+  "sandbox.timed_out": "⏱️ <i>Таймаут после {seconds}с</i>",
+  "sandbox.exit_code": "Код выхода: {code}",
+  "sandbox.output": "📤 <b>Вывод</b>",
+  "sandbox.output_part": "📤 <b>Вывод ({part}/{total})</b>",
+  "sandbox.stderr": "📕 <b>Stderr</b>",
+  "sandbox.stderr_part": "📕 <b>Stderr ({part}/{total})</b>",
+  "sandbox.error": "❌ <b>Ошибка Sandbox:</b>\n<pre>{message}</pre>",
+
+  // === Read Command ===
+  "read.usage":
+    "⚠️ Пожалуйста, укажите путь к файлу.\nИспользование: <code>/read src/index.ts</code>",
+  "read.reading": "📄 <i>Чтение: {file}...</i>",
+  "read.header": "📄 <b>{file}:</b>",
+  "read.header_part": "📄 <b>{file} (Часть {part}/{total}):</b>",
+  "read.error": "❌ <b>Ошибка чтения файла:</b>\n<pre>{message}</pre>",
+
+  // === Journal Command ===
+  "journal.watch_started":
+    "👀 <b>Режим мониторинга Journal запущен</b>\n\nЯ буду отслеживать новые системные ошибки и уведомлять вас.\n\nИспользуйте /journal для проверки последних ошибок.",
+  "journal.fetching": "📋 <i>Получение последних системных ошибок...</i>",
+  "journal.error": "❌ <b>Ошибка получения journal:</b>\n<pre>{message}</pre>",
+
+  // === Health Command ===
+  "health.checking": "📊 Проверка состояния системы...",
+  "health.error": "❌ Не удалось проверить состояние системы.",
+
+  // === Cost Command ===
+  "cost.no_chat": "❌ Не удалось идентифицировать чат.",
+  "cost.header": "💰 <b>Отчет о расходах &amp; использовании</b>",
+  "cost.current_session": "📊 <b>Текущая сессия:</b>",
+  "cost.today": "📅 <b>Сегодня:</b>",
+  "cost.week": "📆 <b>На этой неделе:</b>",
+  "cost.by_model": "🏷️ <b>По модели (Сегодня):</b>",
+  "cost.error": "❌ Не удалось создать отчет о расходах.",
+
+  // === Git Commands ===
+  "git.branch.checking": "🌿 Проверка веток...",
+  "git.branch.empty": "Ветки не найдены.",
+  "git.branch.header": "🌿 <b>Ветки Git</b>",
+  "git.branch.header_part": "🌿 <b>Ветки Git ({part}/{total})</b>",
+  "git.branch.error": "❌ <b>Ошибка Git branch:</b>\n<pre>{message}</pre>",
+  "git.commit.usage": "⚠️ Пожалуйста, укажите сообщение коммита.\nИспользование: <code>/commit Ваше сообщение</code>",
+  "git.commit.committing": "📝 Создание коммита...",
+  "git.commit.success": "Изменения успешно закоммичены.",
+  "git.commit.header": "📝 <b>Git Commit</b>",
+  "git.commit.header_part": "📝 <b>Git Commit ({part}/{total})</b>",
+  "git.commit.error": "❌ <b>Ошибка Git commit:</b>\n<pre>{message}</pre>",
+  "git.diff.checking": "📊 Проверка изменений...",
+  "git.diff.no_changes": "📊 Нет изменений. Рабочая директория чиста.",
+  "git.diff.header": "📊 <b>Git Diff</b>",
+  "git.diff.header_part": "📊 <b>Git Diff ({part}/{total})</b>",
+  "git.diff.staged_header": "📊 <b>Git Diff (Staged)</b>",
+  "git.diff.staged_header_part": "📊 <b>Git Diff (Staged) ({part}/{total})</b>",
+  "git.diff.error": "❌ <b>Ошибка Git diff:</b>\n<pre>{message}</pre>",
+};

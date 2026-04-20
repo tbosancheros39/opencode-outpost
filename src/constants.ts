@@ -1,0 +1,3 @@
+/**
+ * Shared constants used across the application.
+ */

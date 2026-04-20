@@ -1,0 +1,82 @@
+{
+  "name": "opencode-outpost",
+  "version": "0.14.0",
+  "description": "Telegram bot client for OpenCode to run and monitor coding tasks from chat.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "opencode-outpost": "dist/cli.js"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./cli": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md",
+    ".env.example"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "npm run build && npm start",
+    "release:prepare": "node scripts/release-prepare.mjs",
+    "release:rc": "node scripts/release-prepare.mjs rc",
+    "release:notes:preview": "node scripts/release-notes-preview.mjs",
+    "lint": "eslint src --ext .ts --max-warnings=0",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anini39/opencode-outpost.git"
+  },
+  "keywords": [
+    "opencode",
+    "telegram",
+    "telegram-bot",
+    "grammy",
+    "developer-tools",
+    "cli"
+  ],
+  "author": "anini39",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/anini39/opencode-outpost/issues"
+  },
+  "homepage": "https://github.com/anini39/opencode-outpost#readme",
+  "dependencies": {
+    "@grammyjs/runner": "^2.0.3",
+    "@opencode-ai/sdk": "^1.4.12",
+    "better-sqlite3": "^12.9.0",
+    "bullmq": "^5.74.1",
+    "dotenv": "^17.4.1",
+    "grammy": "^1.42.0",
+    "https-proxy-agent": "^9.0.0",
+    "ioredis": "^5.10.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "socks-proxy-agent": "^10.0.0",
+    "unified": "^11.0.5"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^25.0.8",
+    "@typescript-eslint/eslint-plugin": "^8.58.1",
+    "@typescript-eslint/parser": "^8.58.1",
+    "@vitest/coverage-v8": "^4.1.4",
+    "eslint": "^10.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.4"
+  }
+}
