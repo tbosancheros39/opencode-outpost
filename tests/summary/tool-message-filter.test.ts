@@ -4,7 +4,7 @@ import { getToolStreamKey } from "../../src/bot/streaming/tool-call-streamer.js"
 const mockConfig = vi.hoisted(() => ({
   bot: { hideToolFileMessages: false },
   opencode: {
-    apiUrl: "http://localhost:4096",
+    apiUrl: "http://localhost:4097",
     username: "opencode",
     password: "",
     model: { provider: "test", modelId: "test" },

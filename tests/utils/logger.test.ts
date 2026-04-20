@@ -8,7 +8,7 @@ const { configMock } = vi.hoisted(() => ({
       logLevel: "info",
     },
     opencode: {
-      apiUrl: "http://localhost:4096",
+      apiUrl: "http://localhost:4097",
       password: "",
     },
   },

@@ -107,7 +107,7 @@ describe("process/manager", () => {
       expect(result).toEqual({ success: true });
       expect(spawnMock).toHaveBeenCalledWith(
         "cmd.exe",
-        ["/c", "opencode", "serve"],
+        ["/c", "opencode", "serve", "--port", "4097"],
         expect.objectContaining({
           detached: false,
           windowsHide: true,

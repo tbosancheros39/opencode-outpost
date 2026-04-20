@@ -26,7 +26,7 @@ vi.mock("../../src/config.js", () => ({
       messageFormatMode: "markdown",
     },
     opencode: {
-      apiUrl: "http://localhost:4096",
+      apiUrl: "http://localhost:4097",
       password: "",
     },
     server: {

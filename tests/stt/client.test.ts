@@ -25,7 +25,7 @@ vi.mock("../../src/config.js", () => ({
     // and may get loaded via the test setup's resetSingletonState).
     telegram: { token: "test", allowedUserId: 0, proxyUrl: "" },
     opencode: {
-      apiUrl: "http://localhost:4096",
+      apiUrl: "http://localhost:4097",
       username: "opencode",
       password: "",
       model: { provider: "test", modelId: "test" },

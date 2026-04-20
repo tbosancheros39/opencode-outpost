@@ -43,7 +43,7 @@ describe("runtime/bootstrap", () => {
       "OPENCODE_SERVER_PASSWORD=old-password",
       "TELEGRAM_BOT_TOKEN=old",
       "TELEGRAM_ALLOWED_USER_IDS=1",
-      "OPENCODE_API_URL=http://localhost:4096",
+      "OPENCODE_API_URL=http://localhost:4097",
       "OPENCODE_MODEL_PROVIDER=old-provider",
       "OPENCODE_MODEL_ID=old-model",
       "",
@@ -78,13 +78,13 @@ describe("runtime/bootstrap", () => {
       OPENCODE_SERVER_PASSWORD: "secret",
       OPENCODE_MODEL_PROVIDER: "opencode",
       OPENCODE_MODEL_ID: "big-pickle",
-      OPENCODE_API_URL: "https://localhost:4096",
+      OPENCODE_API_URL: "https://localhost:4097",
     });
 
     expect(updated).toContain("BOT_LOCALE=en");
     expect(updated).toContain("TELEGRAM_BOT_TOKEN=token:value");
     expect(updated).toContain("TELEGRAM_ALLOWED_USER_IDS=42");
-    expect(updated).toContain("OPENCODE_API_URL=https://localhost:4096");
+    expect(updated).toContain("OPENCODE_API_URL=https://localhost:4097");
     expect(updated).toContain("OPENCODE_SERVER_USERNAME=opencode");
     expect(updated).toContain("OPENCODE_SERVER_PASSWORD=secret");
     expect(updated).toContain("OPENCODE_MODEL_PROVIDER=opencode");

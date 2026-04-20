@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockConfigObj = {
   watchdog: { enabled: true, intervalSec: 30, maxRestarts: 3 },
-  opencode: { apiUrl: "http://localhost:4096" },
+  opencode: { apiUrl: "http://localhost:4097" },
 };
 
 describe("opencode-watchdog", () => {

@@ -1,6 +1,7 @@
 import { spawn, exec, type ChildProcess } from "child_process";
 import { promisify } from "util";
 import { getServerProcess, setServerProcess, clearServerProcess } from "../settings/manager.js";
+import { config } from "../config.js";
 import { logger } from "../utils/logger.js";
 import type { ProcessState, ProcessOperationResult, ProcessManagerInterface } from "./types.js";
 
@@ -66,7 +67,12 @@ class ProcessManager implements ProcessManagerInterface {
       logger.info("[ProcessManager] Starting OpenCode server process...");
 
       const isWindows = process.platform === "win32";
-      const args = isWindows ? ["/c", "opencode", "serve"] : ["serve"];
+
+      // Extract port from config API URL so the spawned server matches
+      const apiUrlPort = new URL(config.opencode.apiUrl).port;
+      const args = isWindows
+        ? ["/c", "opencode", "serve", "--port", apiUrlPort]
+        : ["serve", "--port", apiUrlPort];
       const command = isWindows ? "cmd.exe" : "opencode";
 
       // Spawn the process
