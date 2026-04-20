@@ -25,7 +25,7 @@
 ## Demo
 
 <p align="center">
-  <video src="assets/video12_4x.mp4" width="720" autoplay loop muted playsinline></video>
+  <img src="assets/demo.gif" width="360" alt="OpenCode Outpost demo">
 </p>
 
 <p align="center">
