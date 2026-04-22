@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.15.0] - 2026-04-22
+
+### Added
+
+- Knowledge base module with FTS5 full-text search (`/find`, `/digest`, CLI `kb` commands)
+- Session snapshot and resume (`/snapshot`, `/resume`)
+- File pinning to session context (`/pin`)
+- Photo/image attachment handling with vision model support
+- Recent files tracker for quick-access file menus
+- Foreground session state guard for scheduled task concurrency
+- Response cache for quick-action keyboard
+- Docker setup: multi-stage Dockerfile + docker-compose.yml (Redis + bot)
+- Windows setup guide (READMEwindows.md) — Docker, WSL2, Native Windows paths
+- Cross-platform config: `.gitattributes` (LF enforcement), `.editorconfig`, `.dockerignore`
+- `dev:watch` script using tsx for hot-reload development
+- Docker quickstart in README.md
+- Chinese locale (zh) — 7th language
+- `opencode kb` CLI subcommands: ingest, search, list, reset
+- API key validation and masked logging on startup
+- Diagnostic logging for message:text events
+
+### Changed
+
+- Expanded command set from 34 to 40 commands
+- DB path resolution uses `getRuntimePaths().appHome` (safe in installed mode)
+- Task queue store: fixed initSchema recursion, added persistent SQLite backend
+- Settings manager: added semanticSearch, pinnedFiles, costHistory, projectSessions
+- Model filtering: added OpenCode Go and Free model groups with wildcard support
+- Inline menu and query handlers updated for new commands
+- Streaming constants documented as non-configurable in .env.example
+- Removed unused `lastUpdated` field from SummaryAggregator
+- Deleted empty `src/constants.ts` (no imports remained)
+
+### Fixed
+
+- Task queue and knowledge base initSchema recursion bug (called getDb() inside itself)
+- Hardcoded `.data/` paths in task-queue and knowledge-base stores (broke installed mode)
+- `foregroundSessionState.__resetForTests()` missing from test helper (state leak between tests)
+- AGENTS.md test file count corrected (88 → 85)
+- Interaction guard deadlock when prompt completes
+- Watchdog restart now passes port from config to `opencode serve`
+- SDK auth param (use apiKey instead of Basic auth)
+- Default port changed to 4097
+
 ## [0.14.0] - 2026-04-18
 
 ### Added
