@@ -20,7 +20,7 @@ interface SessionMessage {
 
 /**
  * /find command — semantic search across session history
- * Uses SSE event aggregation to fetch messages (session.messages() doesn't exist on v2 SDK)
+ * Uses session.messages() to fetch messages directly
  */
 export async function findCommand(ctx: CommandContext<Context>): Promise<void> {
   const query = ctx.match?.toString().trim();
@@ -86,90 +86,35 @@ export async function findCommand(ctx: CommandContext<Context>): Promise<void> {
   }
 }
 
-/**
- * Fetch session messages using client.session.get and aggregating from SSE events
- * (session.messages() doesn't exist on v2 SDK)
- */
 async function fetchSessionMessages(sessionId: string, directory: string): Promise<SessionMessage[]> {
   const messages: SessionMessage[] = [];
 
   try {
-    // Use session.get to get session details
-    const { data: session, error } = await opencodeClient.session.get({
+    const { data, error } = await opencodeClient.session.messages({
       sessionID: sessionId,
       directory,
     });
 
-    if (error || !session) {
-      logger.warn("[Find] Failed to get session:", error);
+    if (error || !data) {
+      logger.warn("[Find] Failed to get session messages:", error);
       return messages;
     }
 
-    // Subscribe to events and collect messages via SSE
-    const abortController = new AbortController();
-    const eventStream = await opencodeClient.event.subscribe({ directory }, { signal: abortController.signal });
+    for (const msg of data) {
+      const info = msg.info;
+      const textParts = msg.parts.filter((p) => "text" in p && p.type === "text") as Array<{ text: string }>;
+      const text = textParts.map((p) => p.text).join("");
 
-    if (!eventStream.stream) {
-      logger.warn("[Find] No event stream available");
-      return messages;
-    }
-
-    // Collect message events for a limited time
-    const collectDurationMs = 5000;
-    const collectedMessages = new Map<string, SessionMessage>();
-
-    const timeoutPromise = new Promise<void>((resolve) => {
-      setTimeout(resolve, collectDurationMs);
-    });
-
-    const streamPromise = (async () => {
-      try {
-        for await (const event of eventStream.stream!) {
-          if (event.type === "message.updated" || event.type === "message.part.updated") {
-            const properties = event.properties as {
-              info?: { id?: string; role?: string; time?: { created?: number } };
-              part?: { sessionID?: string; messageID?: string; text?: string; type?: string };
-            };
-
-            const messageId = properties.info?.id || properties.part?.messageID;
-            const role = properties.info?.role;
-            const created = properties.info?.time?.created;
-
-            if (messageId && role) {
-              const existing = collectedMessages.get(messageId) || {
-                id: messageId,
-                role,
-                text: "",
-                created: created || Date.now(),
-              };
-              existing.role = role;
-              if (created) existing.created = created;
-
-              // Append text from part updates
-              if (properties.part?.type === "text" && properties.part.text) {
-                existing.text += properties.part.text;
-              }
-
-              collectedMessages.set(messageId, existing);
-            }
-          }
-        }
-      } catch (err) {
-        logger.debug("[Find] Event stream ended:", err);
-      }
-    })();
-
-    await Promise.race([timeoutPromise, streamPromise]);
-    abortController.abort();
-
-    // Convert collected messages to array
-    for (const msg of collectedMessages.values()) {
-      if (msg.text.trim()) {
-        messages.push(msg);
+      if (text.trim()) {
+        messages.push({
+          id: info.id,
+          role: info.role,
+          text,
+          created: info.time.created,
+        });
       }
     }
 
-    // Sort by creation time
     messages.sort((a, b) => a.created - b.created);
   } catch (err) {
     logger.error("[Find] Error fetching messages:", err);

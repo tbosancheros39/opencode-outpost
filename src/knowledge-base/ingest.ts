@@ -80,19 +80,21 @@ function createChunks(text: string, chunkSize: number, chunkOverlap: number): st
     return [text];
   }
 
-  // Try to split on paragraph boundaries first
   const paragraphs = text.split(/\n\n+/);
   let currentChunk = "";
+  let previousTail = "";
 
   for (const paragraph of paragraphs) {
-    if (currentChunk.length + paragraph.length + 2 <= chunkSize) {
-      currentChunk += (currentChunk ? "\n\n" : "") + paragraph;
+    const contentToAdd = previousTail + paragraph;
+
+    if (currentChunk.length + contentToAdd.length + 2 <= chunkSize) {
+      currentChunk += (currentChunk ? "\n\n" : "") + contentToAdd;
     } else {
       if (currentChunk) {
         chunks.push(currentChunk);
+        previousTail = currentChunk.slice(-chunkOverlap);
       }
 
-      // If paragraph itself is too long, split on sentences
       if (paragraph.length > chunkSize) {
         const sentences = paragraph.split(/(?<=[.!?])\s+/);
         currentChunk = "";
@@ -102,20 +104,20 @@ function createChunks(text: string, chunkSize: number, chunkOverlap: number): st
           } else {
             if (currentChunk) {
               chunks.push(currentChunk);
+              previousTail = currentChunk.slice(-chunkOverlap);
             }
-            // If sentence is still too long, force split
             if (sentence.length > chunkSize) {
               for (let i = 0; i < sentence.length; i += chunkSize - chunkOverlap) {
                 chunks.push(sentence.slice(i, i + chunkSize));
               }
-              currentChunk = "";
+              previousTail = "";
             } else {
               currentChunk = sentence;
             }
           }
         }
       } else {
-        currentChunk = paragraph;
+        currentChunk = contentToAdd;
       }
     }
   }

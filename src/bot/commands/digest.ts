@@ -66,7 +66,7 @@ export async function digestCommand(ctx: CommandContext<Context>): Promise<void>
 
 /**
  * Generate a digest of the session context
- * Uses session.get() to fetch full session data (not SSE timeout)
+ * Uses session.messages() to fetch messages for the session
  */
 async function generateDigest(
   sessionId: string,
@@ -75,38 +75,35 @@ async function generateDigest(
   focus?: string,
 ): Promise<string | null> {
   try {
-    const { data: session, error } = await opencodeClient.session.get({
+    const { data: messages, error } = await opencodeClient.session.messages({
       sessionID: sessionId,
       directory: worktree,
     });
 
-    if (error || !session) {
-      logger.warn("[Digest] Failed to get session:", error);
+    if (error || !messages) {
+      logger.warn("[Digest] Failed to get messages:", error);
       return null;
     }
 
-    // Extract messages from session data
-    const messages: DigestMessage[] = [];
+    const digestMessages: DigestMessage[] = [];
 
-    // Session object contains conversation context
-    // Format depends on SDK response structure
-    if (Array.isArray(session)) {
-      for (const item of session) {
-        if (item.role && item.text) {
-          messages.push({
-            role: item.role,
-            text: item.text,
-            created: item.time?.created ?? Date.now(),
-          });
-        }
+    for (const item of messages) {
+      const textParts = item.parts.filter((p) => p.type === "text");
+      const text = textParts.map((p) => (p as { type: "text"; text: string }).text).join("\n");
+      if (text) {
+        digestMessages.push({
+          role: item.info.role,
+          text,
+          created: item.info.time.created,
+        });
       }
     }
 
-    if (messages.length === 0) {
+    if (digestMessages.length === 0) {
       return null;
     }
 
-    return formatDigest(sessionTitle, messages, focus);
+    return formatDigest(sessionTitle, digestMessages, focus);
   } catch (err) {
     logger.error("[Digest] Error generating digest:", err);
     return null;
