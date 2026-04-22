@@ -4,7 +4,7 @@ Quick-reference for future OpenCode sessions working in this repo.
 
 ## Project
 
-OpenCode Outpost — a Telegram bot client for [OpenCode](https://opencode.ai). Bridges Telegram chat to a local OpenCode server via SSE + REST API. Fork of `grinev/opencode-telegram-bot`, significantly expanded.
+OpenCode Outpost — a Telegram bot client for [OpenCode](https://opencode.ai). Bridges Telegram chat to a local OpenCode server via SSE + REST API.
 
 ## Commands
 
@@ -40,13 +40,15 @@ The `--mode` flag overrides: `opencode-outpost start --mode sources|installed`.
 
 | Directory | Purpose |
 |-----------|---------|
-| `src/bot/commands/` | 35 Telegram command handlers |
+| `src/bot/commands/` | 40 Telegram command handlers |
 | `src/bot/handlers/` | Message routing (agent, voice, document, inline query, permission) |
 | `src/bot/middleware/` | Auth, rate-limit, chat-concurrency, interaction-guard |
 | `src/bot/streaming/` | Response + tool-call streaming to Telegram |
+| `src/bot/utils/` | Shared utilities (pin-helpers, etc.) |
 | `src/opencode/` | OpenCode SDK client (`@opencode-ai/sdk/v2`) and SSE event listener |
 | `src/queue/` | BullMQ task queue with in-memory fallback when Redis unavailable |
 | `src/task-queue/` | SQLite-backed persistent task store (better-sqlite3, WAL mode) |
+| `src/knowledge-base/` | Document indexing and search (better-sqlite3 + FTS5) |
 | `src/safety/` | Bubblewrap sandbox, env sanitizer, command classifier, path validator |
 | `src/runtime/` | Mode resolution, path resolution, config wizard bootstrap |
 | `src/i18n/` | 7 locales (en, de, es, fr, ru, zh, bs) |
@@ -59,7 +61,7 @@ The `--mode` flag overrides: `opencode-outpost start --mode sources|installed`.
 
 Many modules export singleton instances that hold state. Tests must call `resetSingletonState()` (in `tests/helpers/reset-singleton-state.ts`) between tests. The test setup file (`tests/setup.ts`) handles this automatically via `beforeEach`/`afterEach`.
 
-Affected singletons: `questionManager`, `permissionManager`, `renameManager`, `interactionManager`, `summaryAggregator`, `keyboardManager`, `pinnedMessageManager`, `processManager`, `stopEventListening`, `__resetSessionDirectoryCacheForTests`.
+Affected singletons: `questionManager`, `permissionManager`, `renameManager`, `interactionManager`, `summaryAggregator`, `keyboardManager`, `pinnedMessageManager`, `processManager`, `stopEventListening`, `__resetSessionDirectoryCacheForTests`, `recentFilesTracker`, `__resetKbForTests`.
 
 ### Queue fallback
 
@@ -84,7 +86,7 @@ If Redis is unavailable (`REDIS_ENABLED=false` or connection fails), the app fal
 
 ## Build & Type System
 
-- **TypeScript** with `module: "NodeNext"`, `moduleResolution: "NodeNext"` — all local imports use `.js` extensions
+- **TypeScript** with `module: "ES2022"`, `moduleResolution: "bundler"` — all local imports use `.js` extensions
 - **Target**: ES2022
 - **Strict mode** enabled
 - **Declaration files** generated (`declaration: true`)
@@ -111,14 +113,14 @@ This is required by `NodeNext` module resolution. Do not use `.ts` extensions.
 ### Required services
 
 - **Redis** — required for BullMQ task queue. Falls back to in-memory queue if unavailable.
-- **OpenCode server** — must be running at `http://localhost:4096` (or `OPENCODE_API_URL`). Start with `opencode serve`.
+- **OpenCode server** — must be running at `http://localhost:4097` (or `OPENCODE_API_URL`). Start with `opencode serve`.
 
 ### Key dependencies
 
 - `grammy` — Telegram Bot framework
 - `@opencode-ai/sdk` — OpenCode API client (uses `/v2` export)
 - `bullmq` + `ioredis` — task queue
-- `better-sqlite3` — persistent task storage (native addon, requires build tools)
+- `better-sqlite3` — persistent task storage and KB (native addon, requires build tools)
 - `remark-gfm` + `remark-parse` + `unified` — MarkdownV2 rendering pipeline
 
 ### Native dependency note
@@ -138,6 +140,39 @@ The config module (`src/config.ts`) is loaded eagerly at import time — it read
 Published as `@tbosancheros39/opencode-outpost` on npm. The `files` field in `package.json` only includes `dist/`, `README.md`, `LICENSE.md`, `.env.example`.
 
 CLI entrypoint: `dist/cli.js` (via `bin.opencode-outpost`).
+
+## Development Notes
+
+### Shared utilities
+
+When extracting duplicate code between command handlers, place shared utilities in:
+- `src/bot/utils/` — bot-specific helpers (e.g., `pin-helpers.ts`)
+- `src/utils/` — general utilities (e.g., `logger.ts`)
+
+Follow the existing pattern: extract functions, import with `.js` extensions, remove duplicates from source files.
+
+### Knowledge Base module
+
+The KB module (`src/knowledge-base/`) provides document indexing and search:
+- Uses better-sqlite3 with FTS5 for full-text search
+- `store.ts` exports `__resetKbForTests()` for test isolation
+- DB path is relative (`.data/knowledge-base.db`) — same pattern as task-queue store
+
+### RAG infrastructure
+
+`local-rag.py` provides local document indexing using Ollama embeddings:
+- Embeds documents into `rag_storage/` directory
+- Uses `mxbai-embed-large` model by default
+- Queries return scored chunks from indexed files
+
+### Audit trail documents
+
+The repo uses markdown files for tracking analysis and fixes:
+- `docs/analysis_results.md` — pre-commit audit findings
+- `pr0blemFIX.md` — detailed fix session reports
+- `review-report.md` — post-fix verification and issues
+
+Reference these before making changes to understand historical context.
 
 ## Release Scripts
 

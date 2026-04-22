@@ -56,6 +56,12 @@ const COMMAND_DEFINITIONS: BotCommandI18nDefinition[] = [
   { command: "branch", descriptionKey: "cmd.description.branch" },
   { command: "commit", descriptionKey: "cmd.description.commit" },
   { command: "diff", descriptionKey: "cmd.description.diff" },
+  // New commands
+  { command: "find", descriptionKey: "cmd.description.find" },
+  { command: "pin", descriptionKey: "cmd.description.pin" },
+  { command: "snapshot", descriptionKey: "cmd.description.snapshot" },
+  { command: "resume", descriptionKey: "cmd.description.resume" },
+  { command: "digest", descriptionKey: "cmd.description.digest" },
 ];
 
 export function getLocalizedBotCommands(): BotCommandDefinition[] {

@@ -151,6 +151,7 @@ async function processLlmDirectJob(data: TaskJobData): Promise<TaskJobResult> {
       storedModel.providerID || undefined,
       storedModel.modelID || undefined,
     );
+
     if (inlineMessageId) {
       await telegramBotApi.raw.editMessageText({
         inline_message_id: inlineMessageId,

@@ -9,6 +9,7 @@ export interface RuntimePaths {
   settingsFilePath: string;
   logsDirPath: string;
   runDirPath: string;
+  dataDirPath: string;
 }
 
 const APP_DIR_NAME = "opencode-outpost";
@@ -51,5 +52,6 @@ export function getRuntimePaths(): RuntimePaths {
     settingsFilePath: path.join(appHome, "settings.json"),
     logsDirPath: path.join(appHome, "logs"),
     runDirPath: path.join(appHome, "run"),
+    dataDirPath: path.join(appHome, ".data"),
   };
 }

@@ -5,8 +5,8 @@ import { logger } from "../utils/logger.js";
  * Only models from these groups will be shown in the model selection menu.
  */
 export const MODEL_GROUPS = {
-  GITHUB_COPILOT: "github-copilot",
-  OPENCODE_ZEN_FREE: "opencode-zen-free",
+  OPENCODE_GO: "opencode-go",
+  OPENCODE_FREE: "opencode-free",
 } as const;
 
 export type ModelGroup = (typeof MODEL_GROUPS)[keyof typeof MODEL_GROUPS];
@@ -16,22 +16,22 @@ export type ModelGroup = (typeof MODEL_GROUPS)[keyof typeof MODEL_GROUPS];
  * ONLY these models will appear in the menu.
  */
 const TELEGRAM_ALLOWED_MODELS: Array<{ providerID: string; modelPattern: string }> = [
-  // OpenCode Go Provider — open-source coding models (7 models)
+  // OpenCode Go Provider — open-source coding models
   { providerID: "opencode-go", modelPattern: "glm-5" },
   { providerID: "opencode-go", modelPattern: "glm-5.1" },
   { providerID: "opencode-go", modelPattern: "kimi-k2.5" },
+  { providerID: "opencode-go", modelPattern: "kimi-k2.6" },
   { providerID: "opencode-go", modelPattern: "mimo-v2-omni" },
   { providerID: "opencode-go", modelPattern: "mimo-v2-pro" },
   { providerID: "opencode-go", modelPattern: "minimax-m2.5" },
   { providerID: "opencode-go", modelPattern: "minimax-m2.7" },
 
-  // OpenCode Provider — free + GitHub Copilot models (6 models)
-  { providerID: "opencode", modelPattern: "big-pickle" },
-  { providerID: "opencode", modelPattern: "nemotron-3-super-free" },
-  { providerID: "opencode", modelPattern: "claude-sonnet-4-6" },
-  { providerID: "opencode", modelPattern: "gpt-5.2" },
-  { providerID: "opencode", modelPattern: "gpt-5.3-codex" },
-  { providerID: "opencode", modelPattern: "gpt-5.4-mini" },
+  // OpenCode Provider — free model
+  { providerID: "opencode", modelPattern: "minimax-m2.5-free" },
+
+  // OpenRouter Provider — AI model routing service
+  // Configured in ~/.opencode/opencode.json with @ai-sdk/openai-compatible
+  { providerID: "openrouter", modelPattern: "*" },
 ];
 
 /**
@@ -43,6 +43,7 @@ function matchesPattern(text: string, pattern: string): boolean {
 
 /**
  * Check if a model matches any pattern from a specific list.
+ * Supports wildcard "*" for modelPattern (matches all models from provider).
  */
 function matchesAnyPattern(
   providerID: string,
@@ -52,6 +53,10 @@ function matchesAnyPattern(
   for (const pattern of patterns) {
     if (pattern.providerID !== "*" && pattern.providerID !== providerID) {
       continue;
+    }
+    // Wildcard "*" matches all models from this provider
+    if (pattern.modelPattern === "*") {
+      return true;
     }
     if (matchesPattern(modelID, pattern.modelPattern)) {
       return true;
@@ -80,6 +85,14 @@ export function isFreeModel(
     // Check if provider matches (wildcard "*" matches all providers)
     if (pattern.providerID !== "*" && pattern.providerID !== providerID) {
       continue;
+    }
+
+    // Wildcard "*" matches all models from this provider
+    if (pattern.modelPattern === "*") {
+      logger.debug(
+        `[FreeModels] Model ${providerID}/${modelID} matches wildcard pattern: ${pattern.providerID}/*`,
+      );
+      return true;
     }
 
     // Check if model ID matches pattern

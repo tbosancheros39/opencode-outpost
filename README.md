@@ -2,8 +2,6 @@
 
 > A Telegram bot client for [OpenCode](https://opencode.ai) — run and monitor coding tasks from your phone.
 
-**Fork of [grinev/opencode-telegram-bot](https://github.com/grinev/opencode-telegram-bot)** by Ruslan Grinev, significantly expanded with multi-user support, task queues, sandboxing, and 35 commands.
-
 <p align="center">
   <a href="https://www.npmjs.com/package/@tbosancheros39/opencode-outpost">
     <img src="https://img.shields.io/npm/v/@tbosancheros39/opencode-outpost" alt="npm version">
@@ -54,7 +52,7 @@
 - Multi-user access control with role-based permissions
 - BullMQ + Redis task queue for scheduled background tasks
 - Bubblewrap execution sandboxing for shell commands
-- 35 commands including /shell, /sandbox, /fe, /cost, /tts
+- 40 commands including /shell, /sandbox, /fe, /cost, /tts
 - Streaming responses with live draft updates
 - Voice transcription via Whisper-compatible APIs
 - Text-to-speech replies
@@ -85,7 +83,7 @@ See [PRODUCT.md](./PRODUCT.md) for feature status and planned work.
 
 ## Commands
 
-35 commands organized by function:
+40 commands organized by function:
 
 ### Session & Project
 | Command | Description |
@@ -98,14 +96,18 @@ See [PRODUCT.md](./PRODUCT.md) for feature status and planned work.
 | `/stop` | Stop OpenCode |
 | `/rename` | Rename the current session |
 | `/messages` | Show session messages |
+| `/snapshot` | Save a session snapshot |
+| `/resume` | Resume from a snapshot |
 
 ### Task Execution
 | Command | Description |
 | ------- | ----------- |
 | `/task` | Queue a background task |
+| `/tasks` | List pending tasks (alias for /tasklist) |
 | `/tasklist` | List pending tasks |
 | `/compact` | Request prompt compaction |
 | `/steer` | Steer the current task |
+| `/digest` | Summarize recent session activity |
 
 ### Local Operations
 | Command | Description |
@@ -114,11 +116,19 @@ See [PRODUCT.md](./PRODUCT.md) for feature status and planned work.
 | `/ls` | List directory contents |
 | `/read` | Read file contents |
 | `/fe` | File explorer |
+| `/find` | Search files by name |
 | `/logs` | Show process logs |
 | `/health` | Show system health |
 | `/journal` | Show journal telemetry |
 | `/sandbox` | Show sandbox status |
 | `/export` | Export session data |
+
+### Git Operations
+| Command | Description |
+| ------- | ----------- |
+| `/branch` | Show or switch git branch |
+| `/commit` | Create a git commit |
+| `/diff` | Show git diff |
 
 ### Browsing & Selection
 | Command | Description |
@@ -126,6 +136,7 @@ See [PRODUCT.md](./PRODUCT.md) for feature status and planned work.
 | `/skills` | Manage skills |
 | `/mcps` | Manage MCP servers |
 | `/models` | Switch LLM models |
+| `/pin` | Pin files to session context |
 | `/commands` | List available commands |
 
 ### Bot Control
@@ -152,19 +163,17 @@ Type in any chat: `@botname <command>: <query>`
 
 ## Why Outpost?
 
-A **significantly expanded fork** of [grinev/opencode-telegram-bot](https://github.com/grinev/opencode-telegram-bot) with:
-
-| Feature | Upstream | Outpost |
-|---------|----------|---------|
-| Multi-user access | Single user | Role-based (super/simple/restricted) |
-| Task queue | In-memory | BullMQ + Redis |
-| Shell execution | Direct | Bubblewrap sandbox |
-| Commands | 18 | 35 |
-| Inline mode | No | Yes (6 commands) |
-| Voice + TTS | STT only | Full STT + TTS |
-| File explorer | No | `/fe` command |
-| System monitoring | No | `/health`, `/journal` |
-| Localization | 6 languages | 7 languages |
+| Feature | Description |
+|---------|-------------|
+| Multi-user access | Role-based (super/simple/restricted) |
+| Task queue | BullMQ + Redis |
+| Shell execution | Bubblewrap sandbox |
+| Commands | 40 |
+| Inline mode | Yes (6 commands) |
+| Voice + TTS | Full STT + TTS |
+| File explorer | `/fe` command |
+| System monitoring | `/health`, `/journal` |
+| Localization | 7 languages |
 
 ## Quick Start
 
@@ -332,8 +341,7 @@ See [.env.example](.env.example) for all 41 supported environment variables.
 
 ## FAQ
 
-**How is this different from grinev/opencode-telegram-bot?**
-Outpost is a hard fork with multi-user RBAC, BullMQ task queues, Bubblewrap sandboxing, 35 commands (vs 18), inline mode, file explorer, and system monitoring. See [Why Outpost?](#why-outpost) for the full comparison.
+
 
 **Do I need Redis?**
 Yes, Redis is required for BullMQ task queues and scheduled background tasks. Install with `apt install redis` or `brew install redis`.
@@ -398,10 +406,8 @@ Have questions, feedback, or ideas?
 
 - 💬 [GitHub Discussions](https://github.com/tbosancheros39/opencode-outpost/discussions) — Ask questions, share experiences
 - 🐛 [GitHub Issues](https://github.com/tbosancheros39/opencode-outpost/issues) — Bug reports and feature requests
-- 🍴 **Forks welcome!** This is a hard fork of [grinev/opencode-telegram-bot](https://github.com/grinev/opencode-telegram-bot) with significant enhancements.
+- 🍴 **Contributions welcome!**
 
 ## License
 
 MIT License
-
-Forked from [grinev/opencode-telegram-bot](https://github.com/grinev/opencode-telegram-bot) by Ruslan Grinev.

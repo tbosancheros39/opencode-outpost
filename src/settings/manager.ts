@@ -52,6 +52,8 @@ export interface Settings {
   costHistory?: CostEntry[];
   projectSessions?: Record<string, string>;
   ttsEnabled?: boolean;
+  semanticSearch?: boolean;
+  pinnedFiles?: string[];
 }
 
 const DEFAULT_CHAT_ID = 0;
@@ -89,7 +91,9 @@ function writeSettingsFile(settings: Settings): Promise<void> {
         const fs = await import("fs/promises");
         const settingsFilePath = getSettingsFilePath();
         await fs.mkdir(path.dirname(settingsFilePath), { recursive: true });
-        await fs.writeFile(settingsFilePath, JSON.stringify(settings, null, 2));
+        const tmp = `${settingsFilePath}.tmp`;
+        await fs.writeFile(tmp, JSON.stringify(settings, null, 2), "utf-8");
+        await fs.rename(tmp, settingsFilePath);
       } catch (err) {
         logger.error("[SettingsManager] Error writing settings file:", err);
       }
@@ -287,6 +291,49 @@ export function setTtsEnabled(chatId: number, enabled: boolean): void {
   settings[TTS_ENABLED_KEY] = enabled;
   void writeSettingsFile(settings);
   logger.info(`[Settings] TTS ${enabled ? "enabled" : "disabled"} for chat ${chatId}`);
+}
+
+// Semantic Search Settings
+export function isSemanticSearchEnabled(chatId: number): boolean {
+  return getSettings(chatId).semanticSearch === true;
+}
+
+export function setSemanticSearchEnabled(chatId: number, enabled: boolean): void {
+  const settings = getSettings(chatId);
+  settings.semanticSearch = enabled;
+  void writeSettingsFile(settings);
+  logger.info(`[Settings] Semantic search ${enabled ? "enabled" : "disabled"} for chat ${chatId}`);
+}
+
+// Pinned Files Settings
+export function getPinnedFiles(chatId: number): string[] {
+  return getSettings(chatId).pinnedFiles ?? [];
+}
+
+export function setPinnedFiles(chatId: number, files: string[]): void {
+  const settings = getSettings(chatId);
+  settings.pinnedFiles = files;
+  void writeSettingsFile(settings);
+  logger.info(`[Settings] Updated pinned files for chat ${chatId}: ${files.length} files`);
+}
+
+export function addPinnedFile(chatId: number, filePath: string): void {
+  const settings = getSettings(chatId);
+  if (!settings.pinnedFiles) {
+    settings.pinnedFiles = [];
+  }
+  if (!settings.pinnedFiles.includes(filePath)) {
+    settings.pinnedFiles.push(filePath);
+    void writeSettingsFile(settings);
+  }
+}
+
+export function removePinnedFile(chatId: number, filePath: string): void {
+  const settings = getSettings(chatId);
+  if (settings.pinnedFiles) {
+    settings.pinnedFiles = settings.pinnedFiles.filter((f) => f !== filePath);
+    void writeSettingsFile(settings);
+  }
 }
 
 export function __resetSettingsForTests(): void {

@@ -1,4 +1,4 @@
 /**
  * Variant types
  */
-export { VariantInfo } from "../model/types.js";
+export type { VariantInfo } from "../model/types.js";

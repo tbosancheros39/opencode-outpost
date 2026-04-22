@@ -173,7 +173,7 @@ function expandCronMinuteToken(token: string): number[] {
     }
 
     const baseValues = expandCronMinuteBase(rawBase);
-    return baseValues.filter((value, index) => {
+    return baseValues.filter((_value, index) => {
       if (baseValues.length === 0) {
         return false;
       }

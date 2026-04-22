@@ -1,4 +1,6 @@
-export const bs = {
+import type { I18nDictionary } from "./en.js";
+
+export const bs: I18nDictionary = {
   "cmd.description.status": "Status servera i sesije",
   "cmd.description.new": "Kreiraj novu sesiju",
   "cmd.description.stop": "Zaustavi trenutnu akciju",
@@ -33,11 +35,22 @@ export const bs = {
   "cmd.description.start": "Start or reset the bot",
   "cmd.description.rename": "Preimenuj trenutnu sesiju",
   "cmd.description.tts": "Uključi/isključi text-to-speech za odgovore",
+  "cmd.description.digest": "Sažetak konteksta trenutne sesije",
+  "cmd.description.find": "Semantička pretraga historije sesije",
+  "cmd.description.pin": "Prikvači fajlove u kontekst",
+  "cmd.description.resume": "Vrati iz snimka",
+  "cmd.description.snapshot": "Sačuvaj kontekst sesije u SQLite",
 
+  "ask_and_leave.error": "🔴 Neuspješno slanje pitanja: {error}",
   "ask_and_leave.error.groups_only":
     "Ova komanda funkcioniše samo u grupnim četovima.\n\nDodajte bota u grupu i tamo koristite /ask_and_leave <pitanje>.",
   "ask_and_leave.error.no_query":
-    "Please provide a question.\n\nExample: /ask_and_leave What is the capital of France?",
+    "Molimo navedite pitanje.\n\nPrimjer: /ask_and_leave Koji je glavni grad Francuske?",
+  "ask_and_leave.no_group": "❌ Ova komanda radi samo u grupama",
+  "ask_and_leave.sending": "📨 Slanje pitanja administratorima grupe...",
+  "ask_and_leave.success": "✅ Pitanje poslano administratorima grupe",
+  "ask_and_leave.usage": "📖 Upotreba: /ask_and_leave <pitanje> — Pitaj u grupi i napusti",
+
   "steer.usage": "Usage: /steer <new instruction>\n\nExample: /steer Stop looping and use python",
   "steer.abort_failed":
     "Could not interrupt the agent. The session is still busy. Try again or use /abort first.",
@@ -76,6 +89,77 @@ export const bs = {
   "common.unknown": "nepoznato",
   "common.unknown_error": "nepoznata greška",
 
+  // === Find Command ===
+  "cmd.find.usage": "Upotreba: /find <upit> - Pretraži historiju sesije\nPrimjer: /find autentifikacija",
+  "cmd.find.searching": "Pretraga za: {query}...",
+  "cmd.find.no_session": "Nema aktivne sesije. Pokrenite sesiju sa /new prvo.",
+  "cmd.find.no_messages": "Nema pronađenih poruka u ovoj sesiji.",
+  "cmd.find.no_results": "Nema rezultata za vašu pretragu.",
+  "cmd.find.results_header": "Rezultati pretrage za \"{query}\" ({count} pronađeno):\n\n",
+  "cmd.find.error": "Neuspješna pretraga historije sesije.",
+  "cmd.find.error_query_too_long": "Upit predug. Molimo držite pretrage ispod 500 karaktera.",
+
+  // === Pin Command ===
+  "cmd.pin.usage_add": "Upotreba: /pin add <putanja>",
+  "cmd.pin.usage_remove": "Upotreba: /pin remove <putanja>",
+  "cmd.pin.empty": "Nema prikvačenih fajlova. Koristite /pin <putanja> za prikvačivanje.",
+  "cmd.pin.header": "📌 Prikvačeni fajlovi:",
+  "cmd.pin.hint": "Koristite /pin add <putanja> za dodavanje, /pin remove <putanja> za uklanjanje, /pin clear za brisanje svih.",
+  "cmd.pin.added": "Prikvačeni fajl dodan: {path}",
+  "cmd.pin.removed": "Uklonjen prikvačeni fajl: {path}",
+  "cmd.pin.cleared": "Svi prikvačeni fajlovi obrisani.",
+  "cmd.pin.not_found": "Prikvačeni fajl nije pronađen: {path}",
+  "cmd.pin.already_pinned": "Fajl je već prikvačen: {path}",
+  "cmd.pin.file_not_found": "Fajl nije pronađen: {path}",
+  "cmd.pin.error_is_directory": "Ne može se prikvačiti direktorij kao fajl: {path}",
+  "cmd.pin.limit_reached": "Dostignut maksimalan broj prikvačenih fajlova ({limit}). Prvo uklonite jedan.",
+  "cmd.pin.error_add": "Neuspješno prikvačivanje fajla.",
+  "cmd.pin.error_remove": "Neuspješno uklanjanje prikvačenog fajla.",
+  "cmd.pin.error_clear": "Neuspješno brisanje prikvačenih fajlova.",
+  "cmd.pin.button_clear_all": "🧹 Obriši sve",
+  "cmd.pin.button_refresh": "🔄 Osvježi",
+  "cmd.pin.callback_invalid_index": "Nevažeći indeks datoteke.",
+  "cmd.pin.menu_title": "📌 Prikači datoteke",
+  "cmd.pin.no_files": "Nema nedavnih ili prikačenih datoteka.\nPokrenite sesiju i interaktujte sa datotekama — automatski će se pojaviti ovdje.",
+  "cmd.pin.pinned_header": "📌 Prikačene — dodirnite za otkači:",
+  "cmd.pin.recent_header": "📄 Nedavne — dodirnite za prikači:",
+
+  // === Snapshot Command ===
+  "cmd.snapshot.no_session": "Nema aktivne sesije. Pokrenite sesiju sa /new prvo.",
+  "cmd.snapshot.saved": "Snimak sačuvan: {name}\nID: {id}",
+  "cmd.snapshot.empty": "Nema pronađenih snimaka za ovu sesiju.",
+  "cmd.snapshot.list_header": "📸 Snimci sesije:",
+  "cmd.snapshot.list_page": "📸 Snimci sesije (stranica {page}):",
+  "cmd.snapshot.prev_page": "Prethodna",
+  "cmd.snapshot.next_page": "Sljedeća",
+  "cmd.snapshot.info": "Snimak: {name}\nID: {id}\nSesija: {session}\nDatum: {date}",
+  "cmd.snapshot.not_found": "Snimak nije pronađen: {id}",
+  "cmd.snapshot.deleted": "Snimak obrisan: {id}",
+  "cmd.snapshot.usage_load": "Upotreba: /snapshot load <id>",
+  "cmd.snapshot.usage_delete": "Upotreba: /snapshot delete <id>",
+  "cmd.snapshot.error_save": "Neuspješno čuvanje snimka.",
+  "cmd.snapshot.error_list": "Neuspješno listanje snimaka.",
+  "cmd.snapshot.error_load": "Neuspješno učitavanje snimka.",
+  "cmd.snapshot.error_delete": "Neuspješno brisanje snimka.",
+  "cmd.snapshot.error_name_too_long": "Ime snimka predugo. Maksimum je 100 karaktera.",
+
+  // === Resume Command ===
+  "cmd.resume.no_snapshots": "Nema pronađenih snimaka. Koristite /snapshot za čuvanje.",
+  "cmd.resume.select": "Odaberite snimak za vraćanje:",
+  "cmd.resume.select_page": "Odaberite snimak za vraćanje (stranica {page}):",
+  "cmd.resume.prev_page": "Prethodna",
+  "cmd.resume.next_page": "Sljedeća",
+  "cmd.resume.session_not_found": "Sesija nije pronađena: {id}",
+  "cmd.resume.success": "Sesija vraćena: {title}\nIz snimka: {name}",
+  "cmd.resume.error": "Neuspješno vraćanje sesije.",
+
+  // === Digest Command ===
+  "cmd.digest.no_session": "Nema aktivne sesije. Pokrenite sesiju sa /new prvo.",
+  "cmd.digest.generating": "Generisanje sažetka sesije...",
+  "cmd.digest.header": "# Sažetak sesije: {title}\n\n",
+  "cmd.digest.empty": "Nema poruka za sažetak.",
+  "cmd.digest.error": "Neuspješno generisanje sažetka.",
+
   "start.welcome":
     "👋 Dobrodošli u OpenCode Telegram Bot!\n\nKoristite komande:\n/projects — odaberite projekat\n/sessions — lista sesija\n/new — nova sesija\n/task — zakazani zadatak\n/tasklist — zakazani zadaci\n/status — status\n/help — pomoć\n\nKoristite donje dugmiće za odabir režima rada, modela i varijante.",
   "help.keyboard_hint":
@@ -86,7 +170,6 @@ export const bs = {
   "bot.thinking": "💭 Razmišljam...",
   "bot.working_on_it": "⏳ Primljeno, radim na tome...",
   "bot.project_not_selected": "🏗 Projekat nije odabran.\n\nPrvo odaberite projekat sa /projects.",
-  "bot.global_mode_active": "🌍 Radim u Global Modu (bez konteksta projekta)",
   "bot.session_reset_to_global":
     "⚠️ Sesija je prebačena u Global Mode. Koristite /projects za rad sa projektom.",
   "bot.creating_session": "🔄 Kreiram novu sesiju...",
@@ -136,6 +219,24 @@ export const bs = {
   "status.session_hint": "Koristite /sessions za odabir ili /new za kreiranje",
   "status.server_unavailable":
     "🔴 OpenCode Server je nedostupan\n\nKoristite /opencode_start za pokretanje servera.",
+  "status.health.checking": "Provjera...",
+
+  // === File Explorer ===
+  "fe.closed": "✅ Preglednik datoteka zatvoren",
+  "fe.empty_directory": "📭 Prazan direktorij",
+  "fe.error_listing": "🔴 Neuspješno listanje direktorija: {error}",
+  "fe.error_no_project": "❌ Nema aktivnog projekta. Prvo odaberite projekat.",
+  "fe.error_no_session": "❌ Nema aktivne sesije. Prvo pokrenite novu sesiju.",
+  "fe.error_reading": "🔴 Neuspješno čitanje fajla: {error}",
+  "fe.inactive_callback": "Ovaj preglednik datoteka je neaktivan",
+  "fe.reading_file": "📖 Čitanje fajla...",
+  "fe.selected_path": "📄 Odabrano: {path}",
+  "fe.select_hint": "Odaberite fajl za čitanje, ili nazad za povratak",
+
+  // === Open Command ===
+  "open.no_subfolders": "Nema podfoldera",
+  "open.subfolder_count": "{count} podfolder",
+  "open.subfolders_count": "{count} podfoldera",
 
   "projects.empty":
     "📭 Nema pronađenih projekata.\n\nOtvorite direktorij u OpenCode-u i kreirajte barem jednu sesiju, pa će se pojaviti ovdje.",
@@ -455,10 +556,6 @@ export const bs = {
   "legacy.models.env_hint": "💡 Za korištenje modela u .env:\n",
   "legacy.models.error": "An error occurred while loading models list.",
 
-  "models.all_models_header": "All available models:",
-  "models.free_models_header": "Available free models:",
-  "models.no_free_models": "No free models available. Please contact administrator.",
-  "models.selection_hint": "Click a model to select it.",
 
   "stt.recognizing": "🎤 Prepoznavanje audio zapisa...",
   "stt.recognized": "🎤 Prepoznato:\n{text}",
@@ -558,8 +655,6 @@ export const bs = {
   "inline.cmd.error.callback_expired": "⚠️ This inline request expired. Please send it again.",
   "inline.cmd.error.callback_invalid": "⚠️ This inline action is invalid.",
   "inline.thinking": "🧠 Razmišljam... trenutak!",
-  "inline.loading": "⏳ Generišem odgovor...",
-  "inline.loading_global": "⏳ 🌍 Generišem odgovor (Global Mode)...",
   // ── LLM Guard (Two-Phase) ──────────────────────────────────────────────
   "llm.guard.query_timeout": "⏱ Vrijeme je isteklo. Molim pokušajte ponovo.",
   "llm.guard.confirm_timeout": "⏱ Vrijeme je isteklo.",
@@ -571,6 +666,9 @@ export const bs = {
   "llm.guard.queue_failed":
     '<b>/{command}</b>: "{query}"\n\n⚠️ Neuspješno dodavanje u red. Pokušati ponovo?',
   "llm.guard.fallback_query": "Koji je vaš upit?",
+  "llm.guard.blocked": "⛔️ Komanda blokirana: {reason}",
+  "llm.guard.command_blocked": "⛔️ Ova komanda nije dozvoljena od strane LLM zaštite",
+  "llm.guard.not_allowed": "⛔️ Nije dozvoljeno",
   "tts.enabled": "🔊 Text-to-speech uključen",
   "tts.disabled": "🔇 Text-to-speech isključen",
   "tts.error": "❌ TTS greška",

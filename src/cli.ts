@@ -3,6 +3,7 @@
 import type { RuntimeMode } from "./runtime/mode.js";
 import { parseCliArgs, type CliCommand } from "./cli/args.js";
 import { resolveRuntimeMode, setRuntimeMode } from "./runtime/mode.js";
+import { runKbCommand } from "./cli/kb.js";
 import { t } from "./i18n/index.js";
 
 const EXIT_SUCCESS = 0;
@@ -97,6 +98,10 @@ async function runCli(argv: string[]): Promise<number> {
 
   if (parsedArgs.command === "doctor") {
     return runDoctorCommand();
+  }
+
+  if (parsedArgs.command === "kb") {
+    return runKbCommand(parsedArgs.kbArgs ?? []);
   }
 
   return runPlaceholderCommand(parsedArgs.command);

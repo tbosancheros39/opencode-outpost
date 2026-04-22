@@ -389,3 +389,24 @@ export class ResponseStreamer {
     }
   }
 }
+
+// === Standalone response cache for quick-action keyboard ===
+
+const responseCache: Map<string, string> = new Map();
+const RESPONSE_CACHE_MAX_SIZE = 50;
+
+export function cacheResponse(sessionId: string, messageId: string, text: string): void {
+  const key = `${sessionId}:${messageId}`;
+  responseCache.set(key, text);
+  if (responseCache.size > RESPONSE_CACHE_MAX_SIZE) {
+    const firstKey = responseCache.keys().next().value;
+    if (firstKey) {
+      responseCache.delete(firstKey);
+    }
+  }
+}
+
+export function getCachedResponse(sessionId: string, messageId: string): string | undefined {
+  const key = `${sessionId}:${messageId}`;
+  return responseCache.get(key);
+}

@@ -146,18 +146,7 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 
 ### Added
 
-- Initial fork from [grinev/opencode-telegram-bot](https://github.com/grinev/opencode-telegram-bot)
 - Multi-user infrastructure (`TELEGRAM_ALLOWED_USER_IDS`, `TELEGRAM_SUPER_USER_IDS`)
 - Group chat support (`TELEGRAM_ALLOWED_CHAT_IDS`)
 - BullMQ + Redis integration for background task queues
 - SQLite persistence for scheduled tasks and session cache
-
----
-
-## Fork Origin
-
-This project is a fork of [grinev/opencode-telegram-bot](https://github.com/grinev/opencode-telegram-bot)
-by Ruslan Grinev, significantly expanded by Kerim (anini39).
-
-**Original:** 14 commands, single-user, basic session management.
-**Fork:** 34 commands, multi-user, BullMQ queue, sandboxing, Git ops, i18n, and more.

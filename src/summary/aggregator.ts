@@ -145,7 +145,6 @@ class SummaryAggregator {
   private textMessageStates: Map<string, TextMessageState> = new Map();
   private messages: Map<string, { role: string }> = new Map();
   private messageCount = 0;
-  private lastUpdated = 0;
   private onCompleteCallback: MessageCompleteCallback | null = null;
   private onPartialCallback: MessagePartialCallback | null = null;
   private onToolCallback: ToolCallback | null = null;
@@ -404,7 +403,6 @@ class SummaryAggregator {
     this.thinkingFiredForMessages.clear();
     this.subagents.clear();
     this.messageCount = 0;
-    this.lastUpdated = 0;
 
     if (this.onClearedCallback) {
       try {
@@ -511,8 +509,6 @@ class SummaryAggregator {
           this.emitThinkingUpdate();
         }
       }
-
-      this.lastUpdated = Date.now();
     }
   }
 
@@ -542,7 +538,6 @@ class SummaryAggregator {
       deltaFromUpdated.length > 0
     ) {
       this.applyTextDelta(part.sessionID, messageID, part.id, deltaFromUpdated, part.text);
-      this.lastUpdated = Date.now();
       return;
     }
 
@@ -682,8 +677,6 @@ class SummaryAggregator {
         }
       }
     }
-
-    this.lastUpdated = Date.now();
   }
 
   private handleMessagePartDelta(event: MessagePartDeltaEventRaw): void {

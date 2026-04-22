@@ -1,16 +1,17 @@
 import type { RuntimeMode } from "../runtime/mode.js";
 import { t } from "../i18n/index.js";
 
-export type CliCommand = "start" | "status" | "stop" | "config" | "doctor" | "setup";
+export type CliCommand = "start" | "status" | "stop" | "config" | "doctor" | "setup" | "kb";
 
 export interface ParsedCliArgs {
   command: CliCommand;
   mode?: RuntimeMode;
+  kbArgs?: string[];
   showHelp: boolean;
   error?: string;
 }
 
-const SUPPORTED_COMMANDS: readonly CliCommand[] = ["start", "status", "stop", "config", "doctor", "setup"];
+const SUPPORTED_COMMANDS: readonly CliCommand[] = ["start", "status", "stop", "config", "doctor", "setup", "kb"];
 
 function isCliCommand(value: string): value is CliCommand {
   return SUPPORTED_COMMANDS.includes(value as CliCommand);
@@ -33,6 +34,7 @@ export function parseCliArgs(argv: string[]): ParsedCliArgs {
   let command: CliCommand = "start";
   let mode: RuntimeMode | undefined;
   let showHelp = false;
+  let kbArgs: string[] | undefined;
   let currentIndex = 0;
 
   const firstArg = args[0];
@@ -47,6 +49,33 @@ export function parseCliArgs(argv: string[]): ParsedCliArgs {
 
     command = firstArg;
     currentIndex = 1;
+  }
+
+  // For kb command, capture all remaining args as subcommand args
+  if (command === "kb") {
+    kbArgs = args.slice(currentIndex);
+    // Check if --help is in kb args
+    if (kbArgs.includes("--help") || kbArgs.includes("-h")) {
+      showHelp = true;
+      kbArgs = kbArgs.filter((a) => a !== "--help" && a !== "-h");
+    }
+
+    if (mode) {
+      return {
+        command,
+        mode,
+        kbArgs,
+        showHelp: true,
+        error: t("cli.args.mode_only_start"),
+      };
+    }
+
+    return {
+      command,
+      mode,
+      kbArgs,
+      showHelp,
+    };
   }
 
   while (currentIndex < args.length) {

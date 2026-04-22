@@ -66,3 +66,24 @@ SESSION_*.md
 session*.md
 PLAN_*.md
 PublishPolishing.md
+
+# Debug/audit artifacts
+FailedToGenerateResponse.md
+RestartingBot.md
+analysis_results.md
+firstfix.md
+firstproblem.md
+fix-plan.md
+plan.md
+pr0blem.md
+pr0blemFIX.md
+warningbugFix.md
+verification_report.md
+local-rag.py
+rag_output/
+
+# Agent analysis docs
+docs
+docs/agents/
+docs/sub-agent-preflight.md
+caveman/

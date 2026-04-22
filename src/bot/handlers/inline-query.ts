@@ -194,7 +194,13 @@ export function detectInlineCommandWithoutColon(
   for (const cmd of INLINE_COMMANDS) {
     const prefixWithoutColon = cmd.prefix.replace(/:$/, "");
     if (lowerQuery.startsWith(prefixWithoutColon + " ") || lowerQuery === prefixWithoutColon) {
-      const actualQuery = query.slice(prefixWithoutColon.length).trim();
+      let actualQuery = query.slice(prefixWithoutColon.length).trim();
+      // Strip common filler words users add between command and query
+      // e.g. "deep-research skill activate it, spawn agents" → "spawn agents"
+      actualQuery = actualQuery.replace(
+        /^(?:skill\s+activate\s+(?:it|this|the)\s*,?\s*|activate\s+(?:it|this|the)\s*,?\s*)/i,
+        "",
+      );
       if (actualQuery.length > 0) {
         return {
           command: cmd,
@@ -241,7 +247,12 @@ function detectInlineCommandFlexible(
 
       const noColonMatch = trimmed.match(new RegExp(`^${escapedAlias}\\s+(.+)$`, "i"));
       if (noColonMatch) {
-        const actualQuery = noColonMatch[1]?.trim() ?? "";
+        let actualQuery = noColonMatch[1]?.trim() ?? "";
+        // Strip common filler words (e.g. "deep-research skill activate it, ..." → "...")
+        actualQuery = actualQuery.replace(
+          /^(?:skill\s+activate\s+(?:it|this|the)\s*,?\s*|activate\s+(?:it|this|the)\s*,?\s*)/i,
+          "",
+        );
         if (actualQuery.length > 0) {
           return {
             command: cmd,

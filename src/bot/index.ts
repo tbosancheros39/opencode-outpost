@@ -56,6 +56,12 @@ import { ttsCommand } from "./commands/tts.js";
 import { branchCommand } from "./commands/branch.js";
 import { commitCommand } from "./commands/commit.js";
 import { diffCommand } from "./commands/diff.js";
+// New commands
+import { findCommand } from "./commands/find.js";
+import { pinCommand } from "./commands/pin.js";
+import { snapshotCommand, handleSnapshotCallback } from "./commands/snapshot.js";
+import { resumeCommand, handleResumeCallback } from "./commands/resume.js";
+import { digestCommand } from "./commands/digest.js";
 import {
   handleQuestionCallback,
   showCurrentQuestion,
@@ -74,6 +80,7 @@ import { handleModelSelect, showModelSelectionMenu } from "./handlers/model.js";
 import { handleVariantSelect, showVariantSelectionMenu } from "./handlers/variant.js";
 import { handleContextButtonPress, handleCompactConfirm } from "./handlers/context.js";
 import { handleInlineMenuCancel } from "./handlers/inline-menu.js";
+import { handlePinCallback } from "./handlers/pin-callback.js";
 import { questionManager } from "../question/manager.js";
 import { interactionManager } from "../interaction/manager.js";
 import { clearAllInteractionState, clearPromptInteractionState } from "../interaction/cleanup.js";
@@ -105,18 +112,19 @@ import { logger } from "../utils/logger.js";
 import { safeBackgroundTask } from "../utils/safe-background-task.js";
 import { withTelegramRateLimitRetry } from "../utils/telegram-rate-limit-retry.js";
 import { pinnedMessageManager } from "../pinned/manager.js";
+import { recentFilesTracker } from "./recent-files-tracker.js";
 import { t } from "../i18n/index.js";
 import { processUserPrompt } from "./handlers/prompt.js";
 import { handleVoiceMessage } from "./handlers/voice.js";
 import { handleDocumentMessage } from "./handlers/document.js";
-import { downloadTelegramFile, toDataUri } from "./utils/file-download.js";
+import { createPhotoHandler, type PhotoHandlerDeps } from "./handlers/photo-handler.js";
+
 import { finalizeAssistantResponse } from "./utils/finalize-assistant-response.js";
 import { deliverThinkingMessage } from "./utils/thinking-message.js";
 import { clearLoadingMessage, hasLoadingMessage } from "./utils/loading-messages.js";
 import { getDraftId, clearDraftId } from "./utils/draft-messages.js";
 import { sendBotText } from "./utils/telegram-text.js";
-import { getModelCapabilities, supportsInput } from "../model/capabilities.js";
-import { getStoredModel } from "../model/manager.js";
+
 import { sendTtsResponse } from "./utils/send-tts-response.js";
 import {
   trackChatUser,
@@ -132,7 +140,7 @@ import {
   isSimpleUser,
 } from "../users/access.js";
 import { opencodeClient } from "../opencode/client.js";
-import type { FilePartInput } from "@opencode-ai/sdk/v2";
+
 import { foregroundSessionState } from "../scheduled-task/foreground-state.js";
 import { scheduledTaskRuntime } from "../scheduled-task/runtime.js";
 import { ResponseStreamer } from "./streaming/response-streamer.js";
@@ -163,9 +171,6 @@ let draftTimer: NodeJS.Timeout | null = null;
 const sessionCompletionTasks = new Map<string, Promise<void>>();
 
 // Track group chats that requested a hit-and-run answer — bot leaves after response completes
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const chatsToLeaveAfterAnswer = new Set<number>(); // kept for future group-mode use
-
 const TELEGRAM_DOCUMENT_CAPTION_MAX_LENGTH = 1024;
 const RESPONSE_STREAM_THROTTLE_MS = 200;
 const DRAFT_THROTTLE_MS = 150; // Slightly faster than edit throttle, conservative start
@@ -518,9 +523,12 @@ async function ensureEventSubscription(directory: string): Promise<void> {
   });
 
   summaryAggregator.setOnComplete(async (sessionId, messageId, messageText) => {
-    if (sessionCompletionTasks.has(sessionId)) {
-      logger.warn(`[Bot] Re-entrant completion detected for session=${sessionId}, skipping`);
-      return;
+    // Wait for any previous completion task for this session to finish
+    // (prevents re-entrant SSE events from skipping markIdle)
+    const previousTask = sessionCompletionTasks.get(sessionId);
+    if (previousTask) {
+      logger.debug(`[Bot] Waiting for previous completion task for session=${sessionId}`);
+      await previousTask;
     }
 
     const task = (async () => {
@@ -624,6 +632,7 @@ async function ensureEventSubscription(directory: string): Promise<void> {
 
     sessionCompletionTasks.set(sessionId, task);
     await task;
+    sessionCompletionTasks.delete(sessionId);
   });
 
   summaryAggregator.setOnTool(async (toolInfo) => {
@@ -635,6 +644,12 @@ async function ensureEventSubscription(directory: string): Promise<void> {
     const currentSession = getCurrentSession(chatIdInstance!);
     if (!currentSession || currentSession.id !== toolInfo.sessionId) {
       return;
+    }
+
+    // Track recent files from tool calls (runs once, unconditionally)
+    const project = getCurrentProject(chatIdInstance!);
+    if (project) {
+      recentFilesTracker.processToolCall(project.worktree, toolInfo.tool, toolInfo.input);
     }
 
     const shouldIncludeToolInfoInFileCaption =
@@ -1000,6 +1015,12 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       return;
     }
 
+    // Track recent files from file changes
+    const project = getCurrentProject(chatIdInstance!);
+    if (project) {
+      recentFilesTracker.processFileChange(project.worktree, change.file);
+    }
+
     if (!pinnedMessageManager.isInitialized(chatIdInstance!)) {
       return;
     }
@@ -1267,6 +1288,12 @@ export async function createBot(): Promise<Bot<Context>> {
   bot.command("branch", branchCommand);
   bot.command("commit", commitCommand);
   bot.command("diff", diffCommand);
+  // New commands
+  bot.command("find", findCommand);
+  bot.command("pin", pinCommand);
+  bot.command("snapshot", snapshotCommand);
+  bot.command("resume", resumeCommand);
+  bot.command("digest", digestCommand);
 
   // Register slash command handlers for inline mode commands.
   // When a user taps an inline result (e.g. @bot feynman: some text), the bot
@@ -1311,9 +1338,12 @@ export async function createBot(): Promise<Bot<Context>> {
       const handledJournal = await handleJournalCallback(ctx);
       const handledInlineRun = await handleInlineRunCallback(ctx);
       const handledLlmGuard = await handleLlmConfirmCallback(ctx);
+      const handledSnapshot = await handleSnapshotCallback(ctx);
+      const handledResume = await handleResumeCallback(ctx);
+      const handledPin = await handlePinCallback(ctx);
 
       logger.debug(
-        `[Bot] Callback handled: shell=${handledShell}, inlineCancel=${handledInlineCancel}, session=${handledSession}, project=${handledProject}, question=${handledQuestion}, permission=${handledPermission}, agent=${handledAgent}, model=${handledModel}, variant=${handledVariant}, compactConfirm=${handledCompactConfirm}, task=${handledTask}, taskList=${handledTaskList}, rename=${handledRenameCancel}, commands=${handledCommands}, messages=${handledMessages}, skills=${handledSkills}, mcps=${handledMcps}, journal=${handledJournal}, inlineRun=${handledInlineRun}, llmGuard=${handledLlmGuard}`,
+        `[Bot] Callback handled: shell=${handledShell}, inlineCancel=${handledInlineCancel}, session=${handledSession}, project=${handledProject}, question=${handledQuestion}, permission=${handledPermission}, agent=${handledAgent}, model=${handledModel}, variant=${handledVariant}, compactConfirm=${handledCompactConfirm}, task=${handledTask}, taskList=${handledTaskList}, rename=${handledRenameCancel}, commands=${handledCommands}, messages=${handledMessages}, skills=${handledSkills}, mcps=${handledMcps}, journal=${handledJournal}, inlineRun=${handledInlineRun}, llmGuard=${handledLlmGuard}, snapshot=${handledSnapshot}, resume=${handledResume}, pin=${handledPin}`,
       );
 
       if (
@@ -1336,7 +1366,10 @@ export async function createBot(): Promise<Bot<Context>> {
         !handledMcps &&
         !handledJournal &&
         !handledInlineRun &&
-        !handledLlmGuard
+        !handledLlmGuard &&
+        !handledSnapshot &&
+        !handledResume &&
+        !handledPin
       ) {
         logger.debug("Unknown callback query:", ctx.callbackQuery?.data);
         await ctx.answerCallbackQuery({ text: t("callback.unknown_command") });
@@ -1470,67 +1503,13 @@ export async function createBot(): Promise<Bot<Context>> {
   });
 
   // Photo message handler
+  const photoPromptDeps: PhotoHandlerDeps = { bot, ensureEventSubscription };
+
   bot.on("message:photo", async (ctx) => {
     logger.debug(`[Bot] Received photo message, chatId=${ctx.chat.id}`);
-
-    const photos = ctx.message?.photo;
-    if (!photos || photos.length === 0) {
-      return;
-    }
-
-    const caption = ctx.message.caption || "";
-
-    try {
-      // Get the largest photo (last element in array)
-      const largestPhoto = photos[photos.length - 1];
-
-      // Check model capabilities
-      const storedModel = getStoredModel(ctx.chat.id);
-      const capabilities = await getModelCapabilities(storedModel.providerID, storedModel.modelID);
-
-      if (!supportsInput(capabilities, "image")) {
-        logger.warn(
-          `[Bot] Model ${storedModel.providerID}/${storedModel.modelID} doesn't support image input`,
-        );
-        await ctx.reply(t("bot.photo_model_no_image"));
-
-        // Fall back to caption-only if present
-        if (caption.trim().length > 0) {
-          botInstance = bot;
-          chatIdInstance = ctx.chat.id;
-          const promptDeps = { bot, ensureEventSubscription };
-          await processUserPrompt(ctx, caption, promptDeps);
-        }
-        return;
-      }
-
-      // Download photo
-      await ctx.reply(t("bot.photo_downloading"));
-      const downloadedFile = await downloadTelegramFile(ctx.api, largestPhoto.file_id);
-
-      // Convert to data URI (Telegram always converts photos to JPEG)
-      const dataUri = toDataUri(downloadedFile.buffer, "image/jpeg");
-
-      // Create file part
-      const filePart: FilePartInput = {
-        type: "file",
-        mime: "image/jpeg",
-        filename: "photo.jpg",
-        url: dataUri,
-      };
-
-      logger.info(`[Bot] Sending photo (${downloadedFile.buffer.length} bytes) with prompt`);
-
-      botInstance = bot;
-      chatIdInstance = ctx.chat.id;
-
-      // Send via processUserPrompt with file part
-      const promptDeps = { bot, ensureEventSubscription };
-      await processUserPrompt(ctx, caption, promptDeps, [filePart]);
-    } catch (err) {
-      logger.error("[Bot] Error handling photo message:", err);
-      await ctx.reply(t("bot.photo_download_error"));
-    }
+    botInstance = bot;
+    chatIdInstance = ctx.chat.id;
+    await createPhotoHandler(photoPromptDeps)(ctx);
   });
 
   // Document message handler (PDF and text files)
