@@ -12,9 +12,18 @@ interface ModelInfo {
   modelID: string;
 }
 
+// Index-based callback cache to avoid exceeding Telegram's 64-byte callback_data limit
+const modelIndexCache = new Map<string, ModelInfo>();
+
+export function getModelByIndex(index: string): ModelInfo | undefined {
+  return modelIndexCache.get(index);
+}
+
 function buildModelsKeyboard(models: ModelInfo[], currentSelection?: ModelInfo): InlineKeyboard {
   const keyboard = new InlineKeyboard();
-  const addButton = (model: ModelInfo): void => {
+  modelIndexCache.clear();
+
+  const addButton = (model: ModelInfo, idx: number): void => {
     const isActive =
       currentSelection &&
       model.providerID === currentSelection.providerID &&
@@ -23,7 +32,10 @@ function buildModelsKeyboard(models: ModelInfo[], currentSelection?: ModelInfo):
     const label = isActive
       ? `✅ ${model.providerID}/${model.modelID}`
       : `${model.providerID}/${model.modelID}`;
-    keyboard.text(label.substring(0, 64), `model:${model.providerID}:${model.modelID}`).row();
+    const indexKey = String(idx);
+    modelIndexCache.set(indexKey, model);
+    // Use short index-based callback: "mi:<index>" (max ~6 chars for index)
+    keyboard.text(label.substring(0, 64), `mi:${indexKey}`).row();
   };
 
   const byProvider = new Map<string, ModelInfo[]>();
@@ -34,9 +46,10 @@ function buildModelsKeyboard(models: ModelInfo[], currentSelection?: ModelInfo):
     byProvider.get(model.providerID)!.push(model);
   }
 
+  let idx = 0;
   for (const providerModels of byProvider.values()) {
     for (const model of providerModels) {
-      addButton(model);
+      addButton(model, idx++);
     }
   }
 
@@ -60,7 +73,9 @@ export async function modelsCommand(ctx: CommandContext<Context>) {
       return;
     }
 
-    const providers = providersData.providers;
+    const providers = Array.isArray(providersData)
+      ? providersData
+      : providersData?.providers ?? [];
 
     if (!providers || providers.length === 0) {
       await ctx.reply(t("legacy.models.empty"));

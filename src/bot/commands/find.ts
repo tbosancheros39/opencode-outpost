@@ -53,7 +53,7 @@ export async function findCommand(ctx: CommandContext<Context>): Promise<void> {
   try {
     await ctx.reply(t("cmd.find.searching", { query }));
 
-    // Fetch messages using SSE events via client.session.get and event subscription
+    // Fetch messages directly via session.messages() API
     const messages = await fetchSessionMessages(currentSession.id, currentProject.worktree);
 
     if (messages.length === 0) {

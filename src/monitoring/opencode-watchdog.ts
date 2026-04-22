@@ -53,8 +53,10 @@ export function isWatchdogRunning(): boolean {
 
 async function runHealthCheck(): Promise<void> {
   try {
-    const response = await fetch(`${config.opencode.apiUrl}/health`, { signal: AbortSignal.timeout(5000) });
+    const response = await fetch(`${config.opencode.apiUrl}/global/health`, { signal: AbortSignal.timeout(5000) });
     if (response.ok) {
+      const data = (await response.json().catch(() => null)) as { healthy?: boolean; version?: string } | null;
+      const isHealthy = data && data.healthy === true;
       if (serverWasDown) {
         logger.info("[Watchdog] Server recovered after being down");
         serverWasDown = false;
@@ -62,6 +64,9 @@ async function runHealthCheck(): Promise<void> {
         await notifyUser("✅ OpenCode server is back online");
       }
       failCount = 0;
+      if (!isHealthy) {
+        throw new Error(`Health check returned unhealthy: ${JSON.stringify(data)}`);
+      }
       return;
     }
     // Non-2xx response counts as a failure

@@ -89,9 +89,21 @@ async function getValidModelKeys(): Promise<Set<string> | null> {
 
       const validModelKeys = new Set<string>();
 
-      for (const provider of response.data.providers) {
-        for (const modelID of Object.keys(provider.models)) {
-          validModelKeys.add(getModelKey(provider.id, modelID));
+      const rawProviders = Array.isArray(response.data)
+        ? response.data
+        : response.data?.providers ?? [];
+
+      for (const provider of rawProviders) {
+        const providerID = provider.id ?? provider.providerId ?? provider.provider ?? '';
+        const models = provider.models;
+        if (!providerID || !models) continue;
+
+        const modelIDs = Array.isArray(models)
+          ? models.map((m: any) => m.id ?? m.modelID ?? m).filter((id: any) => typeof id === 'string')
+          : Object.keys(models);
+
+        for (const modelID of modelIDs) {
+          validModelKeys.add(getModelKey(providerID, modelID));
         }
       }
 
@@ -99,7 +111,7 @@ async function getValidModelKeys(): Promise<Set<string> | null> {
       modelCatalogCacheExpiresAt = Date.now() + MODEL_CATALOG_CACHE_TTL_MS;
 
       logger.debug(
-        `[ModelManager] Model catalog refreshed: providers=${response.data.providers.length}, models=${validModelKeys.size}`,
+        `[ModelManager] Model catalog refreshed: providers=${rawProviders.length}, models=${validModelKeys.size}`,
       );
 
       return cachedValidModelKeys;
@@ -254,7 +266,10 @@ export async function getTelegramModelGroups(): Promise<FavoriteModel[]> {
       return cachedTelegramGroupModels || [];
     }
 
-    const filteredModels = filterModelsByTelegramGroups(response.data.providers);
+    const rawProviders = Array.isArray(response.data)
+      ? response.data
+      : response.data?.providers ?? [];
+    const filteredModels = filterModelsByTelegramGroups(rawProviders);
     cachedTelegramGroupModels = filteredModels;
     logger.info(`[ModelManager] Telegram model groups: ${filteredModels.length} models`);
     filteredModels.forEach((m) => {
@@ -274,7 +289,10 @@ async function findFirstAvailableFreeModel(): Promise<FavoriteModel | null> {
       logger.warn("[ModelManager] Could not fetch providers for free model search");
       return null;
     }
-    const freeModels = filterFreeModels(response.data.providers);
+    const rawProviders = Array.isArray(response.data)
+      ? response.data
+      : response.data?.providers ?? [];
+    const freeModels = filterFreeModels(rawProviders);
     if (freeModels.length === 0) {
       logger.warn("[ModelManager] No free models found in catalog");
       return null;

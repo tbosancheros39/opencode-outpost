@@ -19,6 +19,9 @@ function buildModelSelectionMenuText(modelCount: number): string {
   return `${t("model.menu.select")}\n\nShowing ${modelCount} models from GitHub Copilot & OpenCode Zen Free groups`;
 }
 
+// Index-based callback cache for model handler (separate from /models command cache)
+const modelHandlerIndexCache = new Map<string, FavoriteModel>();
+
 /**
  * Handle model selection callback
  * @param ctx grammY context
@@ -27,7 +30,39 @@ function buildModelSelectionMenuText(modelCount: number): string {
 export async function handleModelSelect(ctx: Context): Promise<boolean> {
   const callbackQuery = ctx.callbackQuery;
 
-  if (!callbackQuery?.data || !callbackQuery.data.startsWith("model:")) {
+  if (!callbackQuery?.data) {
+    return false;
+  }
+
+  // Support both old "model:" format and new "mi:" (model index) format
+  const data = callbackQuery.data;
+  let providerID: string;
+  let modelID: string;
+
+  if (data.startsWith("mi:")) {
+    // New index-based format
+    const index = data.slice(3);
+    const model = modelHandlerIndexCache.get(index);
+    if (!model) {
+      logger.error(`[ModelHandler] Invalid model index: ${index}`);
+      clearActiveInlineMenu(ctx.chat?.id ?? 0, "model_select_invalid_index");
+      await ctx.answerCallbackQuery({ text: t("model.change_error_callback") }).catch(() => {});
+      return true;
+    }
+    providerID = model.providerID;
+    modelID = model.modelID;
+  } else if (data.startsWith("model:")) {
+    // Legacy format
+    const parts = data.split(":");
+    if (parts.length < 3) {
+      logger.error(`[ModelHandler] Invalid callback data format: ${data}`);
+      clearActiveInlineMenu(ctx.chat?.id ?? 0, "model_select_invalid_callback");
+      await ctx.answerCallbackQuery({ text: t("model.change_error_callback") }).catch(() => {});
+      return true;
+    }
+    providerID = parts[1];
+    modelID = parts.slice(2).join(":");
+  } else {
     return false;
   }
 
@@ -36,24 +71,13 @@ export async function handleModelSelect(ctx: Context): Promise<boolean> {
     return true;
   }
 
-  logger.debug(`[ModelHandler] Received callback: ${callbackQuery.data}`);
+  logger.debug(`[ModelHandler] Received callback: ${data}`);
 
   const chatId = ctx.chat?.id;
   if (!chatId) return false;
 
   try {
     keyboardManager.initialize(ctx.api, chatId);
-
-    const parts = callbackQuery.data.split(":");
-    if (parts.length < 3) {
-      logger.error(`[ModelHandler] Invalid callback data format: ${callbackQuery.data}`);
-      clearActiveInlineMenu(chatId, "model_select_invalid_callback");
-      await ctx.answerCallbackQuery({ text: t("model.change_error_callback") }).catch(() => {});
-      return true;
-    }
-
-    const providerID = parts[1];
-    const modelID = parts.slice(2).join(":");
 
     const modelInfo: ModelInfo = {
       providerID,
@@ -115,25 +139,30 @@ export async function buildModelSelectionMenu(
 ): Promise<InlineKeyboard> {
   const keyboard = new InlineKeyboard();
   const models = await getTelegramModelGroups();
+  modelHandlerIndexCache.clear();
 
   if (models.length === 0) {
     logger.warn("[ModelHandler] No models found in Telegram groups");
     return keyboard;
   }
 
-  const addButton = (model: FavoriteModel, label: string): void => {
+  const addButton = (model: FavoriteModel, label: string, idx: number): void => {
     const isActive =
       currentModel &&
       model.providerID === currentModel.providerID &&
       model.modelID === currentModel.modelID;
 
     const labelWithCheck = isActive ? `✅ ${label}` : label;
-    keyboard.text(labelWithCheck, `model:${model.providerID}:${model.modelID}`).row();
+    const indexKey = String(idx);
+    modelHandlerIndexCache.set(indexKey, model);
+    // Use short index-based callback: "mi:<index>"
+    keyboard.text(labelWithCheck.substring(0, 64), `mi:${indexKey}`).row();
   };
 
+  let idx = 0;
   for (const model of models) {
     const groupLabel = model.providerID === "github-copilot" ? "🦊 GitHub Copilot" : "✨ OpenCode Zen";
-    addButton(model, `${groupLabel} ${model.modelID}`);
+    addButton(model, `${groupLabel} ${model.modelID}`, idx++);
   }
 
   return keyboard;
