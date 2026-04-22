@@ -1,0 +1,41 @@
+# Auto-detect text files, normalize to LF
+* text=auto
+
+# Source code — enforce LF line endings
+*.ts text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+
+# Shell scripts — MUST be LF (shebang breaks with CRLF)
+*.sh text eol=lf
+
+# Config files — enforce LF
+.env text eol=lf
+.env.* text eol=lf
+.gitignore text eol=lf
+.editorconfig text eol=lf
+.dockerignore text eol=lf
+tsconfig.json text eol=lf
+
+# Binary files — prevent corruption
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.tar binary

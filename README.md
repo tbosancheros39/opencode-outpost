@@ -221,6 +221,16 @@ cp .env.example .env
 npm run dev
 ```
 
+**Alternative — Docker (1 command, no Node.js needed):**
+```bash
+git clone https://github.com/tbosancheros39/opencode-outpost.git
+cd opencode-outpost
+cp .env.example .env
+# Edit .env with your token and user ID
+docker compose up -d
+```
+See [READMEwindows.md](READMEwindows.md) for detailed Docker and Windows setup.
+
 ## Configuration
 
 Edit `.env` file:

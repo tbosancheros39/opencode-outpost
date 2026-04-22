@@ -73,7 +73,7 @@ If Redis is unavailable (`REDIS_ENABLED=false` or connection fails), the app fal
 - Setup: `tests/setup.ts` — sets required env vars and resets singletons
 - Test env defaults are in `tests/helpers/test-environment.ts` (sets `TELEGRAM_BOT_TOKEN`, `OPENCODE_MODEL_PROVIDER`, etc.)
 - Tests live in `tests/` mirroring `src/` structure
-- 88 test files, no test files in `src/` (tsconfig excludes `**/*.test.ts`)
+- 85 test files, no test files in `src/` (tsconfig excludes `**/*.test.ts`)
 - Run a single test: `npx vitest run tests/bot/commands/start.test.ts`
 - Run a directory: `npx vitest run tests/bot/commands/`
 - Coverage includes `src/**/*.ts`, excludes test files

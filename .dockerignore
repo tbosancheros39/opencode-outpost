@@ -1,0 +1,52 @@
+# Dependencies (rebuilt in container)
+node_modules/
+
+# Build output (rebuilt in container)
+dist/
+
+# Runtime data (mounted as volume)
+.data/
+
+# Git
+.git/
+.gitignore
+
+# Environment (mounted via docker-compose)
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files (not needed in production build)
+tests/
+coverage/
+*.test.ts
+*.spec.ts
+
+# Documentation (not needed in build)
+docs/
+*.md
+!README.md
+
+# Scripts (not needed in container)
+scripts/
+
+# Temporary files
+.tmp/
+tmp/
+
+# Docker files (no recursion)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# RAG output
+rag_output/

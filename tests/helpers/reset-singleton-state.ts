@@ -66,6 +66,7 @@ export async function resetSingletonState(): Promise<void> {
     { __resetSessionDirectoryCacheForTests },
     { recentFilesTracker },
     { __resetKbForTests },
+    { foregroundSessionState },
   ] = await Promise.all([
     import("../../src/question/manager.js"),
     import("../../src/permission/manager.js"),
@@ -79,6 +80,7 @@ export async function resetSingletonState(): Promise<void> {
     import("../../src/session/cache-manager.js"),
     import("../../src/bot/recent-files-tracker.js"),
     import("../../src/knowledge-base/store.js"),
+    import("../../src/scheduled-task/foreground-state.js"),
   ]);
 
   stopEventListening();
@@ -143,6 +145,7 @@ export async function resetSingletonState(): Promise<void> {
 
   recentFilesTracker.reset();
   __resetKbForTests();
+  foregroundSessionState.__resetForTests();
 
   __resetSessionDirectoryCacheForTests();
 }
