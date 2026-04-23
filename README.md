@@ -33,14 +33,6 @@
   <img src="assets/output2.gif" width="560" alt="Additional demonstration">
 </p>
 
-### Video Demonstration
-
-<p align="center">
-  <video src="assets/demonstration.mp4" width="280" controls>
-    Watch demonstration video
-  </video>
-</p>
-
 ### Skills Demo
 
 <p align="center">
