@@ -201,8 +201,7 @@ async function processOpencodeJob(job: Job<TaskJobData, TaskJobResult, string>):
       startedAt: new Date().toISOString(),
     });
 
-    await sendProgressHeartbeat(chatId, progressMessageId, 5, "Starting task...");
-    progressMessageId = await sendProgressHeartbeat(chatId, null, 5, "Starting task...");
+    progressMessageId = await sendProgressHeartbeat(chatId, progressMessageId, 5, "Starting task...");
 
     const promptOptions: {
       sessionID: string;
@@ -234,7 +233,6 @@ async function processOpencodeJob(job: Job<TaskJobData, TaskJobResult, string>):
       promptOptions.system = system;
     }
 
-    await sendProgressHeartbeat(chatId, progressMessageId, 10, "Sending prompt to OpenCode...");
     progressMessageId = await sendProgressHeartbeat(chatId, progressMessageId, 10, "Sending prompt to OpenCode...");
 
     const result = await opencodeClient.session.prompt(promptOptions);

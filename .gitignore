@@ -81,6 +81,7 @@ warningbugFix.md
 verification_report.md
 local-rag.py
 rag_output/
+rag_storage/
 
 # Agent analysis docs
 docs
