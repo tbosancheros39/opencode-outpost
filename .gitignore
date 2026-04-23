@@ -60,31 +60,24 @@ scratch_*.ts
 # Packaging artifacts
 *.tgz
 
-# Session/audit files
+# Session/audit/debug files — generic patterns only
 *_F*_2026-*.md
 SESSION_*.md
 session*.md
 PLAN_*.md
 PublishPolishing.md
-
-# Debug/audit artifacts
-FailedToGenerateResponse.md
-RestartingBot.md
 analysis_results.md
-firstfix.md
-firstproblem.md
 fix-plan.md
 plan.md
-pr0blem.md
-pr0blemFIX.md
-warningbugFix.md
 verification_report.md
-local-rag.py
-rag_output/
-rag_storage/
+
+# Local tooling experiments
+local-*.py
+*_output/
+*_storage/
 
 # Agent analysis docs
-docs
+docs/
 docs/agents/
 docs/sub-agent-preflight.md
 caveman/
