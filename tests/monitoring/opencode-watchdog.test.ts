@@ -73,7 +73,7 @@ describe("opencode-watchdog", () => {
   });
 
   it("health check success - no restart triggered", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true, status: 200 });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true, status: 200, json: () => Promise.resolve({ healthy: true }) });
     startWatchdog();
     await vi.advanceTimersByTimeAsync(30000);
     expect(mockStart).not.toHaveBeenCalled();
@@ -115,7 +115,7 @@ describe("opencode-watchdog", () => {
     // 3 failures → serverWasDown = true
     await vi.advanceTimersByTimeAsync(90000);
     // Server recovers
-    fetchMock.mockResolvedValue({ ok: true, status: 200 });
+    fetchMock.mockResolvedValue({ ok: true, status: 200, json: () => Promise.resolve({ healthy: true }) });
     await vi.advanceTimersByTimeAsync(30000);
     expect(mockSendMessage).toHaveBeenCalledWith(123, expect.stringContaining("✅"));
   });
