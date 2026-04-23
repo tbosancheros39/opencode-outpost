@@ -17,20 +17,34 @@
   </a>
 </p>
 
+<p align="center">
+  <img src="assets/Skills.gif" width="560" alt="Skills demonstration">
+</p>
+
 ## Demo
 
 <p align="center">
-  <img src="https://s13.gifyu.com/images/bq1wN.md.gif" width="280" alt="OpenCode Outpost demo 1">
-  <img src="https://s13.gifyu.com/images/bq1wH.md.gif" width="280" alt="OpenCode Outpost demo 2">
-  <img src="https://s13.gifyu.com/images/bq1wI.gif" width="280" alt="OpenCode Outpost demo 3">
+  <img src="assets/screenshot1.jpg" width="280" alt="OpenCode Outpost screenshot 1">
+  <img src="assets/screenshot2.jpg" width="280" alt="OpenCode Outpost screenshot 2">
+  <img src="assets/screenshot3.jpg" width="280" alt="OpenCode Outpost screenshot 3">
 </p>
 
-### Screenshots
+<p align="center">
+  <img src="assets/output2.gif" width="560" alt="Additional demonstration">
+</p>
+
+### Video Demonstration
 
 <p align="center">
-  <img src="assets/screenshot1.jpg" width="280" alt="Screenshot 1">
-  <img src="assets/screenshot2.jpg" width="280" alt="Screenshot 2">
-  <img src="assets/screenshot3.jpg" width="280" alt="Screenshot 3">
+  <video src="assets/demonstration.mp4" width="280" controls>
+    Watch demonstration video
+  </video>
+</p>
+
+### Skills Demo
+
+<p align="center">
+  <img src="assets/Skills.gif" width="280" alt="Skills demonstration">
 </p>
 
 ---
@@ -305,9 +319,7 @@ OpenCode loads skills from `~/.config/opencode/skills/`. I've included a zip of 
 ### Video Demo — All Available Skills
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID">
-    <img src="https://img.shields.io/badge/Video-Skills%20Demo-red?logo=youtube" alt="Watch Skills Demo on YouTube">
-  </a>
+  <img src="assets/Skills.gif" width="320" alt="Skills demonstration">
 </p>
 
 > 📹 **See all 40+ commands in action** — the video walks through every skill, from file exploration (`/fe`) to inline prompts (`@bot eli5:`), git operations, and multi-user session management.
