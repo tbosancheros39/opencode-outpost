@@ -127,7 +127,9 @@ export function filterFreeModels(
     if (!providerID || !provider.models) continue;
 
     const modelIDs = Array.isArray(provider.models)
-      ? provider.models.map((m: any) => m.id ?? m.modelID ?? m).filter((id: any) => typeof id === 'string')
+      ? provider.models
+          .map((m) => (m as { id?: string; modelID?: string }).id ?? (m as { id?: string; modelID?: string }).modelID ?? m)
+          .filter((id): id is string => typeof id === 'string')
       : Object.keys(provider.models);
 
     for (const modelID of modelIDs) {
@@ -161,7 +163,9 @@ export function filterModelsByTelegramGroups(
     if (!providerID || !provider.models) continue;
 
     const modelIDs = Array.isArray(provider.models)
-      ? provider.models.map((m: any) => m.id ?? m.modelID ?? m).filter((id: any) => typeof id === 'string')
+      ? provider.models
+          .map((m) => (m as { id?: string; modelID?: string }).id ?? (m as { id?: string; modelID?: string }).modelID ?? m)
+          .filter((id): id is string => typeof id === 'string')
       : Object.keys(provider.models);
 
     for (const modelID of modelIDs) {

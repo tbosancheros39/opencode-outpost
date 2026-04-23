@@ -87,3 +87,9 @@ docs
 docs/agents/
 docs/sub-agent-preflight.md
 caveman/
+
+# Build artifacts
+package/
+
+# Reference files
+Refs/

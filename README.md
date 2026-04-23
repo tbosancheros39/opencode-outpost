@@ -93,7 +93,6 @@ See [PRODUCT.md](./PRODUCT.md) for feature status and planned work.
 | `/projects` | List all projects |
 | `/status` | Show current session status |
 | `/abort` | Abort the current task |
-| `/stop` | Stop OpenCode |
 | `/rename` | Rename the current session |
 | `/messages` | Show session messages |
 | `/snapshot` | Save a session snapshot |
@@ -322,8 +321,8 @@ See [.env.example](.env.example) for all 41 supported environment variables.
 
 **"OpenCode server is not available"**
 - Ensure OpenCode server is running: `opencode serve` or use `/opencode_start` in Telegram
-- Verify `OPENCODE_API_URL` in `.env` (default: `http://localhost:4096`)
-- Check if port 4096 is available
+- Verify `OPENCODE_API_URL` in `.env` (default: `http://localhost:4097`)
+- Check if port 4097 is available
 
 **Redis connection errors**
 - Start Redis: `redis-server` or `systemctl start redis`

@@ -99,7 +99,9 @@ async function getValidModelKeys(): Promise<Set<string> | null> {
         if (!providerID || !models) continue;
 
         const modelIDs = Array.isArray(models)
-          ? models.map((m: any) => m.id ?? m.modelID ?? m).filter((id: any) => typeof id === 'string')
+          ? models
+              .map((m) => (m as { id?: string; modelID?: string }).id ?? (m as { id?: string; modelID?: string }).modelID ?? m)
+              .filter((id): id is string => typeof id === 'string')
           : Object.keys(models);
 
         for (const modelID of modelIDs) {

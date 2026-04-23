@@ -1260,7 +1260,7 @@ export async function createBot(): Promise<Bot<Context>> {
   bot.command("sessions", sessionsCommand);
   bot.command("new", newCommand);
   bot.command("abort", abortCommand);
-  bot.command("stop", abortCommand);
+  
   bot.command("steer", async (ctx) => {
     await steerCommand(ctx, { bot, ensureEventSubscription });
   });
