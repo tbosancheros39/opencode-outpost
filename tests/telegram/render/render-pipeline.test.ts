@@ -48,7 +48,8 @@ describe("telegram/render/render-pipeline", () => {
     const text = result[0].text;
     expect(text).toContain("*this*");
     expect(text).toContain("`code`");
-    expect(text).toContain("[link](https://example.com)");
+    // URL gets MarkdownV2-escaped — . becomes \\.
+    expect(text).toContain("[link](https://example\\.com)");
   });
 
   it("chunks overlong input", () => {
@@ -101,7 +102,8 @@ describe("telegram/render/render-pipeline", () => {
     expect(text).toContain("*2 issues*");
     expect(text).toContain("`fetchData`");
     expect(text).toContain("```ts");
-    expect(text).toContain("[docs](https://example.com)");
+    // URL gets MarkdownV2-escaped — . becomes \\.
+    expect(text).toContain("[docs](https://example\\.com)");
   });
 
   it("renders strikethrough syntax as Telegram strikethrough with GFM plugin", () => {

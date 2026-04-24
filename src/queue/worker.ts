@@ -19,6 +19,9 @@ let workerInstance: Worker<TaskJobData, TaskJobResult, string> | null = null;
 
 const MAX_RETRIES = 3;
 const INITIAL_BACKOFF_MS = 5000;
+// Max time (ms) for a single prompt() call. Prevent hung sub-agent from blocking forever.
+// 300s matches existing busy-state timeout in ScheduledTaskForeground.
+const PROMPT_TIMEOUT_MS = 300_000;
 const taskRetries = new Map<string, number>();
 
 function getBackoffMs(attempt: number): number {
@@ -235,7 +238,9 @@ async function processOpencodeJob(job: Job<TaskJobData, TaskJobResult, string>):
 
     progressMessageId = await sendProgressHeartbeat(chatId, progressMessageId, 10, "Sending prompt to OpenCode...");
 
-    const result = await opencodeClient.session.prompt(promptOptions);
+    const result = await opencodeClient.session.prompt(promptOptions, {
+      signal: AbortSignal.timeout(PROMPT_TIMEOUT_MS),
+    });
 
     if (result.error) {
       const errorMessage = result.error.toString();
@@ -264,6 +269,16 @@ async function processOpencodeJob(job: Job<TaskJobData, TaskJobResult, string>):
     return { success: true };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
+
+    // Log full error details: cause, name, stack — critical for diagnosing network failures
+    if (error instanceof TypeError && error.message === "fetch failed") {
+      const cause = (error as Error & { cause?: unknown }).cause;
+      logger.error(
+        `[Worker] Job ${job.id} fetch failed (network error). Cause:`,
+        cause instanceof Error ? `${cause.name}: ${cause.message}` : String(cause),
+      );
+    }
+
     const attempts = (taskRetries.get(job.id!) || 0) + 1;
     taskRetries.set(job.id!, attempts);
 

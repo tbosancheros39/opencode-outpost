@@ -42,7 +42,8 @@ export function transformNode(node: RootContent): string {
     case "link": {
       const link = node as Link;
       const text = transformChildren(link);
-      return `[${text}](${link.url})`;
+      // URL must be escaped for MarkdownV2 — contains . ( ) and other special chars
+      return `[${text}](${escapeMd(link.url)})`;
     }
 
     case "paragraph":
@@ -67,7 +68,7 @@ export function transformNode(node: RootContent): string {
         const content = transformNode(item);
         if (list.ordered) {
           const start = list.start ?? 1;
-          return `${start + index}. ${content}`;
+          return `${start + index}\\. ${content}`;
         }
         return `• ${content}`;
       });

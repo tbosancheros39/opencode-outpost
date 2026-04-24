@@ -59,7 +59,8 @@ describe("telegram/render/transformer", () => {
         url: "https://example.com",
         children: [{ type: "text", value: "click" }],
       };
-      expect(transformNode(node)).toBe("[click](https://example.com)");
+      // URL is now escaped for MarkdownV2 — . becomes \\.
+      expect(transformNode(node)).toBe("[click](https://example\\.com)");
     });
 
     it("transforms paragraph node", () => {
@@ -131,8 +132,8 @@ describe("telegram/render/transformer", () => {
         ],
       };
       const result = transformNode(node);
-      expect(result).toContain("1. first");
-      expect(result).toContain("2. second");
+      expect(result).toContain("1\\. first");
+      expect(result).toContain("2\\. second");
     });
 
     it("transforms table node as code block", () => {
