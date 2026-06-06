@@ -26,11 +26,18 @@
 <p align="center">
   <img src="assets/screenshot1.jpg" width="280" alt="OpenCode Outpost screenshot 1">
   <img src="assets/screenshot2.jpg" width="280" alt="OpenCode Outpost screenshot 2">
-  <img src="assets/screenshot3.jpg" width="280" alt="OpenCode Outpost screenshot 3">
+  <img src="assets/help.jpg" width="280" alt="OpenCode Outpost help">
 </p>
 
 <p align="center">
   <img src="assets/output2.gif" width="560" alt="Additional demonstration">
+</p>
+
+### Models & Help
+
+<p align="center">
+  <img src="assets/Models.jpg" width="280" alt="Model switching">
+  <img src="assets/help2.jpg" width="280" alt="Grouped help categories">
 </p>
 
 ### Skills Demo
