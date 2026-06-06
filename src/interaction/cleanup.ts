@@ -11,7 +11,10 @@ import { logger } from "../utils/logger.js";
  * Does NOT clear user-initiated states (rename, task, custom) which the user
  * must explicitly complete or cancel.
  */
-export function clearPromptInteractionState(chatId: number, reason: string): void {
+export function clearPromptInteractionState(
+  chatId: number,
+  reason: string,
+): void {
   const state = interactionManager.getSnapshot(chatId);
   if (!state) return;
 
@@ -27,7 +30,7 @@ export function clearPromptInteractionState(chatId: number, reason: string): voi
 
   logger.info(
     `[InteractionCleanup] Cleared prompt interaction state: reason=${reason}, ` +
-    `kind=${state.kind}, questionActive=${questionActive}, permissionActive=${permissionActive}`,
+      `kind=${state.kind}, questionActive=${questionActive}, permissionActive=${permissionActive}`,
   );
 }
 

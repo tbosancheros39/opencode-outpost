@@ -1,7 +1,14 @@
 import type { RuntimeMode } from "../runtime/mode.js";
 import { t } from "../i18n/index.js";
 
-export type CliCommand = "start" | "status" | "stop" | "config" | "doctor" | "setup" | "kb";
+export type CliCommand =
+  | "start"
+  | "status"
+  | "stop"
+  | "config"
+  | "doctor"
+  | "setup"
+  | "kb";
 
 export interface ParsedCliArgs {
   command: CliCommand;
@@ -11,7 +18,15 @@ export interface ParsedCliArgs {
   error?: string;
 }
 
-const SUPPORTED_COMMANDS: readonly CliCommand[] = ["start", "status", "stop", "config", "doctor", "setup", "kb"];
+const SUPPORTED_COMMANDS: readonly CliCommand[] = [
+  "start",
+  "status",
+  "stop",
+  "config",
+  "doctor",
+  "setup",
+  "kb",
+];
 
 function isCliCommand(value: string): value is CliCommand {
   return SUPPORTED_COMMANDS.includes(value as CliCommand);

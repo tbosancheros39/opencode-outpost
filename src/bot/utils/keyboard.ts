@@ -23,7 +23,9 @@ function formatTokenCount(count: number): string {
 function formatContextForButton(contextInfo: ContextInfo): string {
   const used = formatTokenCount(contextInfo.tokensUsed);
   const limit = formatTokenCount(contextInfo.tokensLimit);
-  const percent = Math.round((contextInfo.tokensUsed / contextInfo.tokensLimit) * 100);
+  const percent = Math.round(
+    (contextInfo.tokensUsed / contextInfo.tokensLimit) * 100,
+  );
   return t("keyboard.context", { used, limit, percent });
 }
 
@@ -45,7 +47,10 @@ export function createMainKeyboard(
   const agentText = getAgentDisplayName(currentAgent);
 
   // Format model with compact provider/model text and icon
-  const modelText = formatModelForButton(currentModel.providerID, currentModel.modelID);
+  const modelText = formatModelForButton(
+    currentModel.providerID,
+    currentModel.modelID,
+  );
 
   // Context text - show "0" if no data available
   const contextText = contextInfo

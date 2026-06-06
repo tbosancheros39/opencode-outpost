@@ -57,7 +57,8 @@ export async function resolveInlineQuery(
     // Create session without a directory — uses OpenCode's default/global context.
     // DO NOT use a temp dir: OpenCode only emits events for known project directories,
     // so filtering by a temp dir would yield zero events and always time out.
-    const { data: session, error: sessionError } = await opencodeClient.session.create({});
+    const { data: session, error: sessionError } =
+      await opencodeClient.session.create({});
 
     if (sessionError || !session) {
       logger.error("[InlineLLM] Failed to create session:", sessionError);
@@ -65,9 +66,12 @@ export async function resolveInlineQuery(
     }
 
     sessionId = session.id;
-    logger.debug(`[InlineLLM] Created session ${sessionId} (no directory — global context)`);
+    logger.debug(
+      `[InlineLLM] Created session ${sessionId} (no directory — global context)`,
+    );
 
-    const systemPrompt = SYSTEM_PROMPTS[command] ?? "Answer the following concisely.";
+    const systemPrompt =
+      SYSTEM_PROMPTS[command] ?? "Answer the following concisely.";
     const fullPrompt = `${systemPrompt}\n\n---\n\nUSER'S QUESTION/CONTENT:\n${query}`;
 
     const textChunks: string[] = [];
@@ -91,7 +95,9 @@ export async function resolveInlineQuery(
           for await (const event of result.stream) {
             if (event.type === "message.part.updated") {
               const part = (
-                event.properties as { part: { type: string; text?: string; sessionID?: string } }
+                event.properties as {
+                  part: { type: string; text?: string; sessionID?: string };
+                }
               ).part;
               if (part.sessionID !== capturedSessionId) continue;
               if (part.type === "text" && part.text) {
@@ -99,7 +105,9 @@ export async function resolveInlineQuery(
               }
             } else if (event.type === "message.updated") {
               const info = (
-                event.properties as { info: { role: string; sessionID?: string } }
+                event.properties as {
+                  info: { role: string; sessionID?: string };
+                }
               ).info;
               if (info.sessionID !== capturedSessionId) continue;
               if (info.role === "assistant") {
@@ -138,7 +146,10 @@ export async function resolveInlineQuery(
 
     // Give local LLM inference time to generate a response (local models are slower than cloud)
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error("Inline query timeout after 60 seconds")), 60_000);
+      setTimeout(
+        () => reject(new Error("Inline query timeout after 60 seconds")),
+        60_000,
+      );
     });
 
     const answer = await Promise.race([responsePromise, timeoutPromise]);

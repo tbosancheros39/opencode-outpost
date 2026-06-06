@@ -31,7 +31,10 @@ export async function newCommand(ctx: CommandContext<Context>) {
       return;
     }
 
-    logger.debug("[Bot] Creating new session for directory:", currentProject.worktree);
+    logger.debug(
+      "[Bot] Creating new session for directory:",
+      currentProject.worktree,
+    );
 
     const { data: session, error } = await opencodeClient.session.create({
       directory: currentProject.worktree,
@@ -64,7 +67,11 @@ export async function newCommand(ctx: CommandContext<Context>) {
     keyboardManager.initialize(ctx.api, chatId);
 
     try {
-      await pinnedMessageManager.onSessionChange(chatId, session.id, session.title);
+      await pinnedMessageManager.onSessionChange(
+        chatId,
+        session.id,
+        session.title,
+      );
     } catch (err) {
       logger.error("[Bot] Error creating pinned message:", err);
     }
@@ -73,7 +80,9 @@ export async function newCommand(ctx: CommandContext<Context>) {
     const currentAgent = getStoredAgent(chatId);
     const currentModel = getStoredModel(chatId);
     const contextInfo = pinnedMessageManager.getContextInfo(chatId);
-    const variantName = formatVariantForButton(currentModel.variant || "default");
+    const variantName = formatVariantForButton(
+      currentModel.variant || "default",
+    );
     const keyboard = createMainKeyboard(
       currentAgent,
       currentModel,

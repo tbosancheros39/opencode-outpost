@@ -45,10 +45,13 @@ export const en = {
   "cmd.find.no_messages": "No messages found in this session.",
   "cmd.find.no_results": "No results found for your search.",
   "cmd.find.no_session": "No active session. Start a session with /new first.",
-  "cmd.find.results_header": "Search results for \"{query}\" ({count} found):\n\n",
+  "cmd.find.results_header":
+    'Search results for "{query}" ({count} found):\n\n',
   "cmd.find.searching": "Searching for: {query}...",
-  "cmd.find.usage": "Usage: /find <query> - Search session history\nExample: /find authentication",
-  "cmd.find.error_query_too_long": "Query too long. Please keep searches under 500 characters.",
+  "cmd.find.usage":
+    "Usage: /find <query> - Search session history\nExample: /find authentication",
+  "cmd.find.error_query_too_long":
+    "Query too long. Please keep searches under 500 characters.",
 
   // === Pin Command ===
   "cmd.pin.added": "Pinned file added: {path}",
@@ -64,10 +67,13 @@ export const en = {
   "cmd.pin.error_remove": "Failed to remove pinned file.",
   "cmd.pin.file_not_found": "File not found: {path}",
   "cmd.pin.header": "📌 Pinned Files:",
-  "cmd.pin.hint": "Use /pin add <path> to add, /pin remove <path> to remove, /pin clear to clear all.",
-  "cmd.pin.limit_reached": "Maximum number of pinned files reached ({limit}). Remove one first.",
+  "cmd.pin.hint":
+    "Use /pin add <path> to add, /pin remove <path> to remove, /pin clear to clear all.",
+  "cmd.pin.limit_reached":
+    "Maximum number of pinned files reached ({limit}). Remove one first.",
   "cmd.pin.menu_title": "📌 Pin Files",
-  "cmd.pin.no_files": "No recent or pinned files.\nStart a session and interact with files — they'll appear here automatically.",
+  "cmd.pin.no_files":
+    "No recent or pinned files.\nStart a session and interact with files — they'll appear here automatically.",
   "cmd.pin.not_found": "Pinned file not found: {path}",
   "cmd.pin.pinned_header": "📌 Pinned — tap to unpin:",
   "cmd.pin.recent_header": "📄 Recent — tap to pin:",
@@ -82,11 +88,14 @@ export const en = {
   "cmd.snapshot.error_list": "Failed to list snapshots.",
   "cmd.snapshot.error_load": "Failed to load snapshot.",
   "cmd.snapshot.error_save": "Failed to save snapshot.",
-  "cmd.snapshot.error_name_too_long": "Snapshot name too long. Maximum is 100 characters.",
-  "cmd.snapshot.info": "Snapshot: {name}\nID: {id}\nSession: {session}\nDate: {date}",
+  "cmd.snapshot.error_name_too_long":
+    "Snapshot name too long. Maximum is 100 characters.",
+  "cmd.snapshot.info":
+    "Snapshot: {name}\nID: {id}\nSession: {session}\nDate: {date}",
   "cmd.snapshot.list_header": "📸 Session Snapshots:",
   "cmd.snapshot.list_page": "📸 Session Snapshots (page {page}):",
-  "cmd.snapshot.no_session": "No active session. Start a session with /new first.",
+  "cmd.snapshot.no_session":
+    "No active session. Start a session with /new first.",
   "cmd.snapshot.not_found": "Snapshot not found: {id}",
   "cmd.snapshot.prev_page": "Previous",
   "cmd.snapshot.next_page": "Next",
@@ -96,7 +105,8 @@ export const en = {
 
   // === Resume Command ===
   "cmd.resume.error": "Failed to resume session.",
-  "cmd.resume.no_snapshots": "No snapshots found. Use /snapshot to save one first.",
+  "cmd.resume.no_snapshots":
+    "No snapshots found. Use /snapshot to save one first.",
   "cmd.resume.prev_page": "Previous",
   "cmd.resume.next_page": "Next",
   "cmd.resume.select": "Select a snapshot to resume:",
@@ -109,7 +119,8 @@ export const en = {
   "cmd.digest.error": "Failed to generate digest.",
   "cmd.digest.generating": "Generating session digest...",
   "cmd.digest.header": "# Session Digest: {title}\n\n",
-  "cmd.digest.no_session": "No active session. Start a session with /new first.",
+  "cmd.digest.no_session":
+    "No active session. Start a session with /new first.",
 
   // === Common & Bot ===
   "bot.create_session_error":
@@ -118,11 +129,14 @@ export const en = {
   "bot.file_download_error": "🔴 Failed to download file",
   "bot.file_downloading": "⏳ Downloading file...",
   "bot.file_too_large": "⚠️ File is too large (max {maxSizeMb}MB)",
-  "bot.model_no_pdf": "⚠️ Current model doesn't support PDF input. Sending text only.",
+  "bot.model_no_pdf":
+    "⚠️ Current model doesn't support PDF input. Sending text only.",
   "bot.photo_download_error": "🔴 Failed to download photo",
   "bot.photo_downloading": "⏳ Downloading photo...",
-  "bot.photo_model_no_image": "⚠️ Current model doesn't support image input. Sending text only.",
-  "bot.photo_no_caption": "💡 Tip: Add a caption to describe what you want to do with this photo.",
+  "bot.photo_model_no_image":
+    "⚠️ Current model doesn't support image input. Sending text only.",
+  "bot.photo_no_caption":
+    "💡 Tip: Add a caption to describe what you want to do with this photo.",
   "bot.photo_too_large": "⚠️ Photo is too large (max {maxSizeMb}MB)",
   "bot.project_not_selected":
     "🏗 Project is not selected.\n\nFirst select a project with /projects.",
@@ -138,7 +152,8 @@ export const en = {
     "🔁 {message}\n\nProvider keeps returning the same error on repeated retries. Use /abort to abort.",
   "bot.text_file_too_large": "⚠️ Text file is too large (max {maxSizeKb}KB)",
   "bot.thinking": "💭 Thinking...",
-  "bot.unknown_command": "⚠️ Unknown command: {command}. Use /help to see available commands.",
+  "bot.unknown_command":
+    "⚠️ Unknown command: {command}. Use /help to see available commands.",
   "bot.working_on_it": "⏳ Working on it...",
   "common.unknown": "unknown",
   "common.unknown_error": "unknown error",
@@ -148,6 +163,15 @@ export const en = {
     "📖 **Help**\n\n/status - Check server status\n/sessions - Session list\n/new - Create new session\n/help - Help",
   "start.welcome":
     "👋 Welcome to OpenCode Telegram Bot!\n\nUse commands:\n/projects — select project\n/sessions — session list\n/new — new session\n/task — scheduled task\n/tasklist — scheduled tasks\n/status — status\n/help — help\n\nUse the bottom buttons to select agent mode, model, and variant.",
+
+  // === Help Categories ===
+  "help.category.session": "📁 Session",
+  "help.category.tasks": "⚙️ Tasks",
+  "help.category.local_ops": "📂 Local Ops",
+  "help.category.git": "🔧 Git",
+  "help.category.browse": "🔍 Browse",
+  "help.category.bot_control": "🤖 Bot Control",
+  "help.tip_commands": "💡 Tip: Use /commands for interactive keyboard",
 
   // === Status & Start/Stop ===
   "opencode_start.already_running_external":
@@ -168,7 +192,8 @@ export const en = {
   "opencode_stop.external_running":
     "⚠️ OpenCode Server is running as an external process\n\nThis server was not started via /opencode-start.\nStop it manually or use /status to check state.",
   "opencode_stop.not_running": "⚠️ OpenCode Server is not running",
-  "opencode_stop.stop_error": "🔴 Failed to stop OpenCode Server\n\nError: {error}",
+  "opencode_stop.stop_error":
+    "🔴 Failed to stop OpenCode Server\n\nError: {error}",
   "opencode_stop.stopping": "🛑 Stopping OpenCode Server...\n\nPID: {pid}",
   "opencode_stop.success": "✅ OpenCode Server stopped successfully",
   "status.agent_not_set": "not set",
@@ -189,9 +214,18 @@ export const en = {
   "status.project_selected": "Project: {project}",
   "status.server_unavailable":
     "🔴 OpenCode Server is unavailable\n\nUse /opencode_start to start the server.",
+  "status.redis_down":
+    "❌ Redis not responding. Run: redis-server (Linux) or brew services start redis (macOS)",
+  "status.opencode_down": "❌ OpenCode not running. Run: opencode serve",
+  "status.both_down":
+    "❌ OpenCode not running. Run: opencode serve\n❌ Redis not responding. Run: redis-server (Linux) or brew services start redis (macOS)",
   "status.session_hint": "Use /sessions to select one or /new to create one",
   "status.session_not_selected": "Current session: not selected",
   "status.session_selected": "Current session: {title}",
+  "status.redis.connected": "🟢 Redis: Connected ({latencyMs}ms)",
+  "status.redis.down": "🔴 Redis: Down",
+  "status.redis.skipped": "⚪ Redis: Skipped (disabled)",
+  "status.queue.stats": "📊 Queue: {pending} pending, {active} active",
 
   // === Projects & Sessions ===
   "new.create_error":
@@ -222,7 +256,8 @@ export const en = {
   "rename.error": "🔴 Failed to rename session.",
   "rename.inactive": "⚠️ Rename request is not active. Run /rename again.",
   "rename.inactive_callback": "Rename request is inactive",
-  "rename.no_session": "⚠️ No active session. Create or select a session first.",
+  "rename.no_session":
+    "⚠️ No active session. Create or select a session first.",
   "rename.prompt": "📝 Enter new title for session:\n\nCurrent: {title}",
   "rename.success": "✅ Session renamed to: {title}",
   "sessions.button.next_page": "Next ➡️",
@@ -232,7 +267,8 @@ export const en = {
     "🔴 OpenCode Server is unavailable or an error occurred while loading sessions.",
   "sessions.loading_context": "⏳ Loading context and latest messages...",
   "sessions.page_empty_callback": "No sessions on this page",
-  "sessions.page_load_error_callback": "Cannot load this page. Please try again.",
+  "sessions.page_load_error_callback":
+    "Cannot load this page. Please try again.",
   "sessions.preview.agent": "Agent:",
   "sessions.preview.empty": "No recent messages.",
   "sessions.preview.title": "Recent messages:",
@@ -244,14 +280,18 @@ export const en = {
   "sessions.select_page": "Select a session (page {page}):",
   "sessions.select_project_first": "🔴 Project is not selected. Use /projects.",
   "sessions.selected": "✅ Session selected: {title}",
-  "stop.error": "🔴 Failed to stop action.\n\nEvent stream is stopped, try /abort again.",
+  "stop.error":
+    "🔴 Failed to stop action.\n\nEvent stream is stopped, try /abort again.",
   "stop.in_progress":
     "🛑 Event stream stopped, sending abort signal...\n\nWaiting for agent to stop.",
   "stop.no_active_session":
     "🛑 Agent was not started\n\nCreate a session with /new or select one via /sessions.",
-  "stop.success": "✅ Agent action interrupted. No more messages from this run will be sent.",
-  "stop.warn_local_only": "⚠️ Event stream stopped locally, but server-side abort failed.",
-  "stop.warn_maybe_finished": "⚠️ Event stream stopped, but the agent may have already finished.",
+  "stop.success":
+    "✅ Agent action interrupted. No more messages from this run will be sent.",
+  "stop.warn_local_only":
+    "⚠️ Event stream stopped locally, but server-side abort failed.",
+  "stop.warn_maybe_finished":
+    "⚠️ Event stream stopped, but the agent may have already finished.",
   "stop.warn_still_busy":
     "⚠️ Signal sent, but agent is still busy.\n\nEvent stream is already disabled, so no intermediate messages will be sent.",
   "stop.warn_timeout":
@@ -273,13 +313,16 @@ export const en = {
   "context.confirm_text":
     '📊 Context compaction for session "{title}"\n\nThis will reduce context usage by removing old messages from history. Current task will not be interrupted.\n\nContinue?',
   "context.error": "❌ Context compaction failed",
-  "context.no_active_session": "⚠️ No active session. Create a session with /new",
+  "context.no_active_session":
+    "⚠️ No active session. Create a session with /new",
   "context.progress": "⏳ Compacting context...",
   "context.success": "✅ Context compacted successfully",
-  "legacy.models.empty": "📋 No available models. Configure providers in OpenCode.",
+  "legacy.models.empty":
+    "📋 No available models. Configure providers in OpenCode.",
   "legacy.models.env_hint": "💡 To use model in .env:\n",
   "legacy.models.error": "🔴 An error occurred while loading models list.",
-  "legacy.models.fetch_error": "🔴 Failed to get models list. Check server status with /status.",
+  "legacy.models.fetch_error":
+    "🔴 Failed to get models list. Check server status with /status.",
   "legacy.models.header": "📋 Available models:\n\n",
   "legacy.models.no_provider_models": "  ⚠️ No available models\n",
   "model.change_error_callback": "Failed to change model",
@@ -291,7 +334,8 @@ export const en = {
   "model.menu.favorites_empty": "— Empty.",
   "model.menu.favorites_hint":
     "ℹ️ Add models to favorites in OpenCode CLI to keep them at the top.",
-  "model.menu.favorites_title": "⭐ Favorites (Add models to favorites in OpenCode CLI)",
+  "model.menu.favorites_title":
+    "⭐ Favorites (Add models to favorites in OpenCode CLI)",
   "model.menu.recent_empty": "— Empty.",
   "model.menu.recent_title": "🕘 Recent",
   "model.menu.select": "Select model:",
@@ -320,7 +364,8 @@ export const en = {
   "task.inactive_callback": "This scheduled task flow is inactive",
   "task.kind.cron": "recurring",
   "task.kind.once": "one-time",
-  "task.limit_reached": "⚠️ Task limit reached ({limit}). Delete an existing scheduled task first.",
+  "task.limit_reached":
+    "⚠️ Task limit reached ({limit}). Delete an existing scheduled task first.",
   "task.parse.in_progress": "⏳ Parsing schedule...",
   "task.parse_error":
     "🔴 Failed to parse schedule.\n\n{message}\n\nSend the schedule again in a clearer form.",
@@ -350,7 +395,8 @@ export const en = {
   "tasklist.select": "Select a scheduled task:",
 
   // === OpenCode Commands ===
-  "commands.arguments_empty": "⚠️ Arguments cannot be empty. Send text or tap Execute.",
+  "commands.arguments_empty":
+    "⚠️ Arguments cannot be empty. Send text or tap Execute.",
   "commands.button.cancel": "❌ Cancel",
   "commands.button.execute": "✅ Execute",
   "commands.button.next_page": "Next ➡️",
@@ -366,7 +412,8 @@ export const en = {
   "commands.inactive_callback": "This command menu is inactive",
   "commands.no_description": "No description",
   "commands.page_empty_callback": "No commands on this page",
-  "commands.page_load_error_callback": "Cannot load this page. Please try again.",
+  "commands.page_load_error_callback":
+    "Cannot load this page. Please try again.",
   "commands.select": "Choose an OpenCode command:",
   "commands.select_page": "Choose an OpenCode command (page {page}):",
 
@@ -375,14 +422,16 @@ export const en = {
   "callback.unknown_command": "Unknown command",
   "inline.blocked.command_not_allowed":
     "⚠️ This command is not available while inline menu is active.",
-  "inline.blocked.expected_choice": "⚠️ Choose an option using the inline buttons or tap Cancel.",
+  "inline.blocked.expected_choice":
+    "⚠️ Choose an option using the inline buttons or tap Cancel.",
   "inline.button.cancel": "❌ Cancel",
   "inline.cancelled_callback": "Cancelled",
   "inline.cmd.button.edit": "Edit",
   "inline.cmd.button.generate": "Generate",
   "inline.cmd.deep_research.description": "Research a topic thoroughly",
   "inline.cmd.deep_research.title": "Deep Research",
-  "inline.cmd.devils_advocate.description": "Argue against the current position",
+  "inline.cmd.devils_advocate.description":
+    "Argue against the current position",
   "inline.cmd.devils_advocate.title": "Devil's Advocate",
   "inline.cmd.eli5.description": "Explain in simple terms",
   "inline.cmd.eli5.title": "Explain Like I'm 5",
@@ -390,9 +439,11 @@ export const en = {
   "inline.cmd.error.callback_invalid": "Invalid callback",
   "inline.cmd.error.query_too_short": "Query too short",
   "inline.cmd.error.resolution_failed": "Resolution failed",
-  "inline.cmd.feynman.description": "Explain a concept as if teaching to a beginner",
+  "inline.cmd.feynman.description":
+    "Explain a concept as if teaching to a beginner",
   "inline.cmd.feynman.title": "Feynman",
-  "inline.cmd.steel_man.description": "Present the strongest argument for an opposing view",
+  "inline.cmd.steel_man.description":
+    "Present the strongest argument for an opposing view",
   "inline.cmd.steel_man.title": "Steel Man",
   "inline.cmd.suggestion.usage": "Usage: @{bot_username} <command>:<args>",
   "inline.cmd.summarise.description": "Summarize the conversation",
@@ -403,9 +454,12 @@ export const en = {
     "⚠️ This command is not available in the current step.",
   "interaction.blocked.expected_callback":
     "⚠️ Please use the inline buttons for this step or tap Cancel.",
-  "interaction.blocked.expected_command": "⚠️ Please send a command for this step.",
-  "interaction.blocked.expected_text": "⚠️ Please send a text message for this step.",
-  "interaction.blocked.expired": "⚠️ This interaction has expired. Please start it again.",
+  "interaction.blocked.expected_command":
+    "⚠️ Please send a command for this step.",
+  "interaction.blocked.expected_text":
+    "⚠️ Please send a text message for this step.",
+  "interaction.blocked.expired":
+    "⚠️ This interaction has expired. Please start it again.",
   "interaction.blocked.finish_current":
     "⚠️ Finish the current interaction first (answer or cancel), then open another menu.",
   "keyboard.agent_mode": "{emoji} {name} Mode",
@@ -458,7 +512,8 @@ export const en = {
   "permission.button.allow": "✅ Allow once",
   "permission.button.always": "🔓 Allow always",
   "permission.button.reject": "❌ Reject",
-  "permission.denied.super_user_only": "⛔️ This action is restricted to super users only",
+  "permission.denied.super_user_only":
+    "⛔️ This action is restricted to super users only",
   "permission.header": "{emoji} Permission request: {name}\n\n",
   "permission.inactive_callback": "Permission request is inactive",
   "permission.name.bash": "Bash",
@@ -492,7 +547,8 @@ export const en = {
   "ask_and_leave.no_group": "❌ This command only works in groups",
   "ask_and_leave.sending": "📨 Sending question to group admins...",
   "ask_and_leave.success": "✅ Question sent to group admins",
-  "ask_and_leave.usage": "📖 Usage: /ask_and_leave <question> — Ask in group and leave",
+  "ask_and_leave.usage":
+    "📖 Usage: /ask_and_leave <question> — Ask in group and leave",
   "export.error": "🔴 Export failed: {error}",
   "export.error_no_session": "❌ No active session. Start a new session first.",
   "export.exporting": "📤 Exporting session...",
@@ -540,7 +596,8 @@ export const en = {
   "messages.cancelled_callback": "Cancelled",
   "messages.empty": "📭 No messages in this session",
   "messages.error_load": "🔴 Failed to load messages: {error}",
-  "messages.error_no_session": "❌ No active session. Start a new session first.",
+  "messages.error_no_session":
+    "❌ No active session. Start a new session first.",
   "messages.fork_error": "🔴 Failed to fork session: {error}",
   "messages.fork_success": "✅ Session forked",
   "messages.forking": "🔄 Forking session...",
@@ -552,7 +609,8 @@ export const en = {
   "messages.revert_success": "✅ Reverted to message",
   "messages.reverting": "🔄 Reverting to message...",
   "skills.activating": "🔄 Activating {name}...",
-  "skills.activation_notice": "✅ Skill {name} activated. It will be loaded for the next prompt.",
+  "skills.activation_notice":
+    "✅ Skill {name} activated. It will be loaded for the next prompt.",
   "skills.button.cancel": "Cancel",
   "skills.button.next": "Next ➡️",
   "skills.button.prev": "⬅️ Prev",
@@ -565,10 +623,12 @@ export const en = {
   "skills.inactive_callback": "This skills menu is inactive",
   "skills.no_description": "No description",
   "skills.no_project": "❌ No active project. Select a project first.",
-  "skills.no_session_warning": "⚠️ No active session. Activate after starting a session.",
+  "skills.no_session_warning":
+    "⚠️ No active session. Activate after starting a session.",
   "skills.not_found": "❌ Skill not found: {name}",
   "steer.abort_failed": "🔴 Failed to abort current task: {error}",
-  "steer.usage": "📖 Usage: /steer <message> — Interrupt and redirect the agent with your message",
+  "steer.usage":
+    "📖 Usage: /steer <message> — Interrupt and redirect the agent with your message",
   "stt.empty_result": "🎤 No speech detected in the audio message.",
   "stt.error": "🔴 Failed to recognize audio: {error}",
   "stt.not_configured":
@@ -579,14 +639,17 @@ export const en = {
   "tts.disabled": "🔇 Text-to-speech disabled",
   "tts.error": "❌ TTS error",
   "tts.failed": "❌ Failed to generate audio response.",
-  "tts.not_configured": "⚠️ TTS is not configured. Set TTS_API_URL and TTS_API_KEY.",
+  "tts.not_configured":
+    "⚠️ TTS is not configured. Set TTS_API_URL and TTS_API_KEY.",
   "tts.text_too_long": "⚠️ Text too long for TTS (max {max} characters)",
 
   // === Guards & Limits ===
-  "chat_limit.exceeded": "⚠️ Too many active chats. Wait for previous conversations to finish.",
+  "chat_limit.exceeded":
+    "⚠️ Too many active chats. Wait for previous conversations to finish.",
   "llm.guard.blocked": "⛔️ Command blocked: {reason}",
   "llm.guard.cancelled": "Cancelled",
-  "llm.guard.command_blocked": "⛔️ This command is not allowed by the LLM guard",
+  "llm.guard.command_blocked":
+    "⛔️ This command is not allowed by the LLM guard",
   "llm.guard.confirm_timeout": "⏰ Confirmation timeout",
   "llm.guard.edit_prompt": "Edit prompt",
   "llm.guard.fallback_query": "💭 Fallback query triggered",
@@ -598,9 +661,12 @@ export const en = {
   "rate_limit.exceeded": "⚠️ Too many messages. Please slow down.",
 
   // === Runtime & CLI ===
-  "cli.args.invalid_mode": "Invalid mode value: {value}. Expected sources|installed",
-  "cli.args.mode_only_start": "Option --mode is supported only for the start command",
-  "cli.args.mode_requires_value": "Option --mode requires a value: sources|installed",
+  "cli.args.invalid_mode":
+    "Invalid mode value: {value}. Expected sources|installed",
+  "cli.args.mode_only_start":
+    "Option --mode is supported only for the start command",
+  "cli.args.mode_requires_value":
+    "Option --mode requires a value: sources|installed",
   "cli.args.unknown_command": "Unknown command: {value}",
   "cli.args.unknown_option": "Unknown option: {value}",
   "cli.error.prefix": "CLI error: {message}",
@@ -611,7 +677,8 @@ export const en = {
   "cli.placeholder.unavailable": "Command is unavailable.",
   "cli.usage":
     "Usage:\n  opencode-telegram [start] [--mode sources|installed]\n  opencode-telegram status\n  opencode-telegram stop\n  opencode-telegram config\n  opencode-telegram kb <ingest|search|list|reset>\n\nNotes:\n  - No command defaults to `start`\n  - `--mode` is currently supported for `start` only",
-  "runtime.wizard.api_url_invalid": "Enter a valid URL (http/https) or press Enter for default.\n",
+  "runtime.wizard.api_url_invalid":
+    "Enter a valid URL (http/https) or press Enter for default.\n",
   "runtime.wizard.ask_api_url":
     "Enter OpenCode API URL (optional).\nPress Enter to use default: {defaultUrl}\n> ",
   "runtime.wizard.ask_language":
@@ -620,7 +687,8 @@ export const en = {
     "Enter OpenCode server password (optional).\nPress Enter to keep it empty.\n> ",
   "runtime.wizard.ask_server_username":
     "Enter OpenCode server username (optional).\nPress Enter to use default: {defaultUsername}\n> ",
-  "runtime.wizard.ask_token": "Enter Telegram bot token (get it from @BotFather).\n> ",
+  "runtime.wizard.ask_token":
+    "Enter Telegram bot token (get it from @BotFather).\n> ",
   "runtime.wizard.ask_user_id":
     "Enter your Telegram User ID (you can get it from @userinfobot).\n> ",
   "runtime.wizard.language_invalid":
@@ -628,7 +696,8 @@ export const en = {
   "runtime.wizard.language_selected": "Selected language: {language}\n",
   "runtime.wizard.not_configured_starting":
     "Application is not configured yet. Starting wizard...\n",
-  "runtime.wizard.saved": "Configuration saved:\n- {envPath}\n- {settingsPath}\n",
+  "runtime.wizard.saved":
+    "Configuration saved:\n- {envPath}\n- {settingsPath}\n",
   "runtime.wizard.start": "OpenCode Telegram Bot setup.\n",
   "runtime.wizard.token_invalid":
     "Token looks invalid (expected format <id>:<secret>). Please try again.\n",
@@ -644,7 +713,8 @@ export const en = {
   "tasks.error": "❌ Failed to retrieve tasks.",
 
   // === Shell Command ===
-  "shell.usage": "⚠️ Please provide a command.\nUsage: <code>/shell ls -la</code>",
+  "shell.usage":
+    "⚠️ Please provide a command.\nUsage: <code>/shell ls -la</code>",
   "shell.expired": "Command expired. Please retry.",
   "shell.executing": "Executing...",
   "shell.cancelled": "Cancelled",
@@ -697,7 +767,8 @@ export const en = {
   "git.branch.header": "🌿 <b>Git Branches</b>",
   "git.branch.header_part": "🌿 <b>Git Branches ({part}/{total})</b>",
   "git.branch.error": "❌ <b>Git branch error:</b>\n<pre>{message}</pre>",
-  "git.commit.usage": "⚠️ Please provide a commit message.\nUsage: <code>/commit Your message here</code>",
+  "git.commit.usage":
+    "⚠️ Please provide a commit message.\nUsage: <code>/commit Your message here</code>",
   "git.commit.committing": "📝 Committing changes...",
   "git.commit.success": "Changes committed successfully.",
   "git.commit.header": "📝 <b>Git Commit</b>",

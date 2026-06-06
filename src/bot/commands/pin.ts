@@ -9,7 +9,11 @@ import { logger } from "../../utils/logger.js";
 import { t } from "../../i18n/index.js";
 import { recentFilesTracker } from "../recent-files-tracker.js";
 import { replyWithInlineMenu } from "../handlers/inline-menu.js";
-import { buildPinKeyboard, buildPinMenuText, makeRelativePath } from "../utils/pin-helpers.js";
+import {
+  buildPinKeyboard,
+  buildPinMenuText,
+  makeRelativePath,
+} from "../utils/pin-helpers.js";
 
 const MAX_PINNED_FILES = 10;
 const MAX_RECENT_FILES_SHOWN = 10;
@@ -72,10 +76,7 @@ export async function pinCommand(ctx: CommandContext<Context>): Promise<void> {
 /**
  * Show the pin menu with recent files (tap to pin) and pinned files (tap to unpin).
  */
-export async function showPinMenu(
-  ctx: Context,
-  chatId: number,
-): Promise<void> {
+export async function showPinMenu(ctx: Context, chatId: number): Promise<void> {
   const currentProject = getCurrentProject(chatId);
   const worktree = currentProject?.worktree ?? "";
 

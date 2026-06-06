@@ -1,5 +1,9 @@
 import { Context, InlineKeyboard } from "grammy";
-import { selectAgent, getAvailableAgents, fetchCurrentAgent } from "../../agent/manager.js";
+import {
+  selectAgent,
+  getAvailableAgents,
+  fetchCurrentAgent,
+} from "../../agent/manager.js";
 import { getAgentDisplayName, getAgentEmoji } from "../../agent/types.js";
 import { getStoredModel } from "../../model/manager.js";
 import { formatVariantForButton } from "../../variant/manager.js";
@@ -53,17 +57,25 @@ export async function handleAgentSelect(ctx: Context): Promise<boolean> {
     const contextInfo =
       pinnedMessageManager.getContextInfo(chatId) ??
       (pinnedMessageManager.getContextLimit(chatId) > 0
-        ? { tokensUsed: 0, tokensLimit: pinnedMessageManager.getContextLimit(chatId) }
+        ? {
+            tokensUsed: 0,
+            tokensLimit: pinnedMessageManager.getContextLimit(chatId),
+          }
         : null);
 
     keyboardManager.updateModel(chatId, currentModel);
     if (contextInfo) {
-      keyboardManager.updateContext(chatId, contextInfo.tokensUsed, contextInfo.tokensLimit);
+      keyboardManager.updateContext(
+        chatId,
+        contextInfo.tokensUsed,
+        contextInfo.tokensLimit,
+      );
     }
 
     const state = keyboardManager.getState(chatId);
     const variantName =
-      state?.variantName ?? formatVariantForButton(currentModel.variant || "default");
+      state?.variantName ??
+      formatVariantForButton(currentModel.variant || "default");
     const keyboard = createMainKeyboard(
       agentName,
       currentModel,
@@ -74,7 +86,9 @@ export async function handleAgentSelect(ctx: Context): Promise<boolean> {
 
     clearActiveInlineMenu(chatId, "agent_selected");
 
-    await ctx.answerCallbackQuery({ text: t("agent.changed_callback", { name: displayName }) });
+    await ctx.answerCallbackQuery({
+      text: t("agent.changed_callback", { name: displayName }),
+    });
     await ctx.reply(t("agent.changed_message", { name: displayName }), {
       reply_markup: keyboard,
     });
@@ -85,7 +99,9 @@ export async function handleAgentSelect(ctx: Context): Promise<boolean> {
   } catch (err) {
     clearActiveInlineMenu(chatId, "agent_select_error");
     logger.error("[AgentHandler] Error handling agent select:", err);
-    await ctx.answerCallbackQuery({ text: t("agent.change_error_callback") }).catch(() => {});
+    await ctx
+      .answerCallbackQuery({ text: t("agent.change_error_callback") })
+      .catch(() => {});
     return false;
   }
 }

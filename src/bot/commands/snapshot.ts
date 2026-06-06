@@ -19,7 +19,9 @@ const SNAPSHOTS_PER_PAGE = 5;
  * /snapshot command — save session context to SQLite
  * Uses the existing task-queue SQLite store (session_snapshots table)
  */
-export async function snapshotCommand(ctx: CommandContext<Context>): Promise<void> {
+export async function snapshotCommand(
+  ctx: CommandContext<Context>,
+): Promise<void> {
   const args = ctx.match?.toString().trim() ?? "";
   const chatId = ctx.chat?.id ?? 0;
 
@@ -39,7 +41,13 @@ export async function snapshotCommand(ctx: CommandContext<Context>): Promise<voi
 
   switch (subCommand) {
     case "save":
-      await saveSnapshot(ctx, chatId, currentSession.id, currentSession.title, currentProject.worktree);
+      await saveSnapshot(
+        ctx,
+        chatId,
+        currentSession.id,
+        currentSession.title,
+        currentProject.worktree,
+      );
       break;
 
     case "list":
@@ -68,12 +76,25 @@ export async function snapshotCommand(ctx: CommandContext<Context>): Promise<voi
 
     case "":
       // No subcommand — save current session with auto-generated name
-      await saveSnapshot(ctx, chatId, currentSession.id, currentSession.title, currentProject.worktree);
+      await saveSnapshot(
+        ctx,
+        chatId,
+        currentSession.id,
+        currentSession.title,
+        currentProject.worktree,
+      );
       break;
 
     default:
       // Treat as a custom snapshot name
-      await saveSnapshot(ctx, chatId, currentSession.id, currentSession.title, currentProject.worktree, args);
+      await saveSnapshot(
+        ctx,
+        chatId,
+        currentSession.id,
+        currentSession.title,
+        currentProject.worktree,
+        args,
+      );
       break;
   }
 }
@@ -107,7 +128,9 @@ async function saveSnapshot(
         id: snapshot.id,
       }),
     );
-    logger.info(`[Snapshot] Saved snapshot ${snapshot.id} for session ${sessionId}`);
+    logger.info(
+      `[Snapshot] Saved snapshot ${snapshot.id} for session ${sessionId}`,
+    );
   } catch (error) {
     logger.error("[Snapshot] Error saving snapshot:", error);
     await ctx.reply(t("cmd.snapshot.error_save"));
@@ -143,13 +166,22 @@ async function listSnapshotsCommand(
     });
 
     if (hasPrev) {
-      keyboard.text(t("cmd.snapshot.prev_page"), `${SNAPSHOT_PAGE_CALLBACK_PREFIX}${page - 1}`);
+      keyboard.text(
+        t("cmd.snapshot.prev_page"),
+        `${SNAPSHOT_PAGE_CALLBACK_PREFIX}${page - 1}`,
+      );
     }
     if (hasNext) {
-      keyboard.text(t("cmd.snapshot.next_page"), `${SNAPSHOT_PAGE_CALLBACK_PREFIX}${page + 1}`);
+      keyboard.text(
+        t("cmd.snapshot.next_page"),
+        `${SNAPSHOT_PAGE_CALLBACK_PREFIX}${page + 1}`,
+      );
     }
 
-    const header = page === 0 ? t("cmd.snapshot.list_header") : t("cmd.snapshot.list_page", { page: String(page + 1) });
+    const header =
+      page === 0
+        ? t("cmd.snapshot.list_header")
+        : t("cmd.snapshot.list_page", { page: String(page + 1) });
 
     await ctx.reply(header, {
       reply_markup: keyboard,
@@ -219,7 +251,9 @@ export async function handleSnapshotCallback(ctx: Context): Promise<boolean> {
   }
 
   if (callbackQuery.data.startsWith(SNAPSHOT_PAGE_CALLBACK_PREFIX)) {
-    const pageStr = callbackQuery.data.slice(SNAPSHOT_PAGE_CALLBACK_PREFIX.length);
+    const pageStr = callbackQuery.data.slice(
+      SNAPSHOT_PAGE_CALLBACK_PREFIX.length,
+    );
     const page = parseInt(pageStr, 10);
     if (isNaN(page) || page < 0) {
       await ctx.answerCallbackQuery({ text: t("callback.processing_error") });
@@ -233,13 +267,20 @@ export async function handleSnapshotCallback(ctx: Context): Promise<boolean> {
       return true;
     }
 
-    await listSnapshotsCommand(ctx as CommandContext<Context>, chatId, currentSession.id, page);
+    await listSnapshotsCommand(
+      ctx as CommandContext<Context>,
+      chatId,
+      currentSession.id,
+      page,
+    );
     await ctx.answerCallbackQuery();
     return true;
   }
 
   if (callbackQuery.data.startsWith(SNAPSHOT_CALLBACK_PREFIX)) {
-    const snapshotId = callbackQuery.data.slice(SNAPSHOT_CALLBACK_PREFIX.length);
+    const snapshotId = callbackQuery.data.slice(
+      SNAPSHOT_CALLBACK_PREFIX.length,
+    );
     const chatId = ctx.chat?.id ?? 0;
     const currentProject = getCurrentProject(chatId);
 
@@ -248,7 +289,12 @@ export async function handleSnapshotCallback(ctx: Context): Promise<boolean> {
       return true;
     }
 
-    await loadSnapshot(ctx as CommandContext<Context>, chatId, snapshotId, currentProject.worktree);
+    await loadSnapshot(
+      ctx as CommandContext<Context>,
+      chatId,
+      snapshotId,
+      currentProject.worktree,
+    );
     await ctx.answerCallbackQuery();
     return true;
   }

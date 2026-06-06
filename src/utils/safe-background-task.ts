@@ -21,10 +21,16 @@ function runHookSafely<T>(
 
   try {
     void Promise.resolve(hook(value)).catch((hookError) => {
-      logger.error(`[safeBackgroundTask] ${taskName}: ${hookName} failed:`, hookError);
+      logger.error(
+        `[safeBackgroundTask] ${taskName}: ${hookName} failed:`,
+        hookError,
+      );
     });
   } catch (hookError) {
-    logger.error(`[safeBackgroundTask] ${taskName}: ${hookName} failed:`, hookError);
+    logger.error(
+      `[safeBackgroundTask] ${taskName}: ${hookName} failed:`,
+      hookError,
+    );
   }
 }
 

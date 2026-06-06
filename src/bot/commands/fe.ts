@@ -8,7 +8,10 @@ import { getCurrentProject } from "../../settings/manager.js";
 import { getStoredAgent } from "../../agent/manager.js";
 import { interactionManager } from "../../interaction/manager.js";
 import { listDirectory } from "../../file-explorer/manager.js";
-import type { FileExplorerItem, FileExplorerMetadata } from "../../file-explorer/types.js";
+import type {
+  FileExplorerItem,
+  FileExplorerMetadata,
+} from "../../file-explorer/types.js";
 import type { InteractionMetadata } from "../../interaction/types.js";
 import { logger } from "../../utils/logger.js";
 import { t } from "../../i18n/index.js";
@@ -54,7 +57,12 @@ function buildFilesKeyboard(
   // Directory navigation buttons (2 per row)
   for (const item of pageItems.filter((i) => i.type === "directory")) {
     const encodedPath = Buffer.from(item.path).toString("base64url");
-    keyboard.text(`${getItemIcon(item)} ${item.name}`, `${FE_NAV_PREFIX}${encodedPath}`).row();
+    keyboard
+      .text(
+        `${getItemIcon(item)} ${item.name}`,
+        `${FE_NAV_PREFIX}${encodedPath}`,
+      )
+      .row();
   }
 
   // File buttons (2 per row)
@@ -136,7 +144,10 @@ export async function feCommand(ctx: CommandContext<Context>) {
       project.worktree,
     );
 
-    const message = await ctx.reply(text, { parse_mode: "HTML", reply_markup: keyboard });
+    const message = await ctx.reply(text, {
+      parse_mode: "HTML",
+      reply_markup: keyboard,
+    });
 
     interactionManager.start(chatId, {
       kind: "custom",
@@ -159,7 +170,9 @@ export async function feCommand(ctx: CommandContext<Context>) {
   } catch (error) {
     logger.error("[FE] Error starting file explorer:", error);
     await ctx.reply(
-      t("fe.error_listing", { error: error instanceof Error ? error.message : String(error) }),
+      t("fe.error_listing", {
+        error: error instanceof Error ? error.message : String(error),
+      }),
     );
   }
 }
@@ -204,7 +217,10 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
         metadata.projectRoot,
       );
 
-      await ctx.editMessageText(text, { parse_mode: "HTML", reply_markup: keyboard });
+      await ctx.editMessageText(text, {
+        parse_mode: "HTML",
+        reply_markup: keyboard,
+      });
 
       interactionManager.transition(chatId, {
         expectedInput: "callback",
@@ -233,13 +249,18 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
       const keyboard = buildFilesKeyboard(
         metadata.items,
         metadata.currentPath,
-        metadata.parentPath ? Buffer.from(metadata.parentPath).toString("base64url") : "",
+        metadata.parentPath
+          ? Buffer.from(metadata.parentPath).toString("base64url")
+          : "",
         page,
         totalPages,
         metadata.projectRoot,
       );
 
-      await ctx.editMessageText(text, { parse_mode: "HTML", reply_markup: keyboard });
+      await ctx.editMessageText(text, {
+        parse_mode: "HTML",
+        reply_markup: keyboard,
+      });
 
       interactionManager.transition(chatId, {
         expectedInput: "callback",
@@ -258,7 +279,11 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
       const parentPath = metadata.parentPath;
       if (!parentPath) return true;
 
-      const pageData = await listDirectory(metadata.sessionId, parentPath, chatId);
+      const pageData = await listDirectory(
+        metadata.sessionId,
+        parentPath,
+        chatId,
+      );
 
       const text = `📁 <b>${escapeHtml(pageData.currentPath)}</b>\n\n${t("fe.select_hint")}`;
       const keyboard = buildFilesKeyboard(
@@ -270,7 +295,10 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
         metadata.projectRoot,
       );
 
-      await ctx.editMessageText(text, { parse_mode: "HTML", reply_markup: keyboard });
+      await ctx.editMessageText(text, {
+        parse_mode: "HTML",
+        reply_markup: keyboard,
+      });
 
       interactionManager.transition(chatId, {
         expectedInput: "callback",
@@ -290,7 +318,11 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
     if (callbackData === FE_HOME) {
       await ctx.answerCallbackQuery();
 
-      const pageData = await listDirectory(metadata.sessionId, metadata.projectRoot, chatId);
+      const pageData = await listDirectory(
+        metadata.sessionId,
+        metadata.projectRoot,
+        chatId,
+      );
 
       const text = `📁 <b>${escapeHtml(pageData.currentPath)}</b>\n\n${t("fe.select_hint")}`;
       const keyboard = buildFilesKeyboard(
@@ -302,7 +334,10 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
         metadata.projectRoot,
       );
 
-      await ctx.editMessageText(text, { parse_mode: "HTML", reply_markup: keyboard });
+      await ctx.editMessageText(text, {
+        parse_mode: "HTML",
+        reply_markup: keyboard,
+      });
 
       interactionManager.transition(chatId, {
         expectedInput: "callback",
@@ -322,7 +357,11 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
     if (callbackData === FE_REFRESH) {
       await ctx.answerCallbackQuery();
 
-      const pageData = await listDirectory(metadata.sessionId, metadata.currentPath, chatId);
+      const pageData = await listDirectory(
+        metadata.sessionId,
+        metadata.currentPath,
+        chatId,
+      );
 
       const text = `📁 <b>${escapeHtml(pageData.currentPath)}</b>\n\n${t("fe.select_hint")}`;
       const keyboard = buildFilesKeyboard(
@@ -334,7 +373,10 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
         metadata.projectRoot,
       );
 
-      await ctx.editMessageText(text, { parse_mode: "HTML", reply_markup: keyboard });
+      await ctx.editMessageText(text, {
+        parse_mode: "HTML",
+        reply_markup: keyboard,
+      });
 
       interactionManager.transition(chatId, {
         expectedInput: "callback",
@@ -362,7 +404,9 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
       const encodedPath = callbackData.slice(FE_READ_PREFIX.length);
       const filePath = Buffer.from(encodedPath, "base64url").toString();
 
-      await ctx.answerCallbackQuery(t("fe.reading_file", { path: escapeHtml(filePath) }));
+      await ctx.answerCallbackQuery(
+        t("fe.reading_file", { path: escapeHtml(filePath) }),
+      );
 
       try {
         const currentAgent = getStoredAgent(chatId) ?? "build";
@@ -376,14 +420,21 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
           let errorMessage: string;
           if (error instanceof Error) {
             errorMessage = error.message;
-          } else if (typeof error === "object" && error !== null && "data" in error) {
+          } else if (
+            typeof error === "object" &&
+            error !== null &&
+            "data" in error
+          ) {
             const err = error as { data?: { message?: string } };
             errorMessage = err.data?.message || JSON.stringify(error);
           } else {
             errorMessage = String(error);
           }
           await ctx.reply(
-            t("fe.error_reading", { error: errorMessage, path: escapeHtml(filePath) }),
+            t("fe.error_reading", {
+              error: errorMessage,
+              path: escapeHtml(filePath),
+            }),
           );
           return true;
         }
@@ -405,7 +456,10 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
       } catch (error) {
         logger.error("[FE] Error reading file:", error);
         await ctx.reply(
-          t("fe.error_reading", { error: String(error), path: escapeHtml(filePath) }),
+          t("fe.error_reading", {
+            error: String(error),
+            path: escapeHtml(filePath),
+          }),
         );
       }
 
@@ -417,10 +471,14 @@ export async function handleFeCallback(ctx: Context): Promise<boolean> {
       const encodedPath = callbackData.slice(FE_SELECT_PREFIX.length);
       const filePath = Buffer.from(encodedPath, "base64url").toString();
 
-      await ctx.answerCallbackQuery(t("fe.selected_path", { path: escapeHtml(filePath) }));
+      await ctx.answerCallbackQuery(
+        t("fe.selected_path", { path: escapeHtml(filePath) }),
+      );
 
       // Send the path as a separate message for easy copying
-      await ctx.reply(`<code>${escapeHtml(filePath)}</code>`, { parse_mode: "HTML" });
+      await ctx.reply(`<code>${escapeHtml(filePath)}</code>`, {
+        parse_mode: "HTML",
+      });
 
       return true;
     }

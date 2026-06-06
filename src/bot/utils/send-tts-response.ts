@@ -6,7 +6,11 @@ import { logger } from "../../utils/logger.js";
 
 const MAX_TTS_INPUT_CHARS = 4000;
 
-export async function sendTtsResponse(api: Api, chatId: number, text: string): Promise<void> {
+export async function sendTtsResponse(
+  api: Api,
+  chatId: number,
+  text: string,
+): Promise<void> {
   if (!isTtsConfigured()) {
     return;
   }
@@ -25,7 +29,10 @@ export async function sendTtsResponse(api: Api, chatId: number, text: string): P
       `[TTS] Text too long for TTS: ${input.length} chars (max ${MAX_TTS_INPUT_CHARS}), chatId=${chatId}`,
     );
     await api
-      .sendMessage(chatId, t("tts.text_too_long", { max: String(MAX_TTS_INPUT_CHARS) }))
+      .sendMessage(
+        chatId,
+        t("tts.text_too_long", { max: String(MAX_TTS_INPUT_CHARS) }),
+      )
       .catch(() => {});
     return;
   }

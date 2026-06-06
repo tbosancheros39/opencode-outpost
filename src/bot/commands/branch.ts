@@ -1,6 +1,10 @@
 import { CommandContext, Context } from "grammy";
 import { opencodeClient } from "../../opencode/client.js";
-import { getCurrentSession, setCurrentSession, type SessionInfo } from "../../session/manager.js";
+import {
+  getCurrentSession,
+  setCurrentSession,
+  type SessionInfo,
+} from "../../session/manager.js";
 import { getStoredAgent } from "../../agent/manager.js";
 import { getCurrentProject } from "../../settings/manager.js";
 import { logger } from "../../utils/logger.js";
@@ -61,7 +65,10 @@ export async function branchCommand(ctx: CommandContext<Context>) {
     for (let i = 0; i < chunks.length; i++) {
       const header =
         chunks.length > 1
-          ? t("git.branch.header_part", { part: String(i + 1), total: String(chunks.length) })
+          ? t("git.branch.header_part", {
+              part: String(i + 1),
+              total: String(chunks.length),
+            })
           : t("git.branch.header");
       await ctx.reply(`${header}\n<pre><code>${chunks[i]}</code></pre>`, {
         parse_mode: "HTML",

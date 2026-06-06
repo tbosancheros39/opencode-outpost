@@ -40,7 +40,7 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
       network: allowNetwork ? " (with network)" : "",
       command: `${escapeHtml(command.slice(0, 100))}${command.length > 100 ? "..." : ""}`,
     }),
-    { parse_mode: "HTML" }
+    { parse_mode: "HTML" },
   );
 
   const startTime = Date.now();
@@ -49,7 +49,10 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
     let result: Awaited<ReturnType<typeof runInSandbox>>;
 
     if (isUrl) {
-      result = await downloadAndAnalyzeUrl(command, { allowNetwork: true, timeoutMs: 30000 });
+      result = await downloadAndAnalyzeUrl(command, {
+        allowNetwork: true,
+        timeoutMs: 30000,
+      });
     } else if (isScript || shouldUseSandbox(command)) {
       result = await runInSandbox(command, { allowNetwork, timeoutMs: 30000 });
     } else {
@@ -57,9 +60,14 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
     }
 
     const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
-    const elapsedStr = elapsedSec < 60 ? `${elapsedSec}s` : `${Math.floor(elapsedSec / 60)}m ${elapsedSec % 60}s`;
+    const elapsedStr =
+      elapsedSec < 60
+        ? `${elapsedSec}s`
+        : `${Math.floor(elapsedSec / 60)}m ${elapsedSec % 60}s`;
 
-    await ctx.api.deleteMessage(ctx.chat?.id ?? 0, statusMsg.message_id).catch(() => {});
+    await ctx.api
+      .deleteMessage(ctx.chat?.id ?? 0, statusMsg.message_id)
+      .catch(() => {});
 
     const securityPreview = formatSecurityPreview(result.securityReport);
 
@@ -67,7 +75,8 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
     const cmdLine = `Command: <code>${escapeHtml(command)}</code>\n`;
     const exitLine = result.timedOut
       ? t("sandbox.timed_out", { seconds: "30" }) + "\n"
-      : t("sandbox.exit_code", { code: String(result.exitCode ?? "N/A") }) + "\n";
+      : t("sandbox.exit_code", { code: String(result.exitCode ?? "N/A") }) +
+        "\n";
 
     const fullReport = `${header}\n${securityPreview}\n\n${cmdLine}${exitLine}`;
 
@@ -76,9 +85,15 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
       for (let i = 0; i < chunks.length; i++) {
         const chunkHeader =
           chunks.length > 1
-            ? t("sandbox.output_part", { part: String(i + 1), total: String(chunks.length) })
+            ? t("sandbox.output_part", {
+                part: String(i + 1),
+                total: String(chunks.length),
+              })
             : t("sandbox.output");
-        await ctx.reply(`${chunkHeader}\n<pre><code>${chunks[i]}</code></pre>`, { parse_mode: "HTML" });
+        await ctx.reply(
+          `${chunkHeader}\n<pre><code>${chunks[i]}</code></pre>`,
+          { parse_mode: "HTML" },
+        );
       }
     }
 
@@ -87,9 +102,15 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
       for (let i = 0; i < chunks.length; i++) {
         const chunkHeader =
           chunks.length > 1
-            ? t("sandbox.stderr_part", { part: String(i + 1), total: String(chunks.length) })
+            ? t("sandbox.stderr_part", {
+                part: String(i + 1),
+                total: String(chunks.length),
+              })
             : t("sandbox.stderr");
-        await ctx.reply(`${chunkHeader}\n<pre><code>${chunks[i]}</code></pre>`, { parse_mode: "HTML" });
+        await ctx.reply(
+          `${chunkHeader}\n<pre><code>${chunks[i]}</code></pre>`,
+          { parse_mode: "HTML" },
+        );
       }
     }
 
@@ -102,7 +123,7 @@ export async function sandboxCommand(ctx: CommandContext<Context>) {
         ctx.chat?.id ?? 0,
         statusMsg.message_id,
         t("sandbox.error", { message: escapeHtml(message) }),
-        { parse_mode: "HTML" }
+        { parse_mode: "HTML" },
       )
       .catch(() => {});
   }

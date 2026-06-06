@@ -18,7 +18,9 @@ const SNAPSHOTS_PER_PAGE = 5;
  * Uses inline keyboard pattern from sessions command (07-command-sessions.ts)
  * Ensures resumeSession doesn't call sendMessage() (doesn't exist on SDK)
  */
-export async function resumeCommand(ctx: CommandContext<Context>): Promise<void> {
+export async function resumeCommand(
+  ctx: CommandContext<Context>,
+): Promise<void> {
   const chatId = ctx.chat?.id ?? 0;
 
   const currentProject = getCurrentProject(chatId);
@@ -38,7 +40,13 @@ export async function resumeCommand(ctx: CommandContext<Context>): Promise<void>
       return;
     }
 
-    await showResumeMenu(ctx, chatId, chatSnapshots, currentProject.worktree, 0);
+    await showResumeMenu(
+      ctx,
+      chatId,
+      chatSnapshots,
+      currentProject.worktree,
+      0,
+    );
   } catch (error) {
     logger.error("[Resume] Error listing snapshots:", error);
     await ctx.reply(t("cmd.resume.error"));
@@ -48,7 +56,14 @@ export async function resumeCommand(ctx: CommandContext<Context>): Promise<void>
 async function showResumeMenu(
   ctx: CommandContext<Context>,
   _chatId: number,
-  snapshots: Array<{ id: string; name: string; sessionId: string; sessionTitle: string; directory: string; createdAt: string }>,
+  snapshots: Array<{
+    id: string;
+    name: string;
+    sessionId: string;
+    sessionTitle: string;
+    directory: string;
+    createdAt: string;
+  }>,
   _worktree: string,
   page: number,
 ): Promise<void> {
@@ -66,15 +81,22 @@ async function showResumeMenu(
   });
 
   if (hasPrev) {
-    keyboard.text(t("cmd.resume.prev_page"), `${RESUME_PAGE_CALLBACK_PREFIX}${page - 1}`);
+    keyboard.text(
+      t("cmd.resume.prev_page"),
+      `${RESUME_PAGE_CALLBACK_PREFIX}${page - 1}`,
+    );
   }
   if (hasNext) {
-    keyboard.text(t("cmd.resume.next_page"), `${RESUME_PAGE_CALLBACK_PREFIX}${page + 1}`);
+    keyboard.text(
+      t("cmd.resume.next_page"),
+      `${RESUME_PAGE_CALLBACK_PREFIX}${page + 1}`,
+    );
   }
 
-  const header = page === 0
-    ? t("cmd.resume.select")
-    : t("cmd.resume.select_page", { page: String(page + 1) });
+  const header =
+    page === 0
+      ? t("cmd.resume.select")
+      : t("cmd.resume.select_page", { page: String(page + 1) });
 
   await ctx.reply(header, {
     reply_markup: keyboard,
@@ -108,7 +130,9 @@ async function resumeSession(
 
     if (error || !sessionData) {
       logger.warn(`[Resume] Session ${snapshot.sessionId} no longer exists`);
-      await ctx.reply(t("cmd.resume.session_not_found", { id: snapshot.sessionId }));
+      await ctx.reply(
+        t("cmd.resume.session_not_found", { id: snapshot.sessionId }),
+      );
       return;
     }
 
@@ -132,7 +156,9 @@ async function resumeSession(
       }),
     );
 
-    logger.info(`[Resume] Restored session ${sessionData.id} from snapshot ${snapshotId}`);
+    logger.info(
+      `[Resume] Restored session ${sessionData.id} from snapshot ${snapshotId}`,
+    );
   } catch (error) {
     logger.error("[Resume] Error resuming session:", error);
     await ctx.reply(t("cmd.resume.error"));
@@ -150,7 +176,9 @@ export async function handleResumeCallback(ctx: Context): Promise<boolean> {
   }
 
   if (callbackQuery.data.startsWith(RESUME_PAGE_CALLBACK_PREFIX)) {
-    const pageStr = callbackQuery.data.slice(RESUME_PAGE_CALLBACK_PREFIX.length);
+    const pageStr = callbackQuery.data.slice(
+      RESUME_PAGE_CALLBACK_PREFIX.length,
+    );
     const page = parseInt(pageStr, 10);
     if (isNaN(page) || page < 0) {
       await ctx.answerCallbackQuery({ text: t("callback.processing_error") });
@@ -167,7 +195,13 @@ export async function handleResumeCallback(ctx: Context): Promise<boolean> {
     const allSnapshots = listSnapshots();
     const chatSnapshots = allSnapshots.filter((s) => s.chatId === chatId);
 
-    await showResumeMenu(ctx as CommandContext<Context>, chatId, chatSnapshots, currentProject.worktree, page);
+    await showResumeMenu(
+      ctx as CommandContext<Context>,
+      chatId,
+      chatSnapshots,
+      currentProject.worktree,
+      page,
+    );
     await ctx.answerCallbackQuery();
     return true;
   }
@@ -182,7 +216,12 @@ export async function handleResumeCallback(ctx: Context): Promise<boolean> {
       return true;
     }
 
-    await resumeSession(ctx as CommandContext<Context>, chatId, snapshotId, currentProject.worktree);
+    await resumeSession(
+      ctx as CommandContext<Context>,
+      chatId,
+      snapshotId,
+      currentProject.worktree,
+    );
     await ctx.answerCallbackQuery();
     return true;
   }

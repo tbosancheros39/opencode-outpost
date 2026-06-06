@@ -25,11 +25,17 @@ const DANGEROUS_PATTERNS: { pattern: RegExp; reason: string }[] = [
   { pattern: /shutdown/i, reason: "System shutdown" },
   { pattern: /reboot/i, reason: "System reboot" },
   { pattern: /halt/i, reason: "System halt" },
-  { pattern: /systemctl\s+(stop|restart|disable)/i, reason: "System service control" },
+  {
+    pattern: /systemctl\s+(stop|restart|disable)/i,
+    reason: "System service control",
+  },
   { pattern: /apt\s+(remove|purge|autoremove)/i, reason: "Package removal" },
   { pattern: /npm\s+uninstall/i, reason: "Package removal" },
   { pattern: /pip\s+uninstall/i, reason: "Package removal" },
-  { pattern: /docker\s+(rm|rmi|stop|kill)/i, reason: "Docker destructive operation" },
+  {
+    pattern: /docker\s+(rm|rmi|stop|kill)/i,
+    reason: "Docker destructive operation",
+  },
   { pattern: /kubectl\s+delete/i, reason: "Kubernetes resource deletion" },
 ];
 
@@ -48,14 +54,14 @@ const WARNING_PATTERNS: { pattern: RegExp; reason: string }[] = [
 
 export function classifyCommand(command: string): CommandClassification {
   const matchedPatterns: string[] = [];
-  
+
   // Check dangerous patterns first
   for (const { pattern, reason } of DANGEROUS_PATTERNS) {
     if (pattern.test(command)) {
       matchedPatterns.push(reason);
     }
   }
-  
+
   if (matchedPatterns.length > 0) {
     return {
       level: "dangerous",
@@ -63,14 +69,14 @@ export function classifyCommand(command: string): CommandClassification {
       patterns: matchedPatterns,
     };
   }
-  
+
   // Check warning patterns
   for (const { pattern, reason } of WARNING_PATTERNS) {
     if (pattern.test(command)) {
       matchedPatterns.push(reason);
     }
   }
-  
+
   if (matchedPatterns.length > 0) {
     return {
       level: "warning",
@@ -78,7 +84,7 @@ export function classifyCommand(command: string): CommandClassification {
       patterns: matchedPatterns,
     };
   }
-  
+
   return {
     level: "safe",
     reason: "No dangerous patterns detected",
@@ -86,14 +92,20 @@ export function classifyCommand(command: string): CommandClassification {
   };
 }
 
-export function requiresConfirmation(classification: CommandClassification): boolean {
+export function requiresConfirmation(
+  classification: CommandClassification,
+): boolean {
   return classification.level === "dangerous";
 }
 
-export function formatWarningMessage(command: string, classification: CommandClassification): string {
+export function formatWarningMessage(
+  command: string,
+  classification: CommandClassification,
+): string {
   const emoji = classification.level === "dangerous" ? "🚨" : "⚠️";
-  const title = classification.level === "dangerous" ? "DANGEROUS COMMAND" : "WARNING";
-  
+  const title =
+    classification.level === "dangerous" ? "DANGEROUS COMMAND" : "WARNING";
+
   return [
     `${emoji} <b>${title}</b>`,
     ``,

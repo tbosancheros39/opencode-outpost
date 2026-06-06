@@ -13,7 +13,9 @@ const MESSAGE_CHUNK_SIZE = 4000;
  * /digest command — context summary
  * Uses existing summaryAggregator singleton (don't create a parallel aggregator)
  */
-export async function digestCommand(ctx: CommandContext<Context>): Promise<void> {
+export async function digestCommand(
+  ctx: CommandContext<Context>,
+): Promise<void> {
   const args = ctx.match?.toString().trim() ?? "";
   const chatId = ctx.chat?.id ?? 0;
 
@@ -49,7 +51,8 @@ export async function digestCommand(ctx: CommandContext<Context>): Promise<void>
     const chunks = chunkOutput(summaryText, MESSAGE_CHUNK_SIZE);
 
     for (let i = 0; i < chunks.length; i++) {
-      const prefix = i === 0 ? t("cmd.digest.header", { title: currentSession.title }) : "";
+      const prefix =
+        i === 0 ? t("cmd.digest.header", { title: currentSession.title }) : "";
       await sendBotText({
         api: ctx.api,
         chatId,
@@ -89,7 +92,9 @@ async function generateDigest(
 
     for (const item of messages) {
       const textParts = item.parts.filter((p) => p.type === "text");
-      const text = textParts.map((p) => (p as { type: "text"; text: string }).text).join("\n");
+      const text = textParts
+        .map((p) => (p as { type: "text"; text: string }).text)
+        .join("\n");
       if (text) {
         digestMessages.push({
           role: item.info.role,
@@ -135,7 +140,9 @@ function formatDigest(
   const userMessages = messages.filter((m) => m.role === "user");
   const assistantMessages = messages.filter((m) => m.role === "assistant");
 
-  lines.push(`**Messages**: ${messages.length} total (${userMessages.length} user, ${assistantMessages.length} assistant)`);
+  lines.push(
+    `**Messages**: ${messages.length} total (${userMessages.length} user, ${assistantMessages.length} assistant)`,
+  );
   lines.push("");
 
   // Recent exchanges
@@ -145,7 +152,8 @@ function formatDigest(
   const recentMessages = messages.slice(-20);
   recentMessages.forEach((msg) => {
     const role = msg.role === "user" ? "**You**" : "**Assistant**";
-    const truncated = msg.text.length > 200 ? `${msg.text.slice(0, 197)}...` : msg.text;
+    const truncated =
+      msg.text.length > 200 ? `${msg.text.slice(0, 197)}...` : msg.text;
     lines.push(`${role}: ${truncated}`);
     lines.push("");
   });
@@ -163,7 +171,8 @@ function formatDigest(
 
       relevantMessages.slice(-10).forEach((msg) => {
         const role = msg.role === "user" ? "**You**" : "**Assistant**";
-        const truncated = msg.text.length > 200 ? `${msg.text.slice(0, 197)}...` : msg.text;
+        const truncated =
+          msg.text.length > 200 ? `${msg.text.slice(0, 197)}...` : msg.text;
         lines.push(`${role}: ${truncated}`);
         lines.push("");
       });

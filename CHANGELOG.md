@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.16.0 (2026-06-06)
+
+### Features
+- Added Redis and OpenCode health check probes
+- First-run wizard now shows health check results after .env creation
+- Actionable error messages for Redis and OpenCode failures
+- `/help` command now shows commands grouped by category
+- `/status` command now shows Redis health and queue statistics
+
+### Chores
+- Added i18n keys for 7 locales (en, de, es, fr, ru, zh, bs)
+
 ## v0.15.2 (2026-06-06)
 
 ### Dependency Updates

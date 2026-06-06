@@ -4,7 +4,12 @@ const TELEGRAM_MESSAGE_SAFE_LENGTH = 4000;
 
 type ToolStreamKey = "files" | "commands" | "search" | "other";
 
-const FILE_STREAM_TOOLS = ["write_file", "edit_file", "create_file", "patch_file"];
+const FILE_STREAM_TOOLS = [
+  "write_file",
+  "edit_file",
+  "create_file",
+  "patch_file",
+];
 const COMMAND_STREAM_TOOLS = ["bash", "shell", "run_command"];
 const SEARCH_STREAM_TOOLS = ["search", "grep", "find", "glob"];
 
@@ -18,7 +23,11 @@ export function getToolStreamKey(toolName: string): ToolStreamKey {
 interface ToolCallStreamerOptions {
   throttleMs: number;
   sendText: (sessionId: string, text: string) => Promise<number>;
-  editText: (sessionId: string, telegramMessageId: number, text: string) => Promise<void>;
+  editText: (
+    sessionId: string,
+    telegramMessageId: number,
+    text: string,
+  ) => Promise<void>;
   deleteText: (sessionId: string, telegramMessageId: number) => Promise<void>;
 }
 
@@ -139,7 +148,9 @@ export class ToolCallStreamer {
     }
 
     const state = this.getOrCreateState(sessionId);
-    const existingEntry = state.entries.find((entry) => entry.prefix === normalizedPrefix);
+    const existingEntry = state.entries.find(
+      (entry) => entry.prefix === normalizedPrefix,
+    );
     if (existingEntry) {
       existingEntry.text = normalizedText;
     } else {
@@ -172,7 +183,9 @@ export class ToolCallStreamer {
     await this.enqueueTask(state, () => this.syncState(state, reason));
     this.cancelState(state);
     this.removeState(state);
-    logger.debug(`[ToolCallStreamer] Broke session stream: session=${sessionId}, reason=${reason}`);
+    logger.debug(
+      `[ToolCallStreamer] Broke session stream: session=${sessionId}, reason=${reason}`,
+    );
   }
 
   clearSession(sessionId: string, reason: string): void {
@@ -203,13 +216,20 @@ export class ToolCallStreamer {
     this.states.clear();
     this.allStates.clear();
     if (count > 0) {
-      logger.debug(`[ToolCallStreamer] Cleared all streams: count=${count}, reason=${reason}`);
+      logger.debug(
+        `[ToolCallStreamer] Cleared all streams: count=${count}, reason=${reason}`,
+      );
     }
   }
 
   private getOrCreateState(sessionId: string): StreamState {
     const existing = this.states.get(sessionId);
-    if (existing && !existing.isBroken && !existing.cancelled && !existing.isBreaking) {
+    if (
+      existing &&
+      !existing.isBroken &&
+      !existing.cancelled &&
+      !existing.isBreaking
+    ) {
       return existing;
     }
 
@@ -253,26 +273,34 @@ export class ToolCallStreamer {
     }
 
     if (this.throttleMs === 0) {
-      void this.enqueueTask(state, () => this.syncState(state, "immediate")).catch((error) => {
-        logger.error(`[ToolCallStreamer] Immediate sync failed: session=${state.sessionId}`, error);
+      void this.enqueueTask(state, () =>
+        this.syncState(state, "immediate"),
+      ).catch((error) => {
+        logger.error(
+          `[ToolCallStreamer] Immediate sync failed: session=${state.sessionId}`,
+          error,
+        );
       });
       return;
     }
 
     state.timer = setTimeout(() => {
       state.timer = null;
-      void this.enqueueTask(state, () => this.syncState(state, "throttle_elapsed")).catch(
-        (error) => {
-          logger.error(
-            `[ToolCallStreamer] Throttled sync failed: session=${state.sessionId}`,
-            error,
-          );
-        },
-      );
+      void this.enqueueTask(state, () =>
+        this.syncState(state, "throttle_elapsed"),
+      ).catch((error) => {
+        logger.error(
+          `[ToolCallStreamer] Throttled sync failed: session=${state.sessionId}`,
+          error,
+        );
+      });
     }, this.throttleMs);
   }
 
-  private enqueueTask(state: StreamState, task: () => Promise<boolean>): Promise<boolean> {
+  private enqueueTask(
+    state: StreamState,
+    task: () => Promise<boolean>,
+  ): Promise<boolean> {
     const nextTask = state.task.catch(() => false).then(task);
     state.task = nextTask;
     return nextTask;
@@ -291,7 +319,10 @@ export class ToolCallStreamer {
     this.allStates.delete(state);
   }
 
-  private async syncState(state: StreamState, reason: string): Promise<boolean> {
+  private async syncState(
+    state: StreamState,
+    reason: string,
+  ): Promise<boolean> {
     if (state.cancelled) {
       return false;
     }
@@ -329,7 +360,11 @@ export class ToolCallStreamer {
     }
   }
 
-  private markStreamBroken(state: StreamState, error: unknown, reason: string): void {
+  private markStreamBroken(
+    state: StreamState,
+    error: unknown,
+    reason: string,
+  ): void {
     state.isBroken = true;
     state.fatalErrorMessage = getErrorMessage(error);
 
@@ -344,7 +379,10 @@ export class ToolCallStreamer {
     );
   }
 
-  private async syncMessages(state: StreamState, parts: string[]): Promise<void> {
+  private async syncMessages(
+    state: StreamState,
+    parts: string[],
+  ): Promise<void> {
     for (let index = 0; index < parts.length; index++) {
       if (state.cancelled) {
         return;
@@ -364,7 +402,11 @@ export class ToolCallStreamer {
       state.lastSentParts[index] = text;
     }
 
-    for (let index = state.telegramMessageIds.length - 1; index >= parts.length; index--) {
+    for (
+      let index = state.telegramMessageIds.length - 1;
+      index >= parts.length;
+      index--
+    ) {
       if (state.cancelled) {
         return;
       }

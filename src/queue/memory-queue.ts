@@ -13,6 +13,10 @@ class MemoryQueue {
   private processing = false;
   private processor: JobProcessor | null = null;
 
+  getPendingCount(): number {
+    return this.queue.length;
+  }
+
   setProcessor(fn: JobProcessor): void {
     this.processor = fn;
   }

@@ -1,6 +1,9 @@
 import { BOT_COMMANDS } from "../commands/definitions.js";
 
-const KNOWN_COMMANDS = new Set<string>(["start", ...BOT_COMMANDS.map((item) => item.command)]);
+const KNOWN_COMMANDS = new Set<string>([
+  "start",
+  ...BOT_COMMANDS.map((item) => item.command),
+]);
 
 export function extractCommandName(text: string): string | null {
   const trimmed = text.trim();

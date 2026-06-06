@@ -1,6 +1,9 @@
 import { CommandContext, Context } from "grammy";
 import { InlineKeyboard } from "grammy";
-import { setCurrentProject, getCurrentProject } from "../../settings/manager.js";
+import {
+  setCurrentProject,
+  getCurrentProject,
+} from "../../settings/manager.js";
 import { getProjects, getProjectsForUser } from "../../project/manager.js";
 import { syncSessionDirectoryCache } from "../../session/cache-manager.js";
 import { clearSession } from "../../session/manager.js";
@@ -55,7 +58,10 @@ export function getProjectFolderName(worktree: string): string {
   return segments.at(-1) ?? normalized;
 }
 
-export function buildProjectButtonLabel(index: number, worktree: string): string {
+export function buildProjectButtonLabel(
+  index: number,
+  worktree: string,
+): string {
   const folderName = getProjectFolderName(worktree);
   return `${index + 1}. ${folderName} [${worktree}]`;
 }
@@ -113,7 +119,11 @@ function buildProjectsMenuText(
   })}`;
 }
 
-function buildProjectsKeyboard(projects: ProjectInfo[], page: number, chatId: number): InlineKeyboard {
+function buildProjectsKeyboard(
+  projects: ProjectInfo[],
+  page: number,
+  chatId: number,
+): InlineKeyboard {
   const keyboard = new InlineKeyboard();
   const currentProject = getCurrentProject(chatId);
   const pageSize = config.bot.projectsListLimit;
@@ -127,7 +137,8 @@ function buildProjectsKeyboard(projects: ProjectInfo[], page: number, chatId: nu
   projects.slice(startIndex, endIndex).forEach((project, index) => {
     const isActive =
       currentProject &&
-      (project.id === currentProject.id || project.worktree === currentProject.worktree);
+      (project.id === currentProject.id ||
+        project.worktree === currentProject.worktree);
     const label = buildProjectButtonLabel(startIndex + index, project.worktree);
     const labelWithCheck = formatProjectButtonLabel(label, Boolean(isActive));
     keyboard.text(labelWithCheck, `project:${project.id}`).row();
@@ -164,7 +175,8 @@ function buildProjectsMenuView(
     page,
     pageSize,
   );
-  const currentProjectName = currentProject?.name || currentProject?.worktree || null;
+  const currentProjectName =
+    currentProject?.name || currentProject?.worktree || null;
 
   return {
     text: buildProjectsMenuText(currentProjectName, normalizedPage, totalPages),
@@ -181,7 +193,8 @@ export async function projectsCommand(ctx: CommandContext<Context>) {
 
     await syncSessionDirectoryCache();
     const userId = ctx.from?.id;
-    const projects = userId != null ? await getProjectsForUser(userId) : await getProjects();
+    const projects =
+      userId != null ? await getProjectsForUser(userId) : await getProjects();
 
     if (projects.length === 0) {
       await ctx.reply(t("projects.empty"));
@@ -298,8 +311,15 @@ export async function handleProjectSelect(ctx: Context): Promise<boolean> {
     const currentModel = getStoredModel(chatId);
     const contextLimit = pinnedMessageManager.getContextLimit(chatId);
     const contextInfo = { tokensUsed: 0, tokensLimit: contextLimit };
-    const variantName = formatVariantForButton(currentModel.variant || "default");
-    const keyboard = createMainKeyboard(currentAgent, currentModel, contextInfo, variantName);
+    const variantName = formatVariantForButton(
+      currentModel.variant || "default",
+    );
+    const keyboard = createMainKeyboard(
+      currentAgent,
+      currentModel,
+      contextInfo,
+      variantName,
+    );
 
     const projectName = selectedProject.name || selectedProject.worktree;
 

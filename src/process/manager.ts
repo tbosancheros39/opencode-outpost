@@ -1,11 +1,53 @@
 import { spawn, exec, type ChildProcess } from "child_process";
 import { promisify } from "util";
-import { getServerProcess, setServerProcess, clearServerProcess } from "../settings/manager.js";
+import {
+  getServerProcess,
+  setServerProcess,
+  clearServerProcess,
+} from "../settings/manager.js";
 import { config } from "../config.js";
 import { logger } from "../utils/logger.js";
-import type { ProcessState, ProcessOperationResult, ProcessManagerInterface } from "./types.js";
+import type {
+  ProcessState,
+  ProcessOperationResult,
+  ProcessManagerInterface,
+} from "./types.js";
 
 const execAsync = promisify(exec);
+
+let systemdServiceChecked = false;
+let systemdServiceName: string | null = null;
+
+/**
+ * Detect if systemd is managing the OpenCode server.
+ * Checks for known service names: opencode-serve, opencode-server, opencode.
+ */
+async function detectSystemdService(): Promise<string | null> {
+  if (systemdServiceChecked) return systemdServiceName;
+  systemdServiceChecked = true;
+
+  if (process.platform === "win32") return null;
+
+  const candidates = ["opencode-serve", "opencode-server", "opencode"];
+  for (const name of candidates) {
+    try {
+      const { stdout } = await execAsync(
+        `systemctl is-active ${name}.service 2>/dev/null`,
+      );
+      if (stdout.trim() === "active" || stdout.trim() === "inactive") {
+        systemdServiceName = name;
+        logger.info(`[ProcessManager] Detected systemd service: ${name}`);
+        return name;
+      }
+    } catch {
+      // service not found, try next
+    }
+  }
+  logger.info(
+    "[ProcessManager] No systemd service detected, will spawn directly",
+  );
+  return null;
+}
 
 /**
  * Singleton manager for OpenCode server process
@@ -32,7 +74,9 @@ class ProcessManager implements ProcessManagerInterface {
       return;
     }
 
-    logger.info(`[ProcessManager] Found saved process: PID=${savedProcess.pid}`);
+    logger.info(
+      `[ProcessManager] Found saved process: PID=${savedProcess.pid}`,
+    );
 
     // Check if the process is still alive
     if (this.isProcessAlive(savedProcess.pid)) {
@@ -47,13 +91,16 @@ class ProcessManager implements ProcessManagerInterface {
         isRunning: true,
       };
     } else {
-      logger.warn(`[ProcessManager] Process PID=${savedProcess.pid} is dead, cleaning up`);
+      logger.warn(
+        `[ProcessManager] Process PID=${savedProcess.pid} is dead, cleaning up`,
+      );
       clearServerProcess(0);
     }
   }
 
   /**
    * Start the OpenCode server process
+   * Uses systemd if a service is detected, otherwise spawns directly.
    */
   async start(): Promise<ProcessOperationResult> {
     if (this.state.isRunning) {
@@ -63,8 +110,71 @@ class ProcessManager implements ProcessManagerInterface {
       };
     }
 
+    const serviceName = await detectSystemdService();
+
+    if (serviceName) {
+      return this.startViaSystemd(serviceName);
+    }
+
+    return this.startDirect();
+  }
+
+  private async startViaSystemd(
+    serviceName: string,
+  ): Promise<ProcessOperationResult> {
     try {
-      logger.info("[ProcessManager] Starting OpenCode server process...");
+      logger.info(
+        `[ProcessManager] Starting via systemd: ${serviceName}.service`,
+      );
+      await execAsync(`sudo systemctl restart ${serviceName}.service`);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Verify it started
+      const { stdout } = await execAsync(
+        `systemctl is-active ${serviceName}.service`,
+      );
+      if (stdout.trim() !== "active") {
+        throw new Error(`systemctl is-active returned: ${stdout.trim()}`);
+      }
+
+      // Try to get the PID
+      let pid: number | null = null;
+      try {
+        const { stdout: pidOut } = await execAsync(
+          `systemctl show --property MainPID ${serviceName}.service`,
+        );
+        const match = pidOut.match(/MainPID=(\d+)/);
+        if (match && match[1] !== "0") {
+          pid = parseInt(match[1], 10);
+        }
+      } catch {
+        // ignore PID lookup failure
+      }
+
+      const startTime = new Date();
+      this.state = {
+        process: null, // Cannot control systemd-managed process directly
+        pid,
+        startTime,
+        isRunning: true,
+      };
+
+      logger.info(
+        `[ProcessManager] OpenCode server started via systemd (service=${serviceName}, PID=${pid})`,
+      );
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      logger.error("[ProcessManager] Failed to start via systemd:", err);
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  private async startDirect(): Promise<ProcessOperationResult> {
+    try {
+      logger.info(
+        "[ProcessManager] Starting OpenCode server process directly...",
+      );
 
       const isWindows = process.platform === "win32";
 
@@ -97,7 +207,9 @@ class ProcessManager implements ProcessManagerInterface {
       });
 
       childProcess.on("exit", (code, signal) => {
-        logger.info(`[ProcessManager] Process exited: code=${code}, signal=${signal}`);
+        logger.info(
+          `[ProcessManager] Process exited: code=${code}, signal=${signal}`,
+        );
         this.cleanup();
       });
 
@@ -129,7 +241,9 @@ class ProcessManager implements ProcessManagerInterface {
         startTime: startTime.toISOString(),
       });
 
-      logger.info(`[ProcessManager] OpenCode server started with PID=${childProcess.pid}`);
+      logger.info(
+        `[ProcessManager] OpenCode server started with PID=${childProcess.pid}`,
+      );
 
       return { success: true };
     } catch (err) {
@@ -144,6 +258,7 @@ class ProcessManager implements ProcessManagerInterface {
    * Stop the OpenCode server process
    * Sends SIGINT (Ctrl+C) and waits for graceful shutdown
    * Falls back to SIGKILL if timeout is exceeded
+   * Uses systemd if a service is detected.
    */
   async stop(timeoutMs: number = 5000): Promise<ProcessOperationResult> {
     if (!this.state.isRunning || !this.state.pid) {
@@ -153,8 +268,48 @@ class ProcessManager implements ProcessManagerInterface {
       };
     }
 
+    // If systemd is managing the service, use systemctl
+    if (systemdServiceName) {
+      return this.stopViaSystemd(systemdServiceName);
+    }
+
+    return this.stopDirect(timeoutMs);
+  }
+
+  private async stopViaSystemd(
+    serviceName: string,
+  ): Promise<ProcessOperationResult> {
     try {
-      const pid = this.state.pid;
+      logger.info(
+        `[ProcessManager] Stopping via systemd: ${serviceName}.service`,
+      );
+      await execAsync(`sudo systemctl stop ${serviceName}.service`);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const { stdout } = await execAsync(
+        `systemctl is-active ${serviceName}.service`,
+      );
+      if (stdout.trim() === "active") {
+        throw new Error("Service still active after stop");
+      }
+
+      this.cleanup();
+      logger.info(
+        `[ProcessManager] Service ${serviceName} stopped successfully`,
+      );
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      logger.error("[ProcessManager] Failed to stop via systemd:", err);
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  private async stopDirect(
+    timeoutMs: number = 5000,
+  ): Promise<ProcessOperationResult> {
+    try {
+      const pid = this.state.pid!;
       logger.info(`[ProcessManager] Stopping process PID=${pid}...`);
 
       // On Windows, use taskkill to kill the entire process tree
@@ -162,14 +317,20 @@ class ProcessManager implements ProcessManagerInterface {
       if (process.platform === "win32") {
         try {
           // /F = force terminate, /T = terminate tree, /PID = process id
-          logger.debug(`[ProcessManager] Using taskkill to terminate process tree for PID=${pid}`);
+          logger.debug(
+            `[ProcessManager] Using taskkill to terminate process tree for PID=${pid}`,
+          );
           await execAsync(`taskkill /F /T /PID ${pid}`);
-          logger.info(`[ProcessManager] Process tree terminated successfully for PID=${pid}`);
+          logger.info(
+            `[ProcessManager] Process tree terminated successfully for PID=${pid}`,
+          );
         } catch (err) {
           // taskkill returns error if process not found, which is ok
           const error = err as Error & { code?: number };
           if (error.message?.includes("not found")) {
-            logger.debug(`[ProcessManager] Process PID=${pid} already terminated`);
+            logger.debug(
+              `[ProcessManager] Process PID=${pid} already terminated`,
+            );
           } else {
             logger.warn(`[ProcessManager] taskkill error for PID=${pid}:`, err);
           }
@@ -187,10 +348,15 @@ class ProcessManager implements ProcessManagerInterface {
           childProcess.kill("SIGINT");
 
           // Wait for graceful shutdown
-          const gracefulExit = await this.waitForProcessExit(childProcess, timeoutMs);
+          const gracefulExit = await this.waitForProcessExit(
+            childProcess,
+            timeoutMs,
+          );
 
           if (!gracefulExit && this.state.isRunning) {
-            logger.warn(`[ProcessManager] Graceful shutdown failed, sending SIGKILL to PID=${pid}`);
+            logger.warn(
+              `[ProcessManager] Graceful shutdown failed, sending SIGKILL to PID=${pid}`,
+            );
             childProcess.kill("SIGKILL");
             await new Promise((resolve) => setTimeout(resolve, 2000));
           }
@@ -200,7 +366,10 @@ class ProcessManager implements ProcessManagerInterface {
           try {
             process.kill(pid, "SIGTERM");
           } catch (err) {
-            logger.debug(`[ProcessManager] Failed to send SIGTERM to PID=${pid}:`, err);
+            logger.debug(
+              `[ProcessManager] Failed to send SIGTERM to PID=${pid}:`,
+              err,
+            );
           }
 
           // Wait for process to die
@@ -208,11 +377,16 @@ class ProcessManager implements ProcessManagerInterface {
 
           // Check if still alive
           if (this.isProcessAlive(pid)) {
-            logger.warn(`[ProcessManager] Graceful shutdown failed, sending SIGKILL to PID=${pid}`);
+            logger.warn(
+              `[ProcessManager] Graceful shutdown failed, sending SIGKILL to PID=${pid}`,
+            );
             try {
               process.kill(pid, "SIGKILL");
             } catch (err) {
-              logger.error(`[ProcessManager] Failed to send SIGKILL to PID=${pid}:`, err);
+              logger.error(
+                `[ProcessManager] Failed to send SIGKILL to PID=${pid}:`,
+                err,
+              );
             }
             await new Promise((resolve) => setTimeout(resolve, 2000));
           }
@@ -240,7 +414,9 @@ class ProcessManager implements ProcessManagerInterface {
 
     // Verify that the process is actually alive
     if (!this.isProcessAlive(this.state.pid)) {
-      logger.warn(`[ProcessManager] Process PID=${this.state.pid} appears dead, cleaning up`);
+      logger.warn(
+        `[ProcessManager] Process PID=${this.state.pid} appears dead, cleaning up`,
+      );
       this.cleanup();
       return false;
     }

@@ -48,7 +48,9 @@ async function runIngest(args: string[]): Promise<number> {
   }
 
   if (stats.isFile()) {
-    const chunks = await knowledgeBaseManager.ingestDocument({ sourcePath: target });
+    const chunks = await knowledgeBaseManager.ingestDocument({
+      sourcePath: target,
+    });
     writeStdout(`✅ Ingested file: ${target} (${chunks} chunks)`);
   } else if (stats.isDirectory()) {
     writeStdout(`📁 Ingesting directory: ${target}...`);
@@ -88,7 +90,9 @@ async function runSearch(args: string[]): Promise<number> {
     writeStdout(`\n--- Result ${i + 1} ---`);
     writeStdout(`Source: ${result.chunk.sourcePath}`);
     writeStdout(`Title: ${result.chunk.title}`);
-    writeStdout(`Chunk: ${result.chunk.chunkIndex + 1}/${result.chunk.totalChunks}`);
+    writeStdout(
+      `Chunk: ${result.chunk.chunkIndex + 1}/${result.chunk.totalChunks}`,
+    );
     writeStdout(`Rank: ${result.rank.toFixed(4)}`);
     writeStdout(`Snippet: ${result.snippet}`);
   }

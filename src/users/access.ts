@@ -8,19 +8,28 @@ export interface UserProjectRestriction {
   modelVariant?: string;
 }
 
-export function getUserProjectRestriction(_userId: number): UserProjectRestriction | undefined {
+export function getUserProjectRestriction(
+  _userId: number,
+): UserProjectRestriction | undefined {
   return undefined;
 }
 
-export function filterProjectsForUser(_userId: number, projects: ProjectInfo[]): ProjectInfo[] {
+export function filterProjectsForUser(
+  _userId: number,
+  projects: ProjectInfo[],
+): ProjectInfo[] {
   return projects;
 }
 
-export function createFallbackProjectInfo(_userId: number): ProjectInfo | undefined {
+export function createFallbackProjectInfo(
+  _userId: number,
+): ProjectInfo | undefined {
   return undefined;
 }
 
-export async function ensureUserProjectDirectory(_userId: number): Promise<void> {
+export async function ensureUserProjectDirectory(
+  _userId: number,
+): Promise<void> {
   return;
 }
 

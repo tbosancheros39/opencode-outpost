@@ -24,7 +24,9 @@ function clearRenameInteraction(chatId: number, reason: string): void {
   }
 }
 
-export async function renameCommand(ctx: CommandContext<Context>): Promise<void> {
+export async function renameCommand(
+  ctx: CommandContext<Context>,
+): Promise<void> {
   try {
     const chatId = ctx.chat?.id ?? 0;
     const currentSession = getCurrentSession(chatId);
@@ -34,13 +36,24 @@ export async function renameCommand(ctx: CommandContext<Context>): Promise<void>
       return;
     }
 
-    const keyboard = new InlineKeyboard().text(t("rename.button.cancel"), "rename:cancel");
+    const keyboard = new InlineKeyboard().text(
+      t("rename.button.cancel"),
+      "rename:cancel",
+    );
 
-    const message = await ctx.reply(t("rename.prompt", { title: currentSession.title }), {
-      reply_markup: keyboard,
-    });
+    const message = await ctx.reply(
+      t("rename.prompt", { title: currentSession.title }),
+      {
+        reply_markup: keyboard,
+      },
+    );
 
-    renameManager.startWaiting(chatId, currentSession.id, currentSession.directory, currentSession.title);
+    renameManager.startWaiting(
+      chatId,
+      currentSession.id,
+      currentSession.directory,
+      currentSession.title,
+    );
     renameManager.setMessageId(chatId, message.message_id);
     interactionManager.start(chatId, {
       kind: "rename",
@@ -51,7 +64,9 @@ export async function renameCommand(ctx: CommandContext<Context>): Promise<void>
       },
     });
 
-    logger.info(`[RenameCommand] Waiting for new title for session: ${currentSession.id}`);
+    logger.info(
+      `[RenameCommand] Waiting for new title for session: ${currentSession.id}`,
+    );
   } catch (error) {
     logger.error("[RenameCommand] Error starting rename flow:", error);
     await ctx.reply(t("rename.error"));
@@ -70,20 +85,29 @@ export async function handleRenameCancel(ctx: Context): Promise<boolean> {
 
   if (!renameManager.isWaitingForName(chatId)) {
     clearRenameInteraction(chatId, "rename_cancel_inactive");
-    await ctx.answerCallbackQuery({ text: t("rename.inactive_callback"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("rename.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
   const interactionState = interactionManager.getSnapshot(chatId);
   if (interactionState?.kind !== "rename") {
     renameManager.clear(chatId);
-    await ctx.answerCallbackQuery({ text: t("rename.inactive_callback"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("rename.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
   const callbackMessageId = getCallbackMessageId(ctx);
   if (!renameManager.isActiveMessage(chatId, callbackMessageId)) {
-    await ctx.answerCallbackQuery({ text: t("rename.inactive_callback"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("rename.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
@@ -132,14 +156,18 @@ export async function handleRenameTextAnswer(ctx: Context): Promise<boolean> {
     return true;
   }
 
-  logger.info(`[RenameHandler] Renaming session ${sessionInfo.sessionId} to: ${newTitle}`);
+  logger.info(
+    `[RenameHandler] Renaming session ${sessionInfo.sessionId} to: ${newTitle}`,
+  );
 
   try {
-    const { data: updatedSession, error } = await opencodeClient.session.update({
-      sessionID: sessionInfo.sessionId,
-      directory: sessionInfo.directory,
-      title: newTitle,
-    });
+    const { data: updatedSession, error } = await opencodeClient.session.update(
+      {
+        sessionID: sessionInfo.sessionId,
+        directory: sessionInfo.directory,
+        title: newTitle,
+      },
+    );
 
     if (error || !updatedSession) {
       throw error || new Error("Failed to update session");
@@ -152,7 +180,11 @@ export async function handleRenameTextAnswer(ctx: Context): Promise<boolean> {
     });
 
     if (ctx.chat && pinnedMessageManager.isInitialized(ctx.chat.id)) {
-      await pinnedMessageManager.onSessionChange(ctx.chat.id, sessionInfo.sessionId, newTitle);
+      await pinnedMessageManager.onSessionChange(
+        ctx.chat.id,
+        sessionInfo.sessionId,
+        newTitle,
+      );
     }
 
     const messageId = renameManager.getMessageId(chatId);

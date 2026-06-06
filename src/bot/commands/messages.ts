@@ -68,7 +68,9 @@ function parseRevertCallback(data: string): string | null {
   return data.slice(MESSAGES_REVERT_PREFIX.length);
 }
 
-function extractTextFromParts(parts: Array<{ type: string; text?: string }>): string | null {
+function extractTextFromParts(
+  parts: Array<{ type: string; text?: string }>,
+): string | null {
   const textParts = parts
     .filter((part) => part.type === "text" && typeof part.text === "string")
     .map((part) => part.text as string);
@@ -130,7 +132,10 @@ async function loadMessagesPage(
 
   const totalMessages = relevantMessages.length;
   const start = page * MESSAGES_PER_PAGE;
-  const pagedMessages = relevantMessages.slice(start, start + MESSAGES_PER_PAGE);
+  const pagedMessages = relevantMessages.slice(
+    start,
+    start + MESSAGES_PER_PAGE,
+  );
   const hasPrev = page > 0;
   const hasNext = start + MESSAGES_PER_PAGE < totalMessages;
 
@@ -166,7 +171,11 @@ function formatMessagesHeader(page: number, totalMessages: number): string {
   return t("messages.header", { from, to, total: totalMessages });
 }
 
-function formatMessageItem(index: number, msg: MessageItem, localeForDate: string): string {
+function formatMessageItem(
+  index: number,
+  msg: MessageItem,
+  localeForDate: string,
+): string {
   const icon = formatRoleIcon(msg.role);
   const timestamp = formatTimestamp(msg.timestamp, localeForDate);
   return `${index + 1}. ${icon} ${msg.text}\n   └ ${timestamp}`;
@@ -178,17 +187,29 @@ function buildMessagesKeyboard(pageData: MessagesPage): InlineKeyboard {
   for (let i = 0; i < pageData.messages.length; i++) {
     const msg = pageData.messages[i];
     keyboard
-      .text(t("messages.button.fork"), `${MESSAGES_FORK_PREFIX}${msg.messageID}`)
-      .text(t("messages.button.revert"), `${MESSAGES_REVERT_PREFIX}${msg.messageID}`)
+      .text(
+        t("messages.button.fork"),
+        `${MESSAGES_FORK_PREFIX}${msg.messageID}`,
+      )
+      .text(
+        t("messages.button.revert"),
+        `${MESSAGES_REVERT_PREFIX}${msg.messageID}`,
+      )
       .row();
   }
 
   if (pageData.hasPrev || pageData.hasNext) {
     if (pageData.hasPrev) {
-      keyboard.text(t("messages.button.prev"), `${MESSAGES_PAGE_PREFIX}${pageData.page - 1}`);
+      keyboard.text(
+        t("messages.button.prev"),
+        `${MESSAGES_PAGE_PREFIX}${pageData.page - 1}`,
+      );
     }
     if (pageData.hasNext) {
-      keyboard.text(t("messages.button.next"), `${MESSAGES_PAGE_PREFIX}${pageData.page + 1}`);
+      keyboard.text(
+        t("messages.button.next"),
+        `${MESSAGES_PAGE_PREFIX}${pageData.page + 1}`,
+      );
     }
     keyboard.row();
   }
@@ -261,7 +282,10 @@ export async function messagesCommand(ctx: CommandContext<Context>) {
 
 export async function handleMessagesCallback(ctx: Context): Promise<boolean> {
   const callbackQuery = ctx.callbackQuery;
-  if (!callbackQuery?.data || !callbackQuery.data.startsWith(MESSAGES_CALLBACK_PREFIX)) {
+  if (
+    !callbackQuery?.data ||
+    !callbackQuery.data.startsWith(MESSAGES_CALLBACK_PREFIX)
+  ) {
     return false;
   }
 
@@ -274,7 +298,9 @@ export async function handleMessagesCallback(ctx: Context): Promise<boolean> {
   }
 
   const metadata = state.metadata as unknown as MessagesMetadata;
-  const callbackMessageId = (ctx.callbackQuery?.message as { message_id?: number })?.message_id;
+  const callbackMessageId = (
+    ctx.callbackQuery?.message as { message_id?: number }
+  )?.message_id;
 
   if (callbackMessageId !== metadata.messageId) {
     await ctx.answerCallbackQuery({ text: t("messages.inactive_callback") });
@@ -293,7 +319,11 @@ export async function handleMessagesCallback(ctx: Context): Promise<boolean> {
 
     const page = parseMessagesPageCallback(data);
     if (page !== null) {
-      const pageData = await loadMessagesPage(metadata.sessionId, metadata.directory, page);
+      const pageData = await loadMessagesPage(
+        metadata.sessionId,
+        metadata.directory,
+        page,
+      );
       if (pageData.messages.length === 0) {
         await ctx.answerCallbackQuery({ text: t("messages.empty") });
         return true;
@@ -338,8 +368,14 @@ export async function handleMessagesCallback(ctx: Context): Promise<boolean> {
         return true;
       }
 
-      logger.info(`[Messages] Session forked: ${metadata.sessionId} at message ${forkMsgId}`);
-      await ctx.reply(t("messages.fork_success", { newSessionId: forkResult.id ?? "unknown" }));
+      logger.info(
+        `[Messages] Session forked: ${metadata.sessionId} at message ${forkMsgId}`,
+      );
+      await ctx.reply(
+        t("messages.fork_success", {
+          newSessionId: forkResult.id ?? "unknown",
+        }),
+      );
       interactionManager.clear(chatId, "messages_forked");
       await ctx.deleteMessage().catch(() => {});
       return true;
@@ -349,11 +385,13 @@ export async function handleMessagesCallback(ctx: Context): Promise<boolean> {
     if (revertMsgId !== null) {
       await ctx.answerCallbackQuery({ text: t("messages.reverting") });
 
-      const { data: revertResult, error } = await opencodeClient.session.revert({
-        sessionID: metadata.sessionId,
-        directory: metadata.directory,
-        messageID: revertMsgId,
-      });
+      const { data: revertResult, error } = await opencodeClient.session.revert(
+        {
+          sessionID: metadata.sessionId,
+          directory: metadata.directory,
+          messageID: revertMsgId,
+        },
+      );
 
       if (error || !revertResult) {
         logger.error("[Messages] Revert failed:", error);
@@ -361,7 +399,9 @@ export async function handleMessagesCallback(ctx: Context): Promise<boolean> {
         return true;
       }
 
-      logger.info(`[Messages] Session reverted: ${metadata.sessionId} to message ${revertMsgId}`);
+      logger.info(
+        `[Messages] Session reverted: ${metadata.sessionId} to message ${revertMsgId}`,
+      );
       await ctx.reply(t("messages.revert_success"));
       interactionManager.clear(chatId, "messages_reverted");
       await ctx.deleteMessage().catch(() => {});

@@ -71,7 +71,9 @@ export async function synthesizeSpeech(text: string): Promise<TtsResult> {
     };
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
-      throw new Error(`TTS request timed out after ${TTS_REQUEST_TIMEOUT_MS}ms`);
+      throw new Error(
+        `TTS request timed out after ${TTS_REQUEST_TIMEOUT_MS}ms`,
+      );
     }
 
     throw err;

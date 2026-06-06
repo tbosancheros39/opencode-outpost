@@ -1,6 +1,9 @@
 const MAX_LENGTH = 4000;
 
-export function chunkOutput(text: string, maxLength: number = MAX_LENGTH): string[] {
+export function chunkOutput(
+  text: string,
+  maxLength: number = MAX_LENGTH,
+): string[] {
   if (!text || text.trim() === "") {
     return ["(no output)"];
   }

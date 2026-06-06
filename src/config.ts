@@ -17,7 +17,10 @@ function getEnvVar(key: string, required: boolean = true): string {
   return value || "";
 }
 
-function getOptionalPositiveIntEnvVar(key: string, defaultValue: number): number {
+function getOptionalPositiveIntEnvVar(
+  key: string,
+  defaultValue: number,
+): number {
   const value = getEnvVar(key, false);
 
   if (!value) {
@@ -32,7 +35,10 @@ function getOptionalPositiveIntEnvVar(key: string, defaultValue: number): number
   return parsedValue;
 }
 
-function getOptionalNonNegativeIntEnvVarFromKeys(keys: string[], defaultValue: number): number {
+function getOptionalNonNegativeIntEnvVarFromKeys(
+  keys: string[],
+  defaultValue: number,
+): number {
   for (const key of keys) {
     const value = getEnvVar(key, false);
     if (!value) {
@@ -142,17 +148,35 @@ export const config = {
       ["SERVICE_MESSAGES_INTERVAL_SEC", "TOOL_MESSAGES_INTERVAL_SEC"],
       5,
     ),
-    hideThinkingMessages: getOptionalBooleanEnvVar("HIDE_THINKING_MESSAGES", false),
-    hideToolCallMessages: getOptionalBooleanEnvVar("HIDE_TOOL_CALL_MESSAGES", false),
-    hideToolFileMessages: getOptionalBooleanEnvVar("HIDE_TOOL_FILE_MESSAGES", false),
+    hideThinkingMessages: getOptionalBooleanEnvVar(
+      "HIDE_THINKING_MESSAGES",
+      false,
+    ),
+    hideToolCallMessages: getOptionalBooleanEnvVar(
+      "HIDE_TOOL_CALL_MESSAGES",
+      false,
+    ),
+    hideToolFileMessages: getOptionalBooleanEnvVar(
+      "HIDE_TOOL_FILE_MESSAGES",
+      false,
+    ),
     responseStreaming: getOptionalBooleanEnvVar("RESPONSE_STREAMING", true),
-    messageFormatMode: getOptionalMessageFormatModeEnvVar("MESSAGE_FORMAT_MODE", "markdown"),
+    messageFormatMode: getOptionalMessageFormatModeEnvVar(
+      "MESSAGE_FORMAT_MODE",
+      "markdown",
+    ),
     maxConcurrentChats: getOptionalPositiveIntEnvVar("MAX_CONCURRENT_CHATS", 3),
-    rateLimitWindowMs: getOptionalPositiveIntEnvVar("RATE_LIMIT_WINDOW_MS", 60_000),
+    rateLimitWindowMs: getOptionalPositiveIntEnvVar(
+      "RATE_LIMIT_WINDOW_MS",
+      60_000,
+    ),
     rateLimitMessages: getOptionalPositiveIntEnvVar("RATE_LIMIT_MESSAGES", 30),
   },
   files: {
-    maxFileSizeKb: parseInt(getEnvVar("CODE_FILE_MAX_SIZE_KB", false) || "100", 10),
+    maxFileSizeKb: parseInt(
+      getEnvVar("CODE_FILE_MAX_SIZE_KB", false) || "100",
+      10,
+    ),
   },
   stt: {
     apiUrl: getEnvVar("STT_API_URL", false),
@@ -168,11 +192,20 @@ export const config = {
     voice: getEnvVar("TTS_VOICE", false) || "alloy",
   },
   journal: {
-    pollIntervalSec: getOptionalPositiveIntEnvVar("JOURNAL_POLL_INTERVAL_SEC", 10),
+    pollIntervalSec: getOptionalPositiveIntEnvVar(
+      "JOURNAL_POLL_INTERVAL_SEC",
+      10,
+    ),
   },
   watchdog: {
     enabled: getOptionalBooleanEnvVar("OPENCODE_WATCHDOG_ENABLED", true),
-    intervalSec: getOptionalPositiveIntEnvVar("OPENCODE_WATCHDOG_INTERVAL_SEC", 30),
-    maxRestarts: getOptionalPositiveIntEnvVar("OPENCODE_WATCHDOG_MAX_RESTARTS", 3),
+    intervalSec: getOptionalPositiveIntEnvVar(
+      "OPENCODE_WATCHDOG_INTERVAL_SEC",
+      30,
+    ),
+    maxRestarts: getOptionalPositiveIntEnvVar(
+      "OPENCODE_WATCHDOG_MAX_RESTARTS",
+      3,
+    ),
   },
 };

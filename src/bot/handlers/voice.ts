@@ -5,7 +5,11 @@ import type { Context } from "grammy";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import { config } from "../../config.js";
-import { isSttConfigured, transcribeAudio, type SttResult } from "../../stt/client.js";
+import {
+  isSttConfigured,
+  transcribeAudio,
+  type SttResult,
+} from "../../stt/client.js";
 import { processUserPrompt, type ProcessPromptDeps } from "./prompt.js";
 import { logger } from "../../utils/logger.js";
 import { t } from "../../i18n/index.js";
@@ -30,11 +34,16 @@ function getTelegramDownloadAgent(): https.RequestOptions["agent"] | undefined {
     ? new SocksProxyAgent(proxyUrl)
     : new HttpsProxyAgent(proxyUrl);
 
-  logger.info(`[Voice] Using Telegram download proxy: ${proxyUrl.replace(/\/\/.*@/, "//***@")}`);
+  logger.info(
+    `[Voice] Using Telegram download proxy: ${proxyUrl.replace(/\/\/.*@/, "//***@")}`,
+  );
   return telegramDownloadAgent;
 }
 
-async function downloadTelegramFileByUrl(url: string, redirectDepth: number = 0): Promise<Buffer> {
+async function downloadTelegramFileByUrl(
+  url: string,
+  redirectDepth: number = 0,
+): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const targetUrl = new URL(url);
     const requestModule = targetUrl.protocol === "http:" ? http : https;
@@ -45,15 +54,24 @@ async function downloadTelegramFileByUrl(url: string, redirectDepth: number = 0)
       (response) => {
         const statusCode = response.statusCode ?? 0;
 
-        if (statusCode >= 300 && statusCode < 400 && response.headers.location) {
+        if (
+          statusCode >= 300 &&
+          statusCode < 400 &&
+          response.headers.location
+        ) {
           response.resume();
 
           if (redirectDepth >= TELEGRAM_DOWNLOAD_MAX_REDIRECTS) {
-            reject(new Error("Too many redirects while downloading Telegram file"));
+            reject(
+              new Error("Too many redirects while downloading Telegram file"),
+            );
             return;
           }
 
-          const redirectUrl = new URL(response.headers.location, targetUrl).toString();
+          const redirectUrl = new URL(
+            response.headers.location,
+            targetUrl,
+          ).toString();
           void downloadTelegramFileByUrl(redirectUrl, redirectDepth + 1)
             .then(resolve)
             .catch(reject);
@@ -62,7 +80,9 @@ async function downloadTelegramFileByUrl(url: string, redirectDepth: number = 0)
 
         if (statusCode < 200 || statusCode >= 300) {
           response.resume();
-          reject(new Error(`Telegram file download failed with HTTP ${statusCode}`));
+          reject(
+            new Error(`Telegram file download failed with HTTP ${statusCode}`),
+          );
           return;
         }
 
@@ -83,7 +103,9 @@ async function downloadTelegramFileByUrl(url: string, redirectDepth: number = 0)
     request.on("error", reject);
     request.setTimeout(TELEGRAM_DOWNLOAD_TIMEOUT_MS, () => {
       request.destroy(
-        new Error(`Telegram file download timed out after ${TELEGRAM_DOWNLOAD_TIMEOUT_MS}ms`),
+        new Error(
+          `Telegram file download timed out after ${TELEGRAM_DOWNLOAD_TIMEOUT_MS}ms`,
+        ),
       );
     });
   });
@@ -95,8 +117,15 @@ export interface VoiceMessageDeps extends ProcessPromptDeps {
     ctx: Context,
     fileId: string,
   ) => Promise<{ buffer: Buffer; filename: string } | null>;
-  transcribeAudio?: (audioBuffer: Buffer, filename: string) => Promise<SttResult>;
-  processPrompt?: (ctx: Context, text: string, deps: ProcessPromptDeps) => Promise<boolean>;
+  transcribeAudio?: (
+    audioBuffer: Buffer,
+    filename: string,
+  ) => Promise<SttResult>;
+  processPrompt?: (
+    ctx: Context,
+    text: string,
+    deps: ProcessPromptDeps,
+  ) => Promise<boolean>;
 }
 
 /**
@@ -118,7 +147,9 @@ async function downloadTelegramFile(
 
     const fileUrl = `https://api.telegram.org/file/bot${ctx.api.token}/${file.file_path}`;
 
-    logger.debug(`[Voice] Downloading file: ${file.file_path} (${file.file_size ?? "?"} bytes)`);
+    logger.debug(
+      `[Voice] Downloading file: ${file.file_path} (${file.file_size ?? "?"} bytes)`,
+    );
 
     const buffer = await downloadTelegramFileByUrl(fileUrl);
 
@@ -129,7 +160,9 @@ async function downloadTelegramFile(
       filename = filename.slice(0, -4) + ".ogg";
     }
 
-    logger.debug(`[Voice] Downloaded file: ${filename} (${buffer.length} bytes)`);
+    logger.debug(
+      `[Voice] Downloaded file: ${filename} (${buffer.length} bytes)`,
+    );
     return { buffer, filename };
   } catch (err) {
     logger.error("[Voice] Error downloading file from Telegram:", err);
@@ -158,7 +191,10 @@ export function createVoiceHandler(deps: VoiceMessageDeps) {
  * 5. Shows recognized text
  * 6. Passes text to processUserPrompt
  */
-export async function handleVoiceMessage(ctx: Context, deps: VoiceMessageDeps): Promise<void> {
+export async function handleVoiceMessage(
+  ctx: Context,
+  deps: VoiceMessageDeps,
+): Promise<void> {
   const sttConfigured = deps.isSttConfigured ?? isSttConfigured;
   const downloadFile = deps.downloadTelegramFile ?? downloadTelegramFile;
   const transcribe = deps.transcribeAudio ?? transcribeAudio;
@@ -202,7 +238,11 @@ export async function handleVoiceMessage(ctx: Context, deps: VoiceMessageDeps): 
 
     const recognizedText = result.text.trim();
     if (!recognizedText) {
-      await ctx.api.editMessageText(chatId, statusMessage.message_id, t("stt.empty_result"));
+      await ctx.api.editMessageText(
+        chatId,
+        statusMessage.message_id,
+        t("stt.empty_result"),
+      );
       return;
     }
 
@@ -216,7 +256,10 @@ export async function handleVoiceMessage(ctx: Context, deps: VoiceMessageDeps): 
         t("stt.recognized", { text: recognizedText }),
       );
     } catch (editError) {
-      logger.warn("[Voice] Failed to edit status message with recognized text:", editError);
+      logger.warn(
+        "[Voice] Failed to edit status message with recognized text:",
+        editError,
+      );
     }
 
     logger.info(`[Voice] Transcribed audio: ${recognizedText.length} chars`);

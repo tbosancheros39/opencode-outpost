@@ -67,13 +67,20 @@ export async function startCommand(ctx: Context): Promise<void> {
   const contextInfo =
     pinnedMessageManager.getContextInfo(chatId) ??
     (pinnedMessageManager.getContextLimit(chatId) > 0
-      ? { tokensUsed: 0, tokensLimit: pinnedMessageManager.getContextLimit(chatId) }
+      ? {
+          tokensUsed: 0,
+          tokensLimit: pinnedMessageManager.getContextLimit(chatId),
+        }
       : null);
 
   keyboardManager.updateAgent(chatId, currentAgent);
   keyboardManager.updateModel(chatId, currentModel);
   if (contextInfo) {
-    keyboardManager.updateContext(chatId, contextInfo.tokensUsed, contextInfo.tokensLimit);
+    keyboardManager.updateContext(
+      chatId,
+      contextInfo.tokensUsed,
+      contextInfo.tokensLimit,
+    );
   }
 
   const keyboard = createMainKeyboard(

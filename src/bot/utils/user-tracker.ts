@@ -1,7 +1,13 @@
 import { logger } from "../../utils/logger.js";
 import { config } from "../../config.js";
 
-const DANGEROUS_PERMISSIONS = new Set(["bash", "edit", "write", "task", "external_directory"]);
+const DANGEROUS_PERMISSIONS = new Set([
+  "bash",
+  "edit",
+  "write",
+  "task",
+  "external_directory",
+]);
 
 const chatUserMap = new Map<number, number>();
 

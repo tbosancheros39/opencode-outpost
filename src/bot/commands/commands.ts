@@ -70,7 +70,10 @@ interface ExecutingCommandMessage {
   }>;
 }
 
-function formatExecutingCommandMessage(commandName: string, args: string): ExecutingCommandMessage {
+function formatExecutingCommandMessage(
+  commandName: string,
+  args: string,
+): ExecutingCommandMessage {
   const prefix = t("commands.executing_prefix");
   const commandText = `/${commandName}`;
   const argsSuffix = args ? ` ${args}` : "";
@@ -127,7 +130,8 @@ function getCallbackMessageId(ctx: Context): number | null {
 }
 
 function formatCommandButtonLabel(command: CommandItem): string {
-  const description = command.description?.trim() || t("commands.no_description");
+  const description =
+    command.description?.trim() || t("commands.no_description");
   const rawLabel = `/${command.name} - ${description}`;
 
   if (rawLabel.length <= MAX_INLINE_BUTTON_LABEL_LENGTH) {
@@ -179,17 +183,26 @@ function buildCommandsListKeyboard(
   commands.slice(startIndex, endIndex).forEach((command, index) => {
     const globalIndex = startIndex + index;
     keyboard
-      .text(formatCommandButtonLabel(command), `${COMMANDS_CALLBACK_SELECT_PREFIX}${globalIndex}`)
+      .text(
+        formatCommandButtonLabel(command),
+        `${COMMANDS_CALLBACK_SELECT_PREFIX}${globalIndex}`,
+      )
       .row();
   });
 
   if (totalPages > 1) {
     if (normalizedPage > 0) {
-      keyboard.text(t("commands.button.prev_page"), buildCommandPageCallback(normalizedPage - 1));
+      keyboard.text(
+        t("commands.button.prev_page"),
+        buildCommandPageCallback(normalizedPage - 1),
+      );
     }
 
     if (normalizedPage < totalPages - 1) {
-      keyboard.text(t("commands.button.next_page"), buildCommandPageCallback(normalizedPage + 1));
+      keyboard.text(
+        t("commands.button.next_page"),
+        buildCommandPageCallback(normalizedPage + 1),
+      );
     }
 
     keyboard.row();
@@ -231,7 +244,9 @@ function parseCommandItems(value: unknown): CommandItem[] | null {
   return commands;
 }
 
-function parseCommandsMetadata(state: InteractionState | null): CommandsMetadata | null {
+function parseCommandsMetadata(
+  state: InteractionState | null,
+): CommandsMetadata | null {
   if (!state || state.kind !== "custom") {
     return null;
   }
@@ -256,7 +271,8 @@ function parseCommandsMetadata(state: InteractionState | null): CommandsMetadata
     }
 
     const page =
-      typeof state.metadata.page === "number" && Number.isInteger(state.metadata.page)
+      typeof state.metadata.page === "number" &&
+      Number.isInteger(state.metadata.page)
         ? Math.max(0, state.metadata.page)
         : 0;
 
@@ -289,13 +305,17 @@ function parseCommandsMetadata(state: InteractionState | null): CommandsMetadata
 }
 
 function clearCommandsInteraction(chatId: number, reason: string): void {
-  const metadata = parseCommandsMetadata(interactionManager.getSnapshot(chatId));
+  const metadata = parseCommandsMetadata(
+    interactionManager.getSnapshot(chatId),
+  );
   if (metadata) {
     interactionManager.clear(chatId, reason);
   }
 }
 
-async function getCommandList(projectDirectory: string): Promise<CommandItem[]> {
+async function getCommandList(
+  projectDirectory: string,
+): Promise<CommandItem[]> {
   const { data, error } = await opencodeClient.command.list({
     directory: normalizeDirectoryForCommandApi(projectDirectory),
   });
@@ -308,7 +328,9 @@ async function getCommandList(projectDirectory: string): Promise<CommandItem[]> 
     .filter((command) => {
       const source = (command as { source?: unknown }).source;
       return (
-        typeof command.name === "string" && command.name.trim().length > 0 && source === "command"
+        typeof command.name === "string" &&
+        command.name.trim().length > 0 &&
+        source === "command"
       );
     })
     .map((command) => ({
@@ -332,23 +354,34 @@ function parseSelectIndex(data: string): number | null {
   return index;
 }
 
-async function isSessionBusy(sessionId: string, directory: string): Promise<boolean> {
+async function isSessionBusy(
+  sessionId: string,
+  directory: string,
+): Promise<boolean> {
   try {
     const { data, error } = await opencodeClient.session.status({ directory });
 
     if (error || !data) {
-      logger.warn("[Commands] Failed to check session status before command:", error);
+      logger.warn(
+        "[Commands] Failed to check session status before command:",
+        error,
+      );
       return false;
     }
 
-    const sessionStatus = (data as Record<string, { type?: string }>)[sessionId];
+    const sessionStatus = (data as Record<string, { type?: string }>)[
+      sessionId
+    ];
     if (!sessionStatus) {
       return false;
     }
 
     return sessionStatus.type === "busy";
   } catch (err) {
-    logger.warn("[Commands] Error checking session status before command:", err);
+    logger.warn(
+      "[Commands] Error checking session status before command:",
+      err,
+    );
     return false;
   }
 }
@@ -410,8 +443,13 @@ async function executeCommand(
   }
 
   const args = params.argumentsText.trim();
-  const executingMessage = formatExecutingCommandMessage(params.commandName, args);
-  await ctx.reply(executingMessage.text, { entities: executingMessage.entities });
+  const executingMessage = formatExecutingCommandMessage(
+    params.commandName,
+    args,
+  );
+  await ctx.reply(executingMessage.text, {
+    entities: executingMessage.entities,
+  });
 
   const session = await ensureSessionForProject(ctx, params.projectDirectory);
   if (!session) {
@@ -452,13 +490,18 @@ async function executeCommand(
     onSuccess: ({ error }) => {
       if (error) {
         foregroundSessionState.markIdle(session.id);
-        logger.error("[Commands] OpenCode API returned an error for session.command", {
-          sessionId: session.id,
-          command: params.commandName,
-          args,
-        });
+        logger.error(
+          "[Commands] OpenCode API returned an error for session.command",
+          {
+            sessionId: session.id,
+            command: params.commandName,
+            args,
+          },
+        );
         logger.error("[Commands] session.command error details:", error);
-        void ctx.api.sendMessage(ctx.chat?.id ?? 0, t("commands.execute_error")).catch(() => {});
+        void ctx.api
+          .sendMessage(ctx.chat?.id ?? 0, t("commands.execute_error"))
+          .catch(() => {});
         return;
       }
 
@@ -473,13 +516,20 @@ async function executeCommand(
         command: params.commandName,
         args,
       });
-      logger.error("[Commands] session.command background failure details:", error);
-      void ctx.api.sendMessage(ctx.chat?.id ?? 0, t("commands.execute_error")).catch(() => {});
+      logger.error(
+        "[Commands] session.command background failure details:",
+        error,
+      );
+      void ctx.api
+        .sendMessage(ctx.chat?.id ?? 0, t("commands.execute_error"))
+        .catch(() => {});
     },
   });
 }
 
-export async function commandsCommand(ctx: CommandContext<Context>): Promise<void> {
+export async function commandsCommand(
+  ctx: CommandContext<Context>,
+): Promise<void> {
   try {
     if (!ctx.chat) return;
     const chatId = ctx.chat.id;
@@ -530,11 +580,20 @@ export async function handleCommandsCallback(
 
   if (!ctx.chat) return false;
   const chatId = ctx.chat.id;
-  const metadata = parseCommandsMetadata(interactionManager.getSnapshot(chatId));
+  const metadata = parseCommandsMetadata(
+    interactionManager.getSnapshot(chatId),
+  );
   const callbackMessageId = getCallbackMessageId(ctx);
 
-  if (!metadata || callbackMessageId === null || metadata.messageId !== callbackMessageId) {
-    await ctx.answerCallbackQuery({ text: t("commands.inactive_callback"), show_alert: true });
+  if (
+    !metadata ||
+    callbackMessageId === null ||
+    metadata.messageId !== callbackMessageId
+  ) {
+    await ctx.answerCallbackQuery({
+      text: t("commands.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
@@ -548,7 +607,10 @@ export async function handleCommandsCallback(
 
     if (data === COMMANDS_CALLBACK_EXECUTE) {
       if (metadata.stage !== "confirm") {
-        await ctx.answerCallbackQuery({ text: t("commands.inactive_callback"), show_alert: true });
+        await ctx.answerCallbackQuery({
+          text: t("commands.inactive_callback"),
+          show_alert: true,
+        });
         return true;
       }
 
@@ -567,23 +629,33 @@ export async function handleCommandsCallback(
     const page = parseCommandPageCallback(data);
     if (page !== null) {
       if (metadata.stage !== "list") {
-        await ctx.answerCallbackQuery({ text: t("callback.processing_error"), show_alert: true });
+        await ctx.answerCallbackQuery({
+          text: t("callback.processing_error"),
+          show_alert: true,
+        });
         return true;
       }
 
       const pageSize = config.bot.commandsListLimit;
-      const { page: normalizedPage, totalPages } = calculateCommandsPaginationRange(
-        metadata.commands.length,
-        page,
-        pageSize,
-      );
+      const { page: normalizedPage, totalPages } =
+        calculateCommandsPaginationRange(
+          metadata.commands.length,
+          page,
+          pageSize,
+        );
 
       if (page >= totalPages || page < 0) {
-        await ctx.answerCallbackQuery({ text: t("commands.page_empty_callback") });
+        await ctx.answerCallbackQuery({
+          text: t("commands.page_empty_callback"),
+        });
         return true;
       }
 
-      const keyboard = buildCommandsListKeyboard(metadata.commands, normalizedPage, pageSize);
+      const keyboard = buildCommandsListKeyboard(
+        metadata.commands,
+        normalizedPage,
+        pageSize,
+      );
       await ctx.editMessageText(formatCommandsSelectText(normalizedPage), {
         reply_markup: keyboard,
       });
@@ -606,20 +678,29 @@ export async function handleCommandsCallback(
 
     const commandIndex = parseSelectIndex(data);
     if (commandIndex === null || metadata.stage !== "list") {
-      await ctx.answerCallbackQuery({ text: t("callback.processing_error"), show_alert: true });
+      await ctx.answerCallbackQuery({
+        text: t("callback.processing_error"),
+        show_alert: true,
+      });
       return true;
     }
 
     const selectedCommand = metadata.commands[commandIndex];
     if (!selectedCommand) {
-      await ctx.answerCallbackQuery({ text: t("commands.inactive_callback"), show_alert: true });
+      await ctx.answerCallbackQuery({
+        text: t("commands.inactive_callback"),
+        show_alert: true,
+      });
       return true;
     }
 
     await ctx.answerCallbackQuery();
-    await ctx.editMessageText(t("commands.confirm", { command: `/${selectedCommand.name}` }), {
-      reply_markup: buildCommandsConfirmKeyboard(),
-    });
+    await ctx.editMessageText(
+      t("commands.confirm", { command: `/${selectedCommand.name}` }),
+      {
+        reply_markup: buildCommandsConfirmKeyboard(),
+      },
+    );
 
     interactionManager.transition(chatId, {
       expectedInput: "mixed",
@@ -636,7 +717,9 @@ export async function handleCommandsCallback(
   } catch (error) {
     logger.error("[Commands] Error handling command callback:", error);
     clearCommandsInteraction(chatId, "commands_callback_error");
-    await ctx.answerCallbackQuery({ text: t("callback.processing_error") }).catch(() => {});
+    await ctx
+      .answerCallbackQuery({ text: t("callback.processing_error") })
+      .catch(() => {});
     return true;
   }
 }
@@ -652,7 +735,9 @@ export async function handleCommandTextArguments(
 
   if (!ctx.chat) return false;
   const chatId = ctx.chat.id;
-  const metadata = parseCommandsMetadata(interactionManager.getSnapshot(chatId));
+  const metadata = parseCommandsMetadata(
+    interactionManager.getSnapshot(chatId),
+  );
   if (!metadata || metadata.stage !== "confirm") {
     return false;
   }
@@ -666,7 +751,9 @@ export async function handleCommandTextArguments(
   clearCommandsInteraction(chatId, "commands_arguments_submitted");
 
   if (ctx.chat) {
-    await ctx.api.deleteMessage(ctx.chat.id, metadata.messageId).catch(() => {});
+    await ctx.api
+      .deleteMessage(ctx.chat.id, metadata.messageId)
+      .catch(() => {});
   }
 
   await executeCommand(ctx, deps, {

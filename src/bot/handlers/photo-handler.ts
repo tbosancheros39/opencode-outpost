@@ -6,7 +6,10 @@ import {
   toDataUri,
   isFileSizeAllowed,
 } from "../utils/file-download.js";
-import { getModelCapabilities, supportsInput } from "../../model/capabilities.js";
+import {
+  getModelCapabilities,
+  supportsInput,
+} from "../../model/capabilities.js";
 import { getStoredModel } from "../../model/manager.js";
 import { logger } from "../../utils/logger.js";
 import { t } from "../../i18n/index.js";
@@ -67,7 +70,9 @@ export async function handlePhotoMessage(
       `[Photo] Photo too large: ${largestPhoto.file_id} (${largestPhoto.file_size} bytes > ${config.files.maxFileSizeKb}KB)`,
     );
     await ctx.reply(
-      t("bot.photo_too_large", { maxSizeMb: String(config.files.maxFileSizeKb / 1024) }),
+      t("bot.photo_too_large", {
+        maxSizeMb: String(config.files.maxFileSizeKb / 1024),
+      }),
     );
     return;
   }
@@ -75,7 +80,10 @@ export async function handlePhotoMessage(
   try {
     // Check if model supports image input (supportsInput from 16-model-capabilities.ts)
     const storedModel = getStored();
-    const capabilities = await getCapabilities(storedModel.providerID, storedModel.modelID);
+    const capabilities = await getCapabilities(
+      storedModel.providerID,
+      storedModel.modelID,
+    );
 
     if (!supportsInput(capabilities, "image")) {
       logger.warn(
@@ -113,7 +121,9 @@ export async function handlePhotoMessage(
     );
 
     // Process the prompt with the photo attached
-    await processPrompt(ctx, caption || "Describe this image", deps, [filePart]);
+    await processPrompt(ctx, caption || "Describe this image", deps, [
+      filePart,
+    ]);
   } catch (err) {
     logger.error("[Photo] Error handling photo message:", err);
     await ctx.reply(t("bot.photo_download_error"));

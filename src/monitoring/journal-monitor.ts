@@ -27,7 +27,10 @@ let isMonitoring = false;
 let journalProc: ChildProcess | null = null;
 let restartTimer: ReturnType<typeof setTimeout> | null = null;
 
-export function initializeJournalMonitoring(bot: Bot<Context>, uid?: number): void {
+export function initializeJournalMonitoring(
+  bot: Bot<Context>,
+  uid?: number,
+): void {
   botInstance = bot;
   if (uid !== undefined) {
     userId = uid;
@@ -58,7 +61,10 @@ export function stopJournalMonitoring(): void {
     try {
       journalProc.kill();
     } catch (err) {
-      logger.warn("[JournalMonitor] Failed to stop journalctl process cleanly:", err);
+      logger.warn(
+        "[JournalMonitor] Failed to stop journalctl process cleanly:",
+        err,
+      );
     }
     journalProc = null;
   }
@@ -74,13 +80,19 @@ function spawnJournalProcess(): void {
 
   let proc: ChildProcess;
   try {
-    proc = spawn("journalctl", ["--follow", "--no-tail", "--output=json", "--priority=err"], {
-      stdio: ["ignore", "pipe", "pipe"],
-    });
+    proc = spawn(
+      "journalctl",
+      ["--follow", "--no-tail", "--output=json", "--priority=err"],
+      {
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    );
   } catch (err: unknown) {
     const code = (err as NodeJS.ErrnoException).code;
     if (code === "ENOENT") {
-      logger.warn("[JournalMonitor] journalctl not found — systemd not available on this system");
+      logger.warn(
+        "[JournalMonitor] journalctl not found — systemd not available on this system",
+      );
     } else {
       logger.error("[JournalMonitor] Failed to spawn journalctl:", err);
     }
@@ -104,12 +116,17 @@ function spawnJournalProcess(): void {
   });
 
   proc.stderr!.on("data", (chunk: Buffer) => {
-    logger.warn("[JournalMonitor] journalctl stderr:", chunk.toString("utf8").trim());
+    logger.warn(
+      "[JournalMonitor] journalctl stderr:",
+      chunk.toString("utf8").trim(),
+    );
   });
 
   proc.on("error", (err: NodeJS.ErrnoException) => {
     if (err.code === "ENOENT") {
-      logger.warn("[JournalMonitor] journalctl not found — systemd not available on this system");
+      logger.warn(
+        "[JournalMonitor] journalctl not found — systemd not available on this system",
+      );
       isMonitoring = false;
     } else {
       logger.error("[JournalMonitor] journalctl process error:", err);
@@ -120,7 +137,9 @@ function spawnJournalProcess(): void {
   proc.on("exit", (code) => {
     journalProc = null;
     if (!isMonitoring) return;
-    logger.warn(`[JournalMonitor] journalctl exited (code ${code}), restarting in 10s`);
+    logger.warn(
+      `[JournalMonitor] journalctl exited (code ${code}), restarting in 10s`,
+    );
     restartTimer = setTimeout(() => {
       restartTimer = null;
       spawnJournalProcess();
@@ -164,7 +183,12 @@ function handleJournalLine(line: string): void {
   if (seenFingerprints.has(fingerprint)) return;
   seenFingerprints.set(fingerprint, now);
 
-  const journalEntry: JournalEntry = { timestamp, message, unit: unit || undefined, priority };
+  const journalEntry: JournalEntry = {
+    timestamp,
+    message,
+    unit: unit || undefined,
+    priority,
+  };
   sendJournalAlert(journalEntry).catch((err) => {
     logger.error("[JournalMonitor] Failed to send alert:", err);
   });
@@ -209,7 +233,9 @@ async function sendJournalAlert(entry: JournalEntry): Promise<void> {
       reply_markup: updatedKeyboard,
     });
 
-    logger.info(`[JournalMonitor] Sent journal alert: ${entry.message.slice(0, 50)}...`);
+    logger.info(
+      `[JournalMonitor] Sent journal alert: ${entry.message.slice(0, 50)}...`,
+    );
   } catch (err) {
     logger.error("[JournalMonitor] Failed to send alert:", err);
   }
@@ -249,7 +275,7 @@ export async function getJournalErrors(limit: number = 20): Promise<string> {
     try {
       output = execSync(
         `journalctl -p err -n ${limit} --no-pager --output=short-iso`,
-        { encoding: "utf8" }
+        { encoding: "utf8" },
       );
     } catch (err: unknown) {
       const code = (err as NodeJS.ErrnoException).code;

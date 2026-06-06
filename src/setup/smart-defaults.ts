@@ -66,7 +66,13 @@ export function detectEnvironment(): DetectedEnvironment {
   }
 
   return {
-    platform: isWsl ? "wsl" : plat === "darwin" ? "macos" : plat === "win32" ? "windows" : "linux",
+    platform: isWsl
+      ? "wsl"
+      : plat === "darwin"
+        ? "macos"
+        : plat === "win32"
+          ? "windows"
+          : "linux",
     hasDocker: checkDocker(),
     hasRedis: checkRedis(),
     redisUrl: detectRedisUrl(),
@@ -161,7 +167,10 @@ function detectRedisUrl(): string | null {
  */
 function detectOpencode(): string | null {
   try {
-    const opencodePath = execSync("which opencode", { stdio: "pipe", encoding: "utf-8" }).trim();
+    const opencodePath = execSync("which opencode", {
+      stdio: "pipe",
+      encoding: "utf-8",
+    }).trim();
     return opencodePath;
   } catch {
     // Check common locations
@@ -193,7 +202,8 @@ function detectShell(): string {
  * Detect system locale
  */
 function detectLocale(): string {
-  const envLocale = process.env.LANG || process.env.LC_ALL || process.env.LC_MESSAGES || "en";
+  const envLocale =
+    process.env.LANG || process.env.LC_ALL || process.env.LC_MESSAGES || "en";
 
   // Extract language code (e.g., "en_US.UTF-8" -> "en")
   const lang = envLocale.split(/[_.]/)[0].toLowerCase();
@@ -218,7 +228,9 @@ function checkBubblewrap(): boolean {
 /**
  * Print a friendly summary of detected environment
  */
-export function printEnvironmentSummary(env: DetectedEnvironment = detectEnvironment()): void {
+export function printEnvironmentSummary(
+  env: DetectedEnvironment = detectEnvironment(),
+): void {
   console.log("\n🔍 Detected Environment:\n");
   console.log(`  Platform:      ${env.platform}`);
   console.log(`  Node.js:       ${env.nodeVersion}`);
@@ -234,7 +246,9 @@ export function printEnvironmentSummary(env: DetectedEnvironment = detectEnviron
 /**
  * Get recommended setup based on environment
  */
-export function getSetupRecommendation(env: DetectedEnvironment = detectEnvironment()): string {
+export function getSetupRecommendation(
+  env: DetectedEnvironment = detectEnvironment(),
+): string {
   if (!env.opencodePath) {
     return "⚠️  OpenCode not found. Install it first: npm install -g @opencode-ai/cli";
   }

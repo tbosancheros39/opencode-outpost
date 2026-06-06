@@ -1,0 +1,17 @@
+[Unit]
+Description=OpenCode Server (Primary)
+Documentation=https://opencode.ai
+After=network.target
+
+[Service]
+Type=oneshot
+User=anini39
+RemainAfterExit=yes
+ExecStartPre=/bin/sh -c 'for i in $$(seq 1 30); do lsof -i:4098 -sTCP:LISTEN >/dev/null 2>&1 && exit 0; sleep 1; done; exit 1'
+ExecStart=/bin/true
+ExecStop=/bin/true
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

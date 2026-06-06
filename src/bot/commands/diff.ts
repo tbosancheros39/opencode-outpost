@@ -1,13 +1,21 @@
 import { CommandContext, Context } from "grammy";
 import { opencodeClient } from "../../opencode/client.js";
-import { getCurrentSession, setCurrentSession, type SessionInfo } from "../../session/manager.js";
+import {
+  getCurrentSession,
+  setCurrentSession,
+  type SessionInfo,
+} from "../../session/manager.js";
 import { getStoredAgent } from "../../agent/manager.js";
 import { getCurrentProject } from "../../settings/manager.js";
 import { logger } from "../../utils/logger.js";
 import { escapeHtml } from "../../utils/html.js";
 import { t } from "../../i18n/index.js";
 import { chunkOutput } from "../utils/chunk.js";
-import { quoteShellArg, validateShellPathInput, extractShellOutput } from "../utils/shell-security.js";
+import {
+  quoteShellArg,
+  validateShellPathInput,
+  extractShellOutput,
+} from "../utils/shell-security.js";
 
 export async function diffCommand(ctx: CommandContext<Context>) {
   if (!ctx.chat) {
@@ -68,14 +76,17 @@ export async function diffCommand(ctx: CommandContext<Context>) {
 
     // If no output, check staged changes
     if (!rawOutput || rawOutput.trim() === "") {
-      const { data: stagedData, error: stagedError } = await opencodeClient.session.shell({
-        sessionID: session.id,
-        command: "git diff --staged",
-        agent: currentAgent,
-      });
+      const { data: stagedData, error: stagedError } =
+        await opencodeClient.session.shell({
+          sessionID: session.id,
+          command: "git diff --staged",
+          agent: currentAgent,
+        });
 
       if (stagedError) {
-        throw stagedError instanceof Error ? stagedError : new Error(String(stagedError));
+        throw stagedError instanceof Error
+          ? stagedError
+          : new Error(String(stagedError));
       }
 
       const stagedOutput = extractShellOutput(stagedData, "");
@@ -96,7 +107,10 @@ export async function diffCommand(ctx: CommandContext<Context>) {
       for (let i = 0; i < chunks.length; i++) {
         const header =
           chunks.length > 1
-            ? t("git.diff.staged_header_part", { part: String(i + 1), total: String(chunks.length) })
+            ? t("git.diff.staged_header_part", {
+                part: String(i + 1),
+                total: String(chunks.length),
+              })
             : t("git.diff.staged_header");
         await ctx.reply(`${header}\n<pre><code>${chunks[i]}</code></pre>`, {
           parse_mode: "HTML",
@@ -111,7 +125,10 @@ export async function diffCommand(ctx: CommandContext<Context>) {
     for (let i = 0; i < chunks.length; i++) {
       const header =
         chunks.length > 1
-          ? t("git.diff.header_part", { part: String(i + 1), total: String(chunks.length) })
+          ? t("git.diff.header_part", {
+              part: String(i + 1),
+              total: String(chunks.length),
+            })
           : t("git.diff.header");
       await ctx.reply(`${header}\n<pre><code>${chunks[i]}</code></pre>`, {
         parse_mode: "HTML",

@@ -27,25 +27,33 @@ export const ru: I18nDictionary = {
   "cmd.find.error": "Ошибка поиска по истории сессии.",
   "cmd.find.no_messages": "В этой сессии нет сообщений.",
   "cmd.find.no_results": "По вашему запросу ничего не найдено.",
-  "cmd.find.no_session": "Нет активной сессии. Сначала создайте сессию командой /new.",
-  "cmd.find.results_header": "Результаты поиска по \"{query}\" (найдено: {count}):\n\n",
+  "cmd.find.no_session":
+    "Нет активной сессии. Сначала создайте сессию командой /new.",
+  "cmd.find.results_header":
+    'Результаты поиска по "{query}" (найдено: {count}):\n\n',
   "cmd.find.searching": "Ищу: {query}...",
-  "cmd.find.usage": "Использование: /find <запрос> - Поиск по истории сессии\nПример: /find authentication",
-  "cmd.find.error_query_too_long": "Запрос слишком длинный. Пожалуйста, держите поиск до 500 символов.",
+  "cmd.find.usage":
+    "Использование: /find <запрос> - Поиск по истории сессии\nПример: /find authentication",
+  "cmd.find.error_query_too_long":
+    "Запрос слишком длинный. Пожалуйста, держите поиск до 500 символов.",
 
   // === Pin Command ===
   "cmd.pin.added": "Закреплённый файл добавлен: {path}",
   "cmd.pin.already_pinned": "Файл уже закреплён: {path}",
   "cmd.pin.cleared": "Все закреплённые файлы удалены.",
-  "cmd.pin.empty": "Нет закреплённых файлов. Используйте /pin <путь>, чтобы закрепить файл.",
+  "cmd.pin.empty":
+    "Нет закреплённых файлов. Используйте /pin <путь>, чтобы закрепить файл.",
   "cmd.pin.error_add": "Не удалось закрепить файл.",
   "cmd.pin.error_clear": "Не удалось очистить закреплённые файлы.",
-  "cmd.pin.error_is_directory": "Невозможно закрепить директорию как файл: {path}",
+  "cmd.pin.error_is_directory":
+    "Невозможно закрепить директорию как файл: {path}",
   "cmd.pin.error_remove": "Не удалось удалить закреплённый файл.",
   "cmd.pin.file_not_found": "Файл не найден: {path}",
   "cmd.pin.header": "📌 Закреплённые файлы:",
-  "cmd.pin.hint": "Используйте /pin add <путь> для добавления, /pin remove <путь> для удаления, /pin clear для очистки.",
-  "cmd.pin.limit_reached": "Достигнут максимум закреплённых файлов ({limit}). Сначала удалите один.",
+  "cmd.pin.hint":
+    "Используйте /pin add <путь> для добавления, /pin remove <путь> для удаления, /pin clear для очистки.",
+  "cmd.pin.limit_reached":
+    "Достигнут максимум закреплённых файлов ({limit}). Сначала удалите один.",
   "cmd.pin.not_found": "Закреплённый файл не найден: {path}",
   "cmd.pin.removed": "Закреплённый файл удалён: {path}",
   "cmd.pin.usage_add": "Использование: /pin add <путь>",
@@ -54,7 +62,8 @@ export const ru: I18nDictionary = {
   "cmd.pin.button_refresh": "🔄 Обновить",
   "cmd.pin.callback_invalid_index": "Неверный индекс файла.",
   "cmd.pin.menu_title": "📌 Закрепить файлы",
-  "cmd.pin.no_files": "Нет недавних или закреплённых файлов.\nНачните сессию и работайте с файлами — они появятся здесь автоматически.",
+  "cmd.pin.no_files":
+    "Нет недавних или закреплённых файлов.\nНачните сессию и работайте с файлами — они появятся здесь автоматически.",
   "cmd.pin.pinned_header": "📌 Закреплённые — нажмите, чтобы открепить:",
   "cmd.pin.recent_header": "📄 Недавние — нажмите, чтобы закрепить:",
 
@@ -65,11 +74,14 @@ export const ru: I18nDictionary = {
   "cmd.snapshot.error_list": "Не удалось получить список снапшотов.",
   "cmd.snapshot.error_load": "Не удалось загрузить снапшот.",
   "cmd.snapshot.error_save": "Не удалось сохранить снапшот.",
-  "cmd.snapshot.error_name_too_long": "Имя снимка слишком длинное. Максимум — 100 символов.",
-  "cmd.snapshot.info": "Снапшот: {name}\nID: {id}\nСессия: {session}\nДата: {date}",
+  "cmd.snapshot.error_name_too_long":
+    "Имя снимка слишком длинное. Максимум — 100 символов.",
+  "cmd.snapshot.info":
+    "Снапшот: {name}\nID: {id}\nСессия: {session}\nДата: {date}",
   "cmd.snapshot.list_header": "📸 Снапшоты сессии:",
   "cmd.snapshot.list_page": "📸 Снапшоты сессии (страница {page}):",
-  "cmd.snapshot.no_session": "Нет активной сессии. Сначала создайте сессию командой /new.",
+  "cmd.snapshot.no_session":
+    "Нет активной сессии. Сначала создайте сессию командой /new.",
   "cmd.snapshot.not_found": "Снапшот не найден: {id}",
   "cmd.snapshot.prev_page": "Назад",
   "cmd.snapshot.next_page": "Далее",
@@ -79,11 +91,13 @@ export const ru: I18nDictionary = {
 
   // === Resume Command ===
   "cmd.resume.error": "Не удалось восстановить сессию.",
-  "cmd.resume.no_snapshots": "Снапшоты не найдены. Используйте /snapshot для сохранения.",
+  "cmd.resume.no_snapshots":
+    "Снапшоты не найдены. Используйте /snapshot для сохранения.",
   "cmd.resume.prev_page": "Назад",
   "cmd.resume.next_page": "Далее",
   "cmd.resume.select": "Выберите снапшот для восстановления:",
-  "cmd.resume.select_page": "Выберите снапшот для восстановления (страница {page}):",
+  "cmd.resume.select_page":
+    "Выберите снапшот для восстановления (страница {page}):",
   "cmd.resume.session_not_found": "Сессия не найдена: {id}",
   "cmd.resume.success": "Сессия восстановлена: {title}\nИз снапшота: {name}",
 
@@ -92,7 +106,8 @@ export const ru: I18nDictionary = {
   "cmd.digest.error": "Не удалось создать обзор.",
   "cmd.digest.generating": "Создаю обзор сессии...",
   "cmd.digest.header": "# Обзор сессии: {title}\n\n",
-  "cmd.digest.no_session": "Нет активной сессии. Сначала создайте сессию командой /new.",
+  "cmd.digest.no_session":
+    "Нет активной сессии. Сначала создайте сессию командой /new.",
 
   "callback.unknown_command": "Неизвестная команда",
   "callback.processing_error": "Ошибка обработки",
@@ -103,17 +118,23 @@ export const ru: I18nDictionary = {
   "error.context_button": "❌ Ошибка при обработке кнопки контекста",
   "error.generic": "🔴 Произошла ошибка.",
 
-  "interaction.blocked.expired": "⚠️ Текущая интеракция устарела. Запустите ее снова.",
+  "interaction.blocked.expired":
+    "⚠️ Текущая интеракция устарела. Запустите ее снова.",
   "interaction.blocked.expected_callback":
     "⚠️ Для этого шага используйте inline-кнопки или нажмите Отмена.",
-  "interaction.blocked.expected_text": "⚠️ Для этого шага отправьте текстовое сообщение.",
-  "interaction.blocked.expected_command": "⚠️ Для этого шага отправьте команду.",
-  "interaction.blocked.command_not_allowed": "⚠️ Эта команда недоступна на текущем шаге.",
+  "interaction.blocked.expected_text":
+    "⚠️ Для этого шага отправьте текстовое сообщение.",
+  "interaction.blocked.expected_command":
+    "⚠️ Для этого шага отправьте команду.",
+  "interaction.blocked.command_not_allowed":
+    "⚠️ Эта команда недоступна на текущем шаге.",
   "interaction.blocked.finish_current":
     "⚠️ Сначала завершите текущую интеракцию (ответьте или отмените), затем откройте другое меню.",
 
-  "inline.blocked.expected_choice": "⚠️ Выберите вариант через inline-кнопки или нажмите Отмена.",
-  "inline.blocked.command_not_allowed": "⚠️ Эта команда недоступна, пока активно inline-меню.",
+  "inline.blocked.expected_choice":
+    "⚠️ Выберите вариант через inline-кнопки или нажмите Отмена.",
+  "inline.blocked.command_not_allowed":
+    "⚠️ Эта команда недоступна, пока активно inline-меню.",
 
   "question.blocked.expected_answer":
     "⚠️ Ответьте на текущий вопрос кнопками, через Свой ответ, или нажмите Отмена.",
@@ -134,8 +155,18 @@ export const ru: I18nDictionary = {
   "help.text":
     "📖 **Справка**\n\n/status - Проверить статус сервера\n/sessions - Список сессий\n/new - Создать новую сессию\n/help - Справка",
 
+  "help.category.session": "📁 Сессия",
+  "help.category.tasks": "⚙️ Задачи",
+  "help.category.local_ops": "📂 Локальные операции",
+  "help.category.git": "🔧 Git",
+  "help.category.browse": "🔍 Просмотр",
+  "help.category.bot_control": "🤖 Управление ботом",
+  "help.tip_commands":
+    "💡 Совет: Используйте /commands для интерактивной клавиатуры",
+
   "bot.thinking": "💭 Думаю...",
-  "bot.project_not_selected": "🏗 Проект не выбран.\n\nСначала выберите проект командой /projects.",
+  "bot.project_not_selected":
+    "🏗 Проект не выбран.\n\nСначала выберите проект командой /projects.",
   "bot.creating_session": "🔄 Создаю новую сессию...",
   "bot.create_session_error":
     "🔴 Не удалось создать сессию. Попробуйте команду /new или проверьте статус сервера /status.",
@@ -148,19 +179,24 @@ export const ru: I18nDictionary = {
   "bot.session_error": "🔴 OpenCode вернул ошибку: {message}",
   "bot.session_retry":
     "🔁 {message}\n\nПровайдер возвращает одну и ту же ошибку при повторных запросах. Используйте /abort для остановки.",
-  "bot.unknown_command": "⚠️ Неизвестная команда: {command}. Используйте /help для списка команд.",
+  "bot.unknown_command":
+    "⚠️ Неизвестная команда: {command}. Используйте /help для списка команд.",
   "bot.photo_downloading": "⏳ Скачиваю фото...",
   "bot.photo_too_large": "⚠️ Фото слишком большое (макс. {maxSizeMb}МБ)",
   "bot.photo_model_no_image":
     "⚠️ Текущая модель не поддерживает изображения. Отправляю только текст.",
   "bot.photo_download_error": "🔴 Не удалось скачать фото",
-  "bot.photo_no_caption": "💡 Совет: Добавьте подпись, чтобы описать, что делать с этим фото.",
+  "bot.photo_no_caption":
+    "💡 Совет: Добавьте подпись, чтобы описать, что делать с этим фото.",
   "bot.file_downloading": "⏳ Скачиваю файл...",
   "bot.file_too_large": "⚠️ Файл слишком большой (макс. {maxSizeMb}МБ)",
   "bot.file_download_error": "🔴 Не удалось скачать файл",
-  "bot.model_no_pdf": "⚠️ Текущая модель не поддерживает PDF. Отправляю только текст.",
-  "bot.text_file_too_large": "⚠️ Текстовый файл слишком большой (макс. {maxSizeKb}КБ)",
-  "chat_limit.exceeded": "⚠️ Too many active chats. Wait for previous conversations to finish.",
+  "bot.model_no_pdf":
+    "⚠️ Текущая модель не поддерживает PDF. Отправляю только текст.",
+  "bot.text_file_too_large":
+    "⚠️ Текстовый файл слишком большой (макс. {maxSizeKb}КБ)",
+  "chat_limit.exceeded":
+    "⚠️ Too many active chats. Wait for previous conversations to finish.",
   "rate_limit.exceeded": "⚠️ Too many messages. Please slow down.",
 
   "status.header_running": "🟢 OpenCode Server запущен",
@@ -181,9 +217,19 @@ export const ru: I18nDictionary = {
   "status.project_hint": "Используйте /projects для выбора проекта",
   "status.session_selected": "Текущая сессия: {title}",
   "status.session_not_selected": "Текущая сессия: не выбрана",
-  "status.session_hint": "Используйте /sessions для выбора или /new для создания",
+  "status.session_hint":
+    "Используйте /sessions для выбора или /new для создания",
   "status.server_unavailable":
     "🔴 OpenCode Server недоступен\n\nИспользуйте /opencode_start для запуска сервера.",
+  "status.redis_down":
+    "❌ Redis не отвечает. Запустите: redis-server (Linux) или brew services start redis (macOS)",
+  "status.opencode_down": "❌ OpenCode не запущен. Запустите: opencode serve",
+  "status.both_down":
+    "❌ OpenCode не запущен. Запустите: opencode serve\n❌ Redis не отвечает. Запустите: redis-server (Linux) или brew services start redis (macOS)",
+  "status.redis.connected": "🟢 Redis: Подключен ({latencyMs}ms)",
+  "status.redis.down": "🔴 Redis: Недоступен",
+  "status.redis.skipped": "⚪ Redis: Пропущен (отключён)",
+  "status.queue.stats": "📊 Очередь: {pending} ожидает, {active} активно",
 
   "projects.empty":
     "📭 Проектов нет.\n\nОткройте директорию в OpenCode и создайте хотя бы одну сессию, после этого она появится здесь.",
@@ -194,7 +240,8 @@ export const ru: I18nDictionary = {
   "projects.next_page": "Вперёд ➡️",
   "projects.fetch_error":
     "🔴 OpenCode Server недоступен или произошла ошибка при получении списка проектов.",
-  "projects.page_load_error": "Не удалось загрузить эту страницу. Попробуйте снова.",
+  "projects.page_load_error":
+    "Не удалось загрузить эту страницу. Попробуйте снова.",
   "projects.selected":
     "✅ Проект выбран: {project}\n\n📋 Сессия сброшена. Используйте /sessions или /new для работы с этим проектом.",
   "projects.select_error": "🔴 Ошибка при выборе проекта.",
@@ -206,7 +253,8 @@ export const ru: I18nDictionary = {
   "sessions.select_page": "Выберите сессию (страница {page}):",
   "sessions.fetch_error":
     "🔴 OpenCode Server недоступен или произошла ошибка при получении списка сессий.",
-  "sessions.select_project_first": "🔴 Проект не выбран. Используйте /projects.",
+  "sessions.select_project_first":
+    "🔴 Проект не выбран. Используйте /projects.",
   "sessions.page_empty_callback": "На этой странице нет сессий",
   "sessions.page_load_error_callback":
     "Не удалось загрузить эту страницу. Пожалуйста, попробуйте снова.",
@@ -220,9 +268,11 @@ export const ru: I18nDictionary = {
   "sessions.preview.you": "Вы:",
   "sessions.preview.agent": "Агент:",
 
-  "new.project_not_selected": "🏗 Проект не выбран.\n\nСначала выберите проект командой /projects.",
+  "new.project_not_selected":
+    "🏗 Проект не выбран.\n\nСначала выберите проект командой /projects.",
   "new.created": "✅ Создана новая сессия: {title}",
-  "new.create_error": "🔴 OpenCode Server недоступен или произошла ошибка при создании сессии.",
+  "new.create_error":
+    "🔴 OpenCode Server недоступен или произошла ошибка при создании сессии.",
 
   "stop.no_active_session":
     "🛑 Агент не был запущен\n\nСначала создайте сессию командой /new или выберите существующую через /sessions.",
@@ -252,14 +302,16 @@ export const ru: I18nDictionary = {
     "🔴 Не удалось запустить OpenCode Server\n\nОшибка: {error}\n\nПроверьте, что OpenCode CLI установлен и доступен в PATH:\nopencode --version\nnpm install -g @opencode-ai/cli",
   "opencode_start.started_not_ready":
     "⚠️ OpenCode Server запущен, но не отвечает\n\nPID: {pid}\n\nСервер может запускаться. Попробуйте /status через несколько секунд.",
-  "opencode_start.success": "✅ OpenCode Server успешно запущен\n\nPID: {pid}\nВерсия: {version}",
+  "opencode_start.success":
+    "✅ OpenCode Server успешно запущен\n\nPID: {pid}\nВерсия: {version}",
   "opencode_start.error":
     "🔴 Произошла ошибка при запуске сервера.\n\nПроверьте логи приложения для подробностей.",
   "opencode_stop.external_running":
     "⚠️ OpenCode Server запущен внешним процессом\n\nЭтот сервер не был запущен через /opencode-start.\nОстановите его вручную или используйте /status для проверки состояния.",
   "opencode_stop.not_running": "⚠️ OpenCode Server не запущен",
   "opencode_stop.stopping": "🛑 Останавливаю OpenCode Server...\n\nPID: {pid}",
-  "opencode_stop.stop_error": "🔴 Не удалось остановить OpenCode Server\n\nОшибка: {error}",
+  "opencode_stop.stop_error":
+    "🔴 Не удалось остановить OpenCode Server\n\nОшибка: {error}",
   "opencode_stop.success": "✅ OpenCode Server успешно остановлен",
   "opencode_stop.error":
     "🔴 Произошла ошибка при остановке сервера.\n\nПроверьте логи приложения для подробностей.",
@@ -278,7 +330,8 @@ export const ru: I18nDictionary = {
   "model.menu.empty": "⚠️ Нет доступных моделей",
   "model.menu.select": "Выберите модель:",
   "model.menu.current": "Текущая модель: {name}\n\nВыберите модель:",
-  "model.menu.favorites_title": "⭐ Избранное (Добавляйте модели в избранное через OpenCode CLI)",
+  "model.menu.favorites_title":
+    "⭐ Избранное (Добавляйте модели в избранное через OpenCode CLI)",
   "model.menu.favorites_empty": "— Список пуст.",
   "model.menu.recent_title": "🕘 Недавние",
   "model.menu.recent_empty": "— Список пуст.",
@@ -296,7 +349,8 @@ export const ru: I18nDictionary = {
   "variant.menu.error": "🔴 Не удалось получить список вариантов",
 
   "context.button.confirm": "✅ Да, сжать контекст",
-  "context.no_active_session": "⚠️ Нет активной сессии. Создайте сессию командой /new",
+  "context.no_active_session":
+    "⚠️ Нет активной сессии. Создайте сессию командой /new",
   "context.confirm_text":
     '📊 Сжатие контекста для сессии "{title}"\n\nЭто уменьшит использование контекста, удалив старые сообщения из истории. Текущая задача не будет прервана.\n\nПродолжить?',
   "context.callback_session_not_found": "Сессия не найдена",
@@ -311,8 +365,10 @@ export const ru: I18nDictionary = {
   "permission.reply.once": "Разрешено однократно",
   "permission.reply.always": "Разрешено всегда",
   "permission.reply.reject": "Отклонено",
-  "permission.send_reply_error": "❌ Не удалось отправить ответ на запрос разрешения",
-  "permission.blocked.expected_reply": "⚠️ Сначала ответьте на запрос разрешения кнопками выше.",
+  "permission.send_reply_error":
+    "❌ Не удалось отправить ответ на запрос разрешения",
+  "permission.blocked.expected_reply":
+    "⚠️ Сначала ответьте на запрос разрешения кнопками выше.",
   "permission.blocked.command_not_allowed":
     "⚠️ Эта команда недоступна, пока вы не ответите на запрос разрешения.",
   "permission.header": "{emoji} Запрос разрешения: {name}\n\n",
@@ -375,7 +431,8 @@ export const ru: I18nDictionary = {
   "tool.file_header.edit":
     "Edit File/Path: {path}\n============================================================\n\n",
 
-  "runtime.wizard.ask_token": "Введите токен Telegram-бота (получить у @BotFather).\n> ",
+  "runtime.wizard.ask_token":
+    "Введите токен Telegram-бота (получить у @BotFather).\n> ",
   "runtime.wizard.ask_language":
     "Выберите язык интерфейса.\nВведите номер языка из списка или код локали.\nНажмите Enter, чтобы оставить язык по умолчанию: {defaultLocale}\n{options}\n> ",
   "runtime.wizard.language_invalid":
@@ -384,8 +441,10 @@ export const ru: I18nDictionary = {
   "runtime.wizard.token_required": "Токен обязателен. Попробуйте еще раз.\n",
   "runtime.wizard.token_invalid":
     "Похоже на невалидный токен (ожидается формат <id>:<secret>). Попробуйте еще раз.\n",
-  "runtime.wizard.ask_user_id": "Введите ваш Telegram User ID (можно узнать у @userinfobot).\n> ",
-  "runtime.wizard.user_id_invalid": "Введите положительное целое число (> 0).\n",
+  "runtime.wizard.ask_user_id":
+    "Введите ваш Telegram User ID (можно узнать у @userinfobot).\n> ",
+  "runtime.wizard.user_id_invalid":
+    "Введите положительное целое число (> 0).\n",
   "runtime.wizard.ask_api_url":
     "Введите URL OpenCode API (опционально).\nНажмите Enter для значения по умолчанию: {defaultUrl}\n> ",
   "runtime.wizard.ask_server_username":
@@ -395,20 +454,23 @@ export const ru: I18nDictionary = {
   "runtime.wizard.api_url_invalid":
     "Введите корректный URL (http/https) или нажмите Enter для значения по умолчанию.\n",
   "runtime.wizard.start": "Настройка OpenCode Telegram Bot.\n",
-  "runtime.wizard.saved": "Конфигурация сохранена:\n- {envPath}\n- {settingsPath}\n",
+  "runtime.wizard.saved":
+    "Конфигурация сохранена:\n- {envPath}\n- {settingsPath}\n",
   "runtime.wizard.not_configured_starting":
     "Приложение еще не сконфигурировано. Запускаю wizard...\n",
   "runtime.wizard.tty_required":
     "Интерактивный wizard требует TTY-терминал. Запустите `opencode-telegram config` в интерактивной оболочке.",
 
-  "rename.no_session": "⚠️ Нет активной сессии. Сначала создайте или выберите сессию.",
+  "rename.no_session":
+    "⚠️ Нет активной сессии. Сначала создайте или выберите сессию.",
   "rename.prompt": "📝 Введите новое название сессии:\n\nТекущее: {title}",
   "rename.empty_title": "⚠️ Название не может быть пустым.",
   "rename.success": "✅ Сессия переименована в: {title}",
   "rename.error": "🔴 Не удалось переименовать сессию.",
   "rename.cancelled": "❌ Переименование отменено.",
   "rename.inactive_callback": "Запрос переименования неактивен",
-  "rename.inactive": "⚠️ Запрос переименования неактивен. Выполните /rename снова.",
+  "rename.inactive":
+    "⚠️ Запрос переименования неактивен. Выполните /rename снова.",
   "rename.blocked.expected_name":
     "⚠️ Введите новое название текстом или нажмите Отмена в сообщении переименования.",
   "rename.blocked.command_not_allowed":
@@ -424,7 +486,8 @@ export const ru: I18nDictionary = {
   "task.schedule_preview":
     "✅ Расписание распознано\n\nКак я понял: {summary}\n{cronLine}Часовой пояс: {timezone}\nТип: {kind}\nСледующий запуск: {nextRunAt}",
   "task.schedule_preview.cron": "Cron: {cron}",
-  "task.prompt.body": "📝 Теперь отправьте текст задачи, которую нужно выполнять по расписанию.",
+  "task.prompt.body":
+    "📝 Теперь отправьте текст задачи, которую нужно выполнять по расписанию.",
   "task.prompt_empty": "⚠️ Текст задачи не может быть пустым.",
   "task.created":
     "✅ Задача по расписанию создана\n\nЗадача: {description}\nПроект: {project}\nМодель: {model}\nРасписание: {schedule}\n{cronLine}Следующий запуск: {nextRunAt}",
@@ -435,7 +498,8 @@ export const ru: I18nDictionary = {
   "task.cancel_callback": "Отменяю...",
   "task.cancelled": "❌ Создание задачи по расписанию отменено.",
   "task.inactive_callback": "Этот сценарий создания задачи уже неактивен",
-  "task.inactive": "⚠️ Сценарий создания задачи неактивен. Запустите /task снова.",
+  "task.inactive":
+    "⚠️ Сценарий создания задачи неактивен. Запустите /task снова.",
   "task.blocked.expected_input":
     "⚠️ Сначала завершите создание задачи по расписанию: отправьте текст или используйте кнопку в сообщении с расписанием.",
   "task.blocked.command_not_allowed":
@@ -447,7 +511,8 @@ export const ru: I18nDictionary = {
   "task.kind.cron": "повторяющаяся",
   "task.kind.once": "однократная",
   "task.run.success": "⏰ Задача по расписанию выполнена: {description}",
-  "task.run.error": "🔴 Ошибка выполнения задачи по расписанию: {description}\n\nОшибка: {error}",
+  "task.run.error":
+    "🔴 Ошибка выполнения задачи по расписанию: {description}\n\nОшибка: {error}",
 
   "tasklist.empty": "📭 Задач по расписанию пока нет.",
   "tasklist.select": "Выберите задачу по расписанию:",
@@ -494,14 +559,18 @@ export const ru: I18nDictionary = {
   "cli.placeholder.unavailable": "Команда недоступна.",
   "cli.error.prefix": "CLI error: {message}",
   "cli.args.unknown_command": "Неизвестная команда: {value}",
-  "cli.args.mode_requires_value": "Опция --mode требует значение: sources|installed",
-  "cli.args.invalid_mode": "Некорректное значение --mode: {value}. Ожидается sources|installed",
+  "cli.args.mode_requires_value":
+    "Опция --mode требует значение: sources|installed",
+  "cli.args.invalid_mode":
+    "Некорректное значение --mode: {value}. Ожидается sources|installed",
   "cli.args.unknown_option": "Неизвестная опция: {value}",
-  "cli.args.mode_only_start": "Опция --mode поддерживается только для команды start",
+  "cli.args.mode_only_start":
+    "Опция --mode поддерживается только для команды start",
 
   "legacy.models.fetch_error":
     "🔴 Не удалось получить список моделей. Проверьте статус сервера /status.",
-  "legacy.models.empty": "📋 Нет доступных моделей. Настройте провайдеры через OpenCode.",
+  "legacy.models.empty":
+    "📋 Нет доступных моделей. Настройте провайдеры через OpenCode.",
   "legacy.models.header": "📋 Доступные модели:\n\n",
   "legacy.models.no_provider_models": "  ⚠️ Нет доступных моделей\n",
   "legacy.models.env_hint": "💡 Для использования модели в .env:\n",
@@ -578,7 +647,8 @@ export const ru: I18nDictionary = {
   "messages.button.prev": "⬅️ Prev",
   "messages.button.next": "Next ➡️",
   "messages.button.cancel": "Cancel",
-  "messages.error_no_session": "❌ No active session. Start a new session first.",
+  "messages.error_no_session":
+    "❌ No active session. Start a new session first.",
   "messages.no_session": "❌ No active session.",
   "messages.no_project": "❌ No active project. Select a project first.",
   "messages.empty": "📭 No messages in this session",
@@ -606,13 +676,17 @@ export const ru: I18nDictionary = {
   "skills.cancelled_callback": "Cancelled",
   "skills.not_found": "❌ Skill not found: {name}",
   "skills.activating": "🔄 Activating {name}...",
-  "skills.activation_notice": "✅ Skill {name} activated. It will be loaded for the next prompt.",
-  "skills.no_session_warning": "⚠️ No active session. Activate after starting a session.",
+  "skills.activation_notice":
+    "✅ Skill {name} activated. It will be loaded for the next prompt.",
+  "skills.no_session_warning":
+    "⚠️ No active session. Activate after starting a session.",
 
-  "steer.usage": "📖 Usage: /steer <message> — Interrupt and redirect the agent with your message",
+  "steer.usage":
+    "📖 Usage: /steer <message> — Interrupt and redirect the agent with your message",
   "steer.abort_failed": "🔴 Failed to abort current task: {error}",
 
-  "ask_and_leave.usage": "📖 Usage: /ask_and_leave <question> — Ask in group and leave",
+  "ask_and_leave.usage":
+    "📖 Usage: /ask_and_leave <question> — Ask in group and leave",
   "ask_and_leave.no_group": "❌ This command only works in groups",
   "ask_and_leave.sending": "📨 Sending question to group admins...",
   "ask_and_leave.success": "✅ Question sent to group admins",
@@ -621,7 +695,8 @@ export const ru: I18nDictionary = {
   "ask_and_leave.error.no_query": "❌ Please provide a question to ask",
 
   "llm.guard.blocked": "⛔️ Command blocked: {reason}",
-  "llm.guard.command_blocked": "⛔️ This command is not allowed by the LLM guard",
+  "llm.guard.command_blocked":
+    "⛔️ This command is not allowed by the LLM guard",
   "llm.guard.not_allowed": "⛔️ Not allowed",
   "llm.guard.fallback_query": "💭 Fallback query triggered",
   "llm.guard.query_timeout": "⏰ Query timeout",
@@ -632,7 +707,8 @@ export const ru: I18nDictionary = {
   "llm.guard.edit_prompt": "Edit prompt",
   "llm.guard.queue_failed": "Failed to queue command",
 
-  "permission.denied.super_user_only": "⛔️ This action is restricted to super users only",
+  "permission.denied.super_user_only":
+    "⛔️ This action is restricted to super users only",
 
   "inline.cmd.button.generate": "Generate",
   "inline.cmd.button.edit": "Edit",
@@ -648,11 +724,14 @@ export const ru: I18nDictionary = {
   "inline.cmd.deep_research.title": "Deep Research",
   "inline.cmd.deep_research.description": "Research a topic thoroughly",
   "inline.cmd.steel_man.title": "Steel Man",
-  "inline.cmd.steel_man.description": "Present the strongest argument for an opposing view",
+  "inline.cmd.steel_man.description":
+    "Present the strongest argument for an opposing view",
   "inline.cmd.feynman.title": "Feynman",
-  "inline.cmd.feynman.description": "Explain a concept as if teaching to a beginner",
+  "inline.cmd.feynman.description":
+    "Explain a concept as if teaching to a beginner",
   "inline.cmd.devils_advocate.title": "Devil's Advocate",
-  "inline.cmd.devils_advocate.description": "Argue against the current position",
+  "inline.cmd.devils_advocate.description":
+    "Argue against the current position",
 
   "inline.thinking": "💭 Thinking...",
 
@@ -662,8 +741,10 @@ export const ru: I18nDictionary = {
   "tts.disabled": "🔇 Text-to-speech disabled",
   "tts.error": "❌ Ошибка TTS",
   "tts.failed": "❌ Failed to generate audio reply.",
-  "tts.not_configured": "⚠️ TTS is not configured. Set TTS_API_URL and TTS_API_KEY.",
-  "tts.text_too_long": "⚠️ Текст слишком длинный для TTS (максимум {max} символов)",
+  "tts.not_configured":
+    "⚠️ TTS is not configured. Set TTS_API_URL and TTS_API_KEY.",
+  "tts.text_too_long":
+    "⚠️ Текст слишком длинный для TTS (максимум {max} символов)",
   "cmd.description.tts": "Toggle text-to-speech for responses",
   "open.no_subfolders": "No subfolders",
   "open.subfolder_count": "{count} subfolder",
@@ -671,12 +752,14 @@ export const ru: I18nDictionary = {
 
   // === Tasks Command ===
   "tasks.no_user": "❌ Не удалось идентифицировать пользователя.",
-  "tasks.empty": "📋 Задачи не найдены. Отправьте сообщение, чтобы создать задачу!",
+  "tasks.empty":
+    "📋 Задачи не найдены. Отправьте сообщение, чтобы создать задачу!",
   "tasks.header": "📋 <b>Ваши последние задачи</b>",
   "tasks.error": "❌ Не удалось получить задачи.",
 
   // === Shell Command ===
-  "shell.usage": "⚠️ Пожалуйста, укажите команду.\nИспользование: <code>/shell ls -la</code>",
+  "shell.usage":
+    "⚠️ Пожалуйста, укажите команду.\nИспользование: <code>/shell ls -la</code>",
   "shell.expired": "Команда истекла. Пожалуйста, повторите.",
   "shell.executing": "Выполняется...",
   "shell.cancelled": "Отменено",
@@ -738,7 +821,8 @@ export const ru: I18nDictionary = {
   "git.branch.header": "🌿 <b>Ветки Git</b>",
   "git.branch.header_part": "🌿 <b>Ветки Git ({part}/{total})</b>",
   "git.branch.error": "❌ <b>Ошибка Git branch:</b>\n<pre>{message}</pre>",
-  "git.commit.usage": "⚠️ Пожалуйста, укажите сообщение коммита.\nИспользование: <code>/commit Ваше сообщение</code>",
+  "git.commit.usage":
+    "⚠️ Пожалуйста, укажите сообщение коммита.\nИспользование: <code>/commit Ваше сообщение</code>",
   "git.commit.committing": "📝 Создание коммита...",
   "git.commit.success": "Изменения успешно закоммичены.",
   "git.commit.header": "📝 <b>Git Commit</b>",

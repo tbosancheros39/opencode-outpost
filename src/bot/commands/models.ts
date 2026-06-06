@@ -19,7 +19,10 @@ export function getModelByIndex(index: string): ModelInfo | undefined {
   return modelIndexCache.get(index);
 }
 
-function buildModelsKeyboard(models: ModelInfo[], currentSelection?: ModelInfo): InlineKeyboard {
+function buildModelsKeyboard(
+  models: ModelInfo[],
+  currentSelection?: ModelInfo,
+): InlineKeyboard {
   const keyboard = new InlineKeyboard();
   modelIndexCache.clear();
 
@@ -66,7 +69,8 @@ export async function modelsCommand(ctx: CommandContext<Context>) {
       return;
     }
 
-    const { data: providersData, error } = await opencodeClient.config.providers();
+    const { data: providersData, error } =
+      await opencodeClient.config.providers();
 
     if (error || !providersData) {
       await ctx.reply(t("legacy.models.fetch_error"));
@@ -75,7 +79,7 @@ export async function modelsCommand(ctx: CommandContext<Context>) {
 
     const providers = Array.isArray(providersData)
       ? providersData
-      : providersData?.providers ?? [];
+      : (providersData?.providers ?? []);
 
     if (!providers || providers.length === 0) {
       await ctx.reply(t("legacy.models.empty"));

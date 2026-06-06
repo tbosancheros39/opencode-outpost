@@ -17,7 +17,10 @@ export interface DownloadedFile {
  * @param fileId Telegram file_id
  * @returns Downloaded photo buffer and path
  */
-export async function downloadTelegramFile(api: Api, fileId: string): Promise<DownloadedFile> {
+export async function downloadTelegramFile(
+  api: Api,
+  fileId: string,
+): Promise<DownloadedFile> {
   logger.debug(`[FileDownload] Getting file info for fileId=${fileId}`);
 
   const file = await api.getFile(fileId);
@@ -32,7 +35,9 @@ export async function downloadTelegramFile(api: Api, fileId: string): Promise<Do
   }
 
   const fileUrl = `${TELEGRAM_FILE_URL_BASE}${config.telegram.token}/${file.file_path}`;
-  logger.debug(`[FileDownload] Downloading from ${fileUrl.replace(config.telegram.token, "***")}`);
+  logger.debug(
+    `[FileDownload] Downloading from ${fileUrl.replace(config.telegram.token, "***")}`,
+  );
 
   const fetchOptions: RequestInit & { agent?: unknown } = {};
 
@@ -45,7 +50,9 @@ export async function downloadTelegramFile(api: Api, fileId: string): Promise<Do
   const response = await fetch(fileUrl, fetchOptions);
 
   if (!response.ok) {
-    throw new Error(`Failed to download file: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Failed to download file: ${response.status} ${response.statusText}`,
+    );
   }
 
   const arrayBuffer = await response.arrayBuffer();
@@ -76,7 +83,10 @@ export function toDataUri(buffer: Buffer, mimeType: string): string {
  * @param maxSizeKb Maximum size in KB (from config)
  * @returns true if within limit
  */
-export function isFileSizeAllowed(fileSize: number | undefined, maxSizeKb: number): boolean {
+export function isFileSizeAllowed(
+  fileSize: number | undefined,
+  maxSizeKb: number,
+): boolean {
   if (!fileSize) {
     return true; // Unknown size, allow (will be checked on download)
   }

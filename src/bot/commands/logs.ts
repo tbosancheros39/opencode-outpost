@@ -1,6 +1,10 @@
 import { CommandContext, Context } from "grammy";
 import { opencodeClient } from "../../opencode/client.js";
-import { getCurrentSession, setCurrentSession, type SessionInfo } from "../../session/manager.js";
+import {
+  getCurrentSession,
+  setCurrentSession,
+  type SessionInfo,
+} from "../../session/manager.js";
 import { getStoredAgent } from "../../agent/manager.js";
 import { getCurrentProject } from "../../settings/manager.js";
 import { logger } from "../../utils/logger.js";
@@ -14,7 +18,10 @@ export async function logsCommand(ctx: CommandContext<Context>) {
   }
 
   const chatId = ctx.chat.id;
-  const service = ((ctx.match as string)?.trim() || "syslog").replace(/[<>&;|]/g, "");
+  const service = ((ctx.match as string)?.trim() || "syslog").replace(
+    /[<>&;|]/g,
+    "",
+  );
 
   // Validate service name (alphanumeric, dash, dot only)
   if (!/^[a-zA-Z0-9_.-]+$/.test(service) && service !== "syslog") {
@@ -26,9 +33,12 @@ export async function logsCommand(ctx: CommandContext<Context>) {
     return;
   }
 
-  const statusMsg = await ctx.reply(`📋 <i>Fetching logs for: <code>${service}</code>...</i>`, {
-    parse_mode: "HTML",
-  });
+  const statusMsg = await ctx.reply(
+    `📋 <i>Fetching logs for: <code>${service}</code>...</i>`,
+    {
+      parse_mode: "HTML",
+    },
+  );
 
   try {
     let session = getCurrentSession(chatId);

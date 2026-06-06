@@ -54,7 +54,9 @@ export async function handleVariantSelect(ctx: Context): Promise<boolean> {
 
     if (!currentModel.providerID || !currentModel.modelID) {
       logger.error("[VariantHandler] No model selected");
-      await ctx.answerCallbackQuery({ text: t("variant.model_not_selected_callback") });
+      await ctx.answerCallbackQuery({
+        text: t("variant.model_not_selected_callback"),
+      });
       return false;
     }
 
@@ -69,11 +71,18 @@ export async function handleVariantSelect(ctx: Context): Promise<boolean> {
     const contextInfo =
       pinnedMessageManager.getContextInfo(chatId) ??
       (pinnedMessageManager.getContextLimit(chatId) > 0
-        ? { tokensUsed: 0, tokensLimit: pinnedMessageManager.getContextLimit(chatId) }
+        ? {
+            tokensUsed: 0,
+            tokensLimit: pinnedMessageManager.getContextLimit(chatId),
+          }
         : null);
 
     if (contextInfo) {
-      keyboardManager.updateContext(chatId, contextInfo.tokensUsed, contextInfo.tokensLimit);
+      keyboardManager.updateContext(
+        chatId,
+        contextInfo.tokensUsed,
+        contextInfo.tokensLimit,
+      );
     }
 
     const variantName = formatVariantForButton(variantId);
@@ -88,7 +97,9 @@ export async function handleVariantSelect(ctx: Context): Promise<boolean> {
 
     clearActiveInlineMenu(chatId, "variant_selected");
 
-    await ctx.answerCallbackQuery({ text: t("variant.changed_callback", { name: displayName }) });
+    await ctx.answerCallbackQuery({
+      text: t("variant.changed_callback", { name: displayName }),
+    });
     await ctx.reply(t("variant.changed_message", { name: displayName }), {
       reply_markup: keyboard,
     });
@@ -99,7 +110,9 @@ export async function handleVariantSelect(ctx: Context): Promise<boolean> {
   } catch (err) {
     clearActiveInlineMenu(chatId, "variant_select_error");
     logger.error("[VariantHandler] Error handling variant select:", err);
-    await ctx.answerCallbackQuery({ text: t("variant.change_error_callback") }).catch(() => {});
+    await ctx
+      .answerCallbackQuery({ text: t("variant.change_error_callback") })
+      .catch(() => {});
     return false;
   }
 }
@@ -130,7 +143,9 @@ export async function buildVariantSelectionMenu(
 
   if (activeVariants.length === 0) {
     logger.warn("[VariantHandler] No active variants found");
-    keyboard.text(`✅ ${formatVariantForDisplay("default")}`, "variant:default").row();
+    keyboard
+      .text(`✅ ${formatVariantForDisplay("default")}`, "variant:default")
+      .row();
     return keyboard;
   }
 

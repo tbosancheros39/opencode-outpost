@@ -37,7 +37,9 @@ export function extractShellOutput(data: unknown, fallback: string): string {
   type ShellResponse = { parts?: ShellPart[] };
   const parts = (data as ShellResponse)?.parts ?? [];
   const outputs = parts
-    .filter((p) => p.type === "tool" && (p.tool === "bash" || p.tool === "shell"))
+    .filter(
+      (p) => p.type === "tool" && (p.tool === "bash" || p.tool === "shell"),
+    )
     .map((p) => p.state?.output ?? p.state?.metadata?.output ?? "")
     .filter(Boolean);
   return outputs.length > 0 ? outputs.join("\n") : fallback;
@@ -50,7 +52,7 @@ export function quoteShellArg(value: string): string {
 /**
  * Validates and canonicalizes a path to ensure it stays within a base directory.
  * Prevents path traversal via ../ and symlink escapes.
- * 
+ *
  * @param userPath - User-provided path (relative or absolute)
  * @param basePath - Base directory the path must stay within
  * @returns Canonical absolute path if valid
@@ -58,7 +60,7 @@ export function quoteShellArg(value: string): string {
  */
 export async function validateAndCanonicalizePath(
   userPath: string,
-  basePath: string
+  basePath: string,
 ): Promise<string> {
   if (!userPath || userPath.trim() === "") {
     throw new Error("Path cannot be empty");
@@ -92,16 +94,20 @@ export async function validateAndCanonicalizePath(
   }
 
   // Ensure canonical path is within base directory
-  if (!canonicalPath.startsWith(absoluteBase + path.sep) && canonicalPath !== absoluteBase) {
+  if (
+    !canonicalPath.startsWith(absoluteBase + path.sep) &&
+    canonicalPath !== absoluteBase
+  ) {
     logger.warn(
-      `[PathValidation] Path escape attempt: userPath=${userPath}, canonicalPath=${canonicalPath}, basePath=${absoluteBase}`
+      `[PathValidation] Path escape attempt: userPath=${userPath}, canonicalPath=${canonicalPath}, basePath=${absoluteBase}`,
     );
     throw new Error(
-      `Path traversal detected: "${userPath}" resolves outside allowed directory`
+      `Path traversal detected: "${userPath}" resolves outside allowed directory`,
     );
   }
 
-  logger.debug(`[PathValidation] Path validated: ${userPath} → ${canonicalPath}`);
+  logger.debug(
+    `[PathValidation] Path validated: ${userPath} → ${canonicalPath}`,
+  );
   return canonicalPath;
 }
-

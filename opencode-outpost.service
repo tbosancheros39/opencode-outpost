@@ -1,0 +1,23 @@
+[Unit]
+Description=OpenCode Outpost Telegram Bot
+Documentation=https://github.com/tbosancheros39/opencode-outpost
+After=network.target opencode-server.service
+Wants=opencode-server.service
+
+[Service]
+Type=simple
+User=anini39
+WorkingDirectory=/media/ext4_storage/workspace/Projects/OpenCodeTelegramBot/opencode-outpost
+ExecStartPre=/usr/bin/npm run build
+ExecStart=/usr/bin/node /media/ext4_storage/workspace/Projects/OpenCodeTelegramBot/opencode-outpost/dist/index.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+Environment=NODE_ENV=production
+
+# Pass env vars from .env
+EnvironmentFile=/media/ext4_storage/workspace/Projects/OpenCodeTelegramBot/opencode-outpost/.env
+
+[Install]
+WantedBy=multi-user.target

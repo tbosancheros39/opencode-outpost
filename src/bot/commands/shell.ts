@@ -1,6 +1,10 @@
 import { CommandContext, Context, InlineKeyboard } from "grammy";
 import { opencodeClient } from "../../opencode/client.js";
-import { getCurrentSession, setCurrentSession, type SessionInfo } from "../../session/manager.js";
+import {
+  getCurrentSession,
+  setCurrentSession,
+  type SessionInfo,
+} from "../../session/manager.js";
 import { getStoredAgent } from "../../agent/manager.js";
 import { getCurrentProject } from "../../settings/manager.js";
 import { logger } from "../../utils/logger.js";
@@ -69,8 +73,14 @@ export async function shellCommand(ctx: CommandContext<Context>) {
     const message = await ctx.reply(warningMsg, {
       parse_mode: "HTML",
       reply_markup: new InlineKeyboard()
-        .text("✅ Execute", `shell:exec:${ctx.message?.message_id || Date.now()}`)
-        .text("❌ Cancel", `shell:cancel:${ctx.message?.message_id || Date.now()}`),
+        .text(
+          "✅ Execute",
+          `shell:exec:${ctx.message?.message_id || Date.now()}`,
+        )
+        .text(
+          "❌ Cancel",
+          `shell:cancel:${ctx.message?.message_id || Date.now()}`,
+        ),
     });
 
     // Store for later execution
@@ -85,7 +95,9 @@ export async function shellCommand(ctx: CommandContext<Context>) {
 
   // For warnings, show notice but proceed
   if (classification.level === "warning") {
-    logger.warn(`[Shell] Warning: ${classification.reason} for command: ${command}`);
+    logger.warn(
+      `[Shell] Warning: ${classification.reason} for command: ${command}`,
+    );
   }
 
   // Execute immediately for safe commands
@@ -115,12 +127,17 @@ async function executeShellCommand(
   const progressInterval = setInterval(async () => {
     const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
     const elapsedStr =
-      elapsedSec < 60 ? `${elapsedSec}s` : `${Math.floor(elapsedSec / 60)}m ${elapsedSec % 60}s`;
+      elapsedSec < 60
+        ? `${elapsedSec}s`
+        : `${Math.floor(elapsedSec / 60)}m ${elapsedSec % 60}s`;
     try {
       await ctx.api.editMessageText(
         chatId,
         statusMsg.message_id,
-        t("shell.running_elapsed", { command: escapeHtml(command), elapsed: elapsedStr }),
+        t("shell.running_elapsed", {
+          command: escapeHtml(command),
+          elapsed: elapsedStr,
+        }),
         { parse_mode: "HTML" },
       );
     } catch {
@@ -162,7 +179,11 @@ async function executeShellCommand(
       let message: string;
       if (typeof error === "string") {
         message = error;
-      } else if ("data" in error && typeof error.data === "object" && error.data !== null) {
+      } else if (
+        "data" in error &&
+        typeof error.data === "object" &&
+        error.data !== null
+      ) {
         const data = error.data as { message?: string };
         message = data.message || JSON.stringify(error);
       } else {
@@ -179,14 +200,20 @@ async function executeShellCommand(
 
     const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
     const elapsedStr =
-      elapsedSec < 60 ? `${elapsedSec}s` : `${Math.floor(elapsedSec / 60)}m ${elapsedSec % 60}s`;
+      elapsedSec < 60
+        ? `${elapsedSec}s`
+        : `${Math.floor(elapsedSec / 60)}m ${elapsedSec % 60}s`;
 
     await ctx.api.deleteMessage(chatId, statusMsg.message_id).catch(() => {});
 
     for (let i = 0; i < chunks.length; i++) {
       const header =
         chunks.length > 1
-          ? t("shell.output_part", { part: String(i + 1), total: String(chunks.length), elapsed: elapsedStr })
+          ? t("shell.output_part", {
+              part: String(i + 1),
+              total: String(chunks.length),
+              elapsed: elapsedStr,
+            })
           : t("shell.output", { elapsed: elapsedStr });
       await ctx.reply(`${header}\n<pre><code>${chunks[i]}</code></pre>`, {
         parse_mode: "HTML",
@@ -214,7 +241,10 @@ export async function handleShellCallback(ctx: Context): Promise<boolean> {
     return false;
   }
 
-  if (callbackData.startsWith("shell:exec:") || callbackData.startsWith("shell:cancel:")) {
+  if (
+    callbackData.startsWith("shell:exec:") ||
+    callbackData.startsWith("shell:cancel:")
+  ) {
     // Re-use the shellCommand logic
     await shellCommand(ctx as CommandContext<Context>);
     return true;

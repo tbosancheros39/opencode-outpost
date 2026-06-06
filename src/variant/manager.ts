@@ -32,7 +32,9 @@ export async function getAvailableVariants(
 
     const model = provider.models[modelID];
     if (!model) {
-      logger.warn(`[VariantManager] Model ${modelID} not found in provider ${providerID}`);
+      logger.warn(
+        `[VariantManager] Model ${modelID} not found in provider ${providerID}`,
+      );
       return [{ id: "default" }];
     }
 

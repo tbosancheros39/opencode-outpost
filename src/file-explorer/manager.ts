@@ -1,7 +1,10 @@
 // src/file-explorer/manager.ts
 
 import { opencodeClient } from "../opencode/client.js";
-import { quoteShellArg, validateShellPathInput } from "../bot/utils/shell-security.js";
+import {
+  quoteShellArg,
+  validateShellPathInput,
+} from "../bot/utils/shell-security.js";
 import { getStoredAgent } from "../agent/manager.js";
 import type { FileExplorerItem, FileExplorerPage } from "./types.js";
 
@@ -10,7 +13,10 @@ const EXPLORER_ITEMS_PER_PAGE = 15;
 /**
  * Parse ls -la output into structured file items
  */
-export function parseLsOutput(output: string, basePath: string): FileExplorerItem[] {
+export function parseLsOutput(
+  output: string,
+  basePath: string,
+): FileExplorerItem[] {
   const lines = output.split("\n").filter((line) => line.trim());
   const items: FileExplorerItem[] = [];
 

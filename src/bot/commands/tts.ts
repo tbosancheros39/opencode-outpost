@@ -22,5 +22,7 @@ export async function ttsCommand(ctx: CommandContext<Context>): Promise<void> {
   const message = enabled ? t("tts.enabled") : t("tts.disabled");
   await ctx.reply(message).catch(() => {});
 
-  logger.info(`[TTS] TTS ${enabled ? "enabled" : "disabled"} for chat ${chatId}`);
+  logger.info(
+    `[TTS] TTS ${enabled ? "enabled" : "disabled"} for chat ${chatId}`,
+  );
 }

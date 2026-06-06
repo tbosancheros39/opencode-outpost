@@ -2,7 +2,11 @@ import { CommandContext, Context } from "grammy";
 import { pinnedMessageManager } from "../../pinned/manager.js";
 import { logger } from "../../utils/logger.js";
 import { t } from "../../i18n/index.js";
-import { getCostHistory, addCostEntry, type CostEntry } from "../../settings/manager.js";
+import {
+  getCostHistory,
+  addCostEntry,
+  type CostEntry,
+} from "../../settings/manager.js";
 
 function formatTokenCount(count: number): string {
   if (count >= 1000000) {
@@ -85,7 +89,8 @@ export async function costCommand(ctx: CommandContext<Context>) {
     if (modelCosts.size > 0) {
       lines.push("", t("cost.by_model"));
       for (const [model, cost] of modelCosts) {
-        const percent = todayCost > 0 ? Math.round((cost / todayCost) * 100) : 0;
+        const percent =
+          todayCost > 0 ? Math.round((cost / todayCost) * 100) : 0;
         lines.push(`  ${model}: $${cost.toFixed(2)} (${percent}%)`);
       }
     }

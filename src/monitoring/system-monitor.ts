@@ -82,29 +82,31 @@ export function startSystemMonitoring(options: MonitoringOptions): void {
     logger.warn("[SystemMonitor] Already running, stopping first");
     stopSystemMonitoring();
   }
-  
+
   userId = options.userId;
   const thresholds: AlertThresholds = {
     diskWarning: options.diskWarning ?? DEFAULT_THRESHOLDS.diskWarning,
     diskCritical: options.diskCritical ?? DEFAULT_THRESHOLDS.diskCritical,
     memoryWarning: options.memoryWarning ?? DEFAULT_THRESHOLDS.memoryWarning,
     memoryCritical: options.memoryCritical ?? DEFAULT_THRESHOLDS.memoryCritical,
-    memoryWarningGB: options.memoryWarningGB ?? DEFAULT_THRESHOLDS.memoryWarningGB,
-    memoryCriticalGB: options.memoryCriticalGB ?? DEFAULT_THRESHOLDS.memoryCriticalGB,
+    memoryWarningGB:
+      options.memoryWarningGB ?? DEFAULT_THRESHOLDS.memoryWarningGB,
+    memoryCriticalGB:
+      options.memoryCriticalGB ?? DEFAULT_THRESHOLDS.memoryCriticalGB,
     loadWarning: DEFAULT_THRESHOLDS.loadWarning,
     cpuTempWarning: DEFAULT_THRESHOLDS.cpuTempWarning,
     cpuTempCritical: DEFAULT_THRESHOLDS.cpuTempCritical,
   };
-  
+
   const intervalMs = (options.checkIntervalMinutes ?? 5) * 60 * 1000;
-  
+
   logger.info(`[SystemMonitor] Started with ${intervalMs}ms interval`);
-  
+
   // Run first check after a short delay
   setTimeout(() => {
     void checkSystemHealth(thresholds);
   }, 10000);
-  
+
   // Schedule periodic checks
   checkInterval = setInterval(() => {
     void checkSystemHealth(thresholds);
@@ -127,20 +129,20 @@ async function checkSystemHealth(thresholds: AlertThresholds): Promise<void> {
   if (!botInstance || !userId) {
     return;
   }
-  
+
   try {
     const metrics = await getSystemMetrics();
     const alerts = generateAlerts(metrics, thresholds);
 
     // disk_health alerts bypass the gate — SMART failures are persistent, alert immediately
-    const diskHealthAlerts = alerts.filter(a => a.type === "disk_health");
+    const diskHealthAlerts = alerts.filter((a) => a.type === "disk_health");
     for (const alert of diskHealthAlerts) {
       await sendAlert(alert);
     }
 
     // All other alert types enter the 15-second persistence gate
-    const gatedAlerts = alerts.filter(a => a.type !== "disk_health");
-    const activeKeys = new Set(gatedAlerts.map(a => `${a.type}-${a.level}`));
+    const gatedAlerts = alerts.filter((a) => a.type !== "disk_health");
+    const activeKeys = new Set(gatedAlerts.map((a) => `${a.type}-${a.level}`));
 
     let hasNewAlerts = false;
     for (const alert of gatedAlerts) {
@@ -160,14 +162,19 @@ async function checkSystemHealth(thresholds: AlertThresholds): Promise<void> {
 
     // Schedule confirmation for newly detected alerts
     if (hasNewAlerts) {
-      setTimeout(() => void confirmAndSendAlerts(thresholds), SUSTAIN_THRESHOLD_MS);
+      setTimeout(
+        () => void confirmAndSendAlerts(thresholds),
+        SUSTAIN_THRESHOLD_MS,
+      );
     }
   } catch (err) {
     logger.error("[SystemMonitor] Error checking system health:", err);
   }
 }
 
-async function confirmAndSendAlerts(thresholds: AlertThresholds): Promise<void> {
+async function confirmAndSendAlerts(
+  thresholds: AlertThresholds,
+): Promise<void> {
   if (!botInstance || !userId) {
     return;
   }
@@ -176,9 +183,9 @@ async function confirmAndSendAlerts(thresholds: AlertThresholds): Promise<void> 
     const metrics = await getSystemMetrics();
     const alerts = generateAlerts(metrics, thresholds);
     const now = Date.now();
-    const activeKeys = new Set(alerts.map(a => `${a.type}-${a.level}`));
+    const activeKeys = new Set(alerts.map((a) => `${a.type}-${a.level}`));
 
-    for (const alert of alerts.filter(a => a.type !== "disk_health")) {
+    for (const alert of alerts.filter((a) => a.type !== "disk_health")) {
       const key = `${alert.type}-${alert.level}`;
       const startTime = sustainedAlertStart.get(key);
       if (startTime !== undefined && now - startTime >= SUSTAIN_THRESHOLD_MS) {
@@ -205,7 +212,9 @@ async function getSystemMetrics(): Promise<SystemMetrics> {
   let loadAverage = 0;
 
   try {
-    const { stdout } = await execAsync("df -h / | tail -1 | awk '{print $5}' | sed 's/%//'");
+    const { stdout } = await execAsync(
+      "df -h / | tail -1 | awk '{print $5}' | sed 's/%//'",
+    );
     diskUsage = parseInt(stdout.trim(), 10) || 0;
   } catch (err) {
     logger.warn("[SystemMonitor] Failed to read disk usage:", err);
@@ -219,8 +228,8 @@ async function getSystemMetrics(): Promise<SystemMetrics> {
     const usedBytes = parseInt(parts[2], 10) || 0;
     if (totalBytes > 0) {
       memoryUsage = Math.round((usedBytes / totalBytes) * 100);
-      memoryUsedGB = usedBytes / (1024 ** 3);
-      memoryTotalGB = totalBytes / (1024 ** 3);
+      memoryUsedGB = usedBytes / 1024 ** 3;
+      memoryTotalGB = totalBytes / 1024 ** 3;
     }
   } catch (err) {
     logger.warn("[SystemMonitor] Failed to read memory usage:", err);
@@ -250,13 +259,13 @@ async function getSystemMetrics(): Promise<SystemMetrics> {
 async function getCpuTemperature(): Promise<number | null> {
   try {
     const { stdout } = await execAsync(
-      "sensors 2>/dev/null | grep 'Core 0' | awk '{print $3}' | sed 's/+//' | sed 's/°C//'"
+      "sensors 2>/dev/null | grep 'Core 0' | awk '{print $3}' | sed 's/+//' | sed 's/°C//'",
     );
     const temp = parseFloat(stdout.trim());
     if (!isNaN(temp) && temp > 0) return temp;
 
     const { stdout: stdout2 } = await execAsync(
-      "sensors 2>/dev/null | grep 'Package id 0' | awk '{print $4}' | sed 's/+//' | sed 's/°C//'"
+      "sensors 2>/dev/null | grep 'Package id 0' | awk '{print $4}' | sed 's/+//' | sed 's/°C//'",
     );
     const temp2 = parseFloat(stdout2.trim());
     return !isNaN(temp2) && temp2 > 0 ? temp2 : null;
@@ -268,32 +277,36 @@ async function getCpuTemperature(): Promise<number | null> {
 async function getDiskHealth(): Promise<DiskHealth | null> {
   try {
     const { stdout: diskStdout } = await execAsync(
-      "lsblk -d -n -o NAME,TYPE | grep disk | head -1 | awk '{print $1}'"
+      "lsblk -d -n -o NAME,TYPE | grep disk | head -1 | awk '{print $1}'",
     );
     const diskName = diskStdout.trim() || "sda";
 
     let smartOutput = "";
     try {
       const { stdout } = await execAsync(
-        `smartctl -H /dev/${diskName} 2>/dev/null | grep -E 'SMART overall-health|PASSED|FAILED' | head -3`
+        `smartctl -H /dev/${diskName} 2>/dev/null | grep -E 'SMART overall-health|PASSED|FAILED' | head -3`,
       );
       smartOutput = stdout.trim();
     } catch {
       // smartctl not installed or permission denied
     }
 
-    if (smartOutput.toLowerCase().includes("failed") || smartOutput.toLowerCase().includes("critical")) {
+    if (
+      smartOutput.toLowerCase().includes("failed") ||
+      smartOutput.toLowerCase().includes("critical")
+    ) {
       return {
         name: diskName,
         status: "critical",
-        message: "Disk has critical SMART errors. Consider backup and replacement.",
+        message:
+          "Disk has critical SMART errors. Consider backup and replacement.",
       };
     }
 
     let reallocOutput = "";
     try {
       const { stdout } = await execAsync(
-        `smartctl -A /dev/${diskName} 2>/dev/null | grep -E 'Reallocated_Sector|Current_Pending_Sector' | head -2`
+        `smartctl -A /dev/${diskName} 2>/dev/null | grep -E 'Reallocated_Sector|Current_Pending_Sector' | head -2`,
       );
       reallocOutput = stdout.trim();
     } catch {
@@ -309,7 +322,10 @@ async function getDiskHealth(): Promise<DiskHealth | null> {
       };
     }
 
-    if (smartOutput.toLowerCase().includes("passed") || smartOutput.toLowerCase().includes("smart overall-health")) {
+    if (
+      smartOutput.toLowerCase().includes("passed") ||
+      smartOutput.toLowerCase().includes("smart overall-health")
+    ) {
       return {
         name: diskName,
         status: "ok",
@@ -329,10 +345,10 @@ async function getDiskHealth(): Promise<DiskHealth | null> {
 
 function generateAlerts(
   metrics: SystemMetrics,
-  thresholds: AlertThresholds
+  thresholds: AlertThresholds,
 ): SystemAlert[] {
   const alerts: SystemAlert[] = [];
-  
+
   // Disk alerts
   if (metrics.diskUsage >= thresholds.diskCritical) {
     alerts.push({
@@ -351,7 +367,7 @@ function generateAlerts(
       threshold: thresholds.diskWarning,
     });
   }
-  
+
   // Memory alerts (GB-based)
   if (metrics.memoryUsedGB >= thresholds.memoryCriticalGB) {
     alerts.push({
@@ -370,7 +386,7 @@ function generateAlerts(
       threshold: thresholds.memoryWarningGB,
     });
   }
-  
+
   // Load average alerts
   if (metrics.loadAverage >= thresholds.loadWarning * 1.5) {
     alerts.push({
@@ -389,7 +405,7 @@ function generateAlerts(
       threshold: thresholds.loadWarning,
     });
   }
-  
+
   // CPU temperature alerts
   if (metrics.cpuTemp !== null) {
     if (metrics.cpuTemp >= thresholds.cpuTempCritical) {
@@ -410,7 +426,7 @@ function generateAlerts(
       });
     }
   }
-  
+
   // Disk health alerts
   if (metrics.diskHealth && metrics.diskHealth.status === "critical") {
     alerts.push({
@@ -429,7 +445,7 @@ function generateAlerts(
       threshold: 0,
     });
   }
-  
+
   return alerts;
 }
 
@@ -437,22 +453,22 @@ async function sendAlert(alert: SystemAlert): Promise<void> {
   if (!botInstance || !userId) {
     return;
   }
-  
+
   const alertKey = `${alert.type}-${alert.level}`;
   const lastTime = lastAlertTime.get(alertKey);
   const now = Date.now();
-  
+
   if (lastTime && now - lastTime < ALERT_COOLDOWN_MS) {
     logger.debug(`[SystemMonitor] Alert ${alertKey} skipped (cooldown)`);
     return;
   }
-  
+
   try {
     await botInstance.api.sendMessage(userId, alert.message, {
       parse_mode: "HTML",
       disable_notification: alert.level === "warning",
     });
-    
+
     lastAlertTime.set(alertKey, now);
     logger.info(`[SystemMonitor] Sent ${alert.level} alert: ${alert.type}`);
   } catch (err) {
@@ -463,7 +479,7 @@ async function sendAlert(alert: SystemAlert): Promise<void> {
 export async function manualHealthCheck(_chatId: number): Promise<string> {
   try {
     const metrics = await getSystemMetrics();
-    
+
     const lines = [
       "📊 <b>System Health Check</b>",
       "",
@@ -472,32 +488,51 @@ export async function manualHealthCheck(_chatId: number): Promise<string> {
       `⚡ Load Average: ${metrics.loadAverage}`,
       "",
     ];
-    
+
     if (metrics.cpuTemp !== null) {
       lines.push(`🌡️ CPU Temperature: ${metrics.cpuTemp}°C`);
     } else {
       lines.push(`🌡️ CPU Temperature: N/A (sensors not available)`);
     }
-    
+
     if (metrics.diskHealth) {
-      const healthIcon = metrics.diskHealth.status === "ok" ? "✅" : metrics.diskHealth.status === "warning" ? "⚠️" : "🚨";
-      lines.push(`${healthIcon} Disk /dev/${metrics.diskHealth.name}: ${metrics.diskHealth.status.toUpperCase()}`);
+      const healthIcon =
+        metrics.diskHealth.status === "ok"
+          ? "✅"
+          : metrics.diskHealth.status === "warning"
+            ? "⚠️"
+            : "🚨";
+      lines.push(
+        `${healthIcon} Disk /dev/${metrics.diskHealth.name}: ${metrics.diskHealth.status.toUpperCase()}`,
+      );
       if (metrics.diskHealth.status !== "ok") {
         lines.push(`   ${metrics.diskHealth.message}`);
       }
     } else {
       lines.push(`💿 Disk Health: N/A (smartctl not available)`);
     }
-    
+
     lines.push("");
-    lines.push(metrics.diskUsage > 90 ? "⚠️ Disk space is low!" : "✅ Disk space OK");
-    lines.push(metrics.memoryUsedGB > DEFAULT_THRESHOLDS.memoryWarningGB ? "⚠️ Memory usage is high!" : "✅ Memory usage OK");
-    lines.push(metrics.loadAverage > 4 ? "⚠️ System load is high!" : "✅ System load OK");
-    
+    lines.push(
+      metrics.diskUsage > 90 ? "⚠️ Disk space is low!" : "✅ Disk space OK",
+    );
+    lines.push(
+      metrics.memoryUsedGB > DEFAULT_THRESHOLDS.memoryWarningGB
+        ? "⚠️ Memory usage is high!"
+        : "✅ Memory usage OK",
+    );
+    lines.push(
+      metrics.loadAverage > 4 ? "⚠️ System load is high!" : "✅ System load OK",
+    );
+
     if (metrics.cpuTemp !== null) {
-      lines.push(metrics.cpuTemp > 80 ? "⚠️ CPU temperature is high!" : "✅ CPU temperature OK");
+      lines.push(
+        metrics.cpuTemp > 80
+          ? "⚠️ CPU temperature is high!"
+          : "✅ CPU temperature OK",
+      );
     }
-    
+
     return lines.join("\n");
   } catch (err) {
     logger.error("[SystemMonitor] Manual health check failed:", err);

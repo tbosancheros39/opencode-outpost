@@ -13,7 +13,11 @@ import {
   ensureActiveInlineMenu,
   appendInlineMenuCancelButton,
 } from "./inline-menu.js";
-import { buildPinKeyboard, buildPinMenuText, makeRelativePath } from "../utils/pin-helpers.js";
+import {
+  buildPinKeyboard,
+  buildPinMenuText,
+  makeRelativePath,
+} from "../utils/pin-helpers.js";
 
 const MAX_PINNED_FILES = 10;
 const MAX_RECENT_FILES_SHOWN = 10;
@@ -57,7 +61,9 @@ export async function handlePinCallback(ctx: Context): Promise<boolean> {
         const indexStr = action.slice(2);
         const index = parseInt(indexStr, 10);
         if (isNaN(index)) {
-          await ctx.answerCallbackQuery({ text: t("callback.unknown_command") });
+          await ctx.answerCallbackQuery({
+            text: t("callback.unknown_command"),
+          });
           return true;
         }
         await handlePinRecent(ctx, chatId, index);
@@ -68,7 +74,9 @@ export async function handlePinCallback(ctx: Context): Promise<boolean> {
         const indexStr = action.slice(2);
         const index = parseInt(indexStr, 10);
         if (isNaN(index)) {
-          await ctx.answerCallbackQuery({ text: t("callback.unknown_command") });
+          await ctx.answerCallbackQuery({
+            text: t("callback.unknown_command"),
+          });
           return true;
         }
         await handlePinUnpin(ctx, chatId, index);
@@ -97,7 +105,9 @@ async function handlePinRecent(
     .filter((f) => !pinnedFiles.includes(f));
 
   if (index < 0 || index >= recentFiles.length) {
-    await ctx.answerCallbackQuery({ text: t("cmd.pin.callback_invalid_index") });
+    await ctx.answerCallbackQuery({
+      text: t("cmd.pin.callback_invalid_index"),
+    });
     return;
   }
 
@@ -116,14 +126,18 @@ async function handlePinRecent(
     const statResult = await stat(filePath);
     if (statResult.isDirectory()) {
       await ctx.answerCallbackQuery({
-        text: t("cmd.pin.error_is_directory", { path: makeRelativePath(filePath, worktree) }),
+        text: t("cmd.pin.error_is_directory", {
+          path: makeRelativePath(filePath, worktree),
+        }),
         show_alert: true,
       });
       return;
     }
   } catch {
     await ctx.answerCallbackQuery({
-      text: t("cmd.pin.file_not_found", { path: makeRelativePath(filePath, worktree) }),
+      text: t("cmd.pin.file_not_found", {
+        path: makeRelativePath(filePath, worktree),
+      }),
       show_alert: true,
     });
     return;
@@ -131,7 +145,9 @@ async function handlePinRecent(
 
   if (pinnedFiles.includes(filePath)) {
     await ctx.answerCallbackQuery({
-      text: t("cmd.pin.already_pinned", { path: makeRelativePath(filePath, worktree) }),
+      text: t("cmd.pin.already_pinned", {
+        path: makeRelativePath(filePath, worktree),
+      }),
     });
     return;
   }
@@ -164,7 +180,9 @@ async function handlePinUnpin(
   const pinnedFiles = getPinnedFiles(chatId) ?? [];
 
   if (index < 0 || index >= pinnedFiles.length) {
-    await ctx.answerCallbackQuery({ text: t("cmd.pin.callback_invalid_index") });
+    await ctx.answerCallbackQuery({
+      text: t("cmd.pin.callback_invalid_index"),
+    });
     return;
   }
 
@@ -177,7 +195,9 @@ async function handlePinUnpin(
     text: t("cmd.pin.removed", { path: relativePath }),
   });
 
-  logger.info(`[Pin] Unpinned file via callback for chat ${chatId}: ${removed}`);
+  logger.info(
+    `[Pin] Unpinned file via callback for chat ${chatId}: ${removed}`,
+  );
 
   // Update the menu
   await updatePinMenu(ctx, chatId);
@@ -227,15 +247,15 @@ async function updatePinMenu(ctx: Context, chatId: number): Promise<void> {
   }
 
   try {
-    await ctx.api.editMessageText(
-      chatId,
-      message.message_id,
-      text,
-      { reply_markup: keyboard },
-    );
+    await ctx.api.editMessageText(chatId, message.message_id, text, {
+      reply_markup: keyboard,
+    });
   } catch (err) {
     // "message is not modified" is fine — means the state didn't change
-    if (err instanceof Error && err.message?.includes("message is not modified")) {
+    if (
+      err instanceof Error &&
+      err.message?.includes("message is not modified")
+    ) {
       return;
     }
     logger.error("[PinCallback] Error updating pin menu:", err);

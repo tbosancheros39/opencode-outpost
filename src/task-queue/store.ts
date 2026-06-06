@@ -3,7 +3,12 @@ import fs from "node:fs";
 import Database from "better-sqlite3";
 import { logger } from "../utils/logger.js";
 import { getRuntimePaths } from "../runtime/paths.js";
-import type { QueuedTask, TaskCreationOptions, TaskUpdateOptions, TaskStatus } from "./types.js";
+import type {
+  QueuedTask,
+  TaskCreationOptions,
+  TaskUpdateOptions,
+  TaskStatus,
+} from "./types.js";
 
 let db: Database.Database | null = null;
 
@@ -32,7 +37,7 @@ function getDb(): Database.Database {
 
 function initSchema(): void {
   const dbInstance = db!;
-  
+
   dbInstance.exec(`
     CREATE TABLE IF NOT EXISTS tasks (
       id TEXT PRIMARY KEY,
@@ -83,7 +88,7 @@ export function createTask(options: TaskCreationOptions): QueuedTask {
   const db = getDb();
   const id = generateTaskId();
   const now = new Date().toISOString();
-  
+
   const task: QueuedTask = {
     id,
     userId: options.userId,
@@ -103,7 +108,7 @@ export function createTask(options: TaskCreationOptions): QueuedTask {
     modelId: options.modelId,
     variant: options.variant,
   };
-  
+
   const stmt = db.prepare(`
     INSERT INTO tasks (
       id, user_id, chat_id, prompt_text, status, result_text, error_message,
@@ -111,7 +116,7 @@ export function createTask(options: TaskCreationOptions): QueuedTask {
       notification_message_id, agent, model_provider, model_id, variant
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  
+
   stmt.run(
     task.id,
     task.userId,
@@ -129,19 +134,22 @@ export function createTask(options: TaskCreationOptions): QueuedTask {
     task.agent,
     task.modelProvider,
     task.modelId,
-    task.variant
+    task.variant,
   );
-  
+
   logger.info(`[TaskQueue] Created task ${id} for user ${options.userId}`);
   return task;
 }
 
-export function updateTask(taskId: string, updates: TaskUpdateOptions): QueuedTask | null {
+export function updateTask(
+  taskId: string,
+  updates: TaskUpdateOptions,
+): QueuedTask | null {
   const db = getDb();
-  
+
   const sets: string[] = [];
   const values: (string | null)[] = [];
-  
+
   if (updates.status !== undefined) {
     sets.push("status = ?");
     values.push(updates.status);
@@ -162,76 +170,79 @@ export function updateTask(taskId: string, updates: TaskUpdateOptions): QueuedTa
     sets.push("finished_at = ?");
     values.push(updates.finishedAt);
   }
-  
+
   if (sets.length === 0) {
     return getTask(taskId);
   }
-  
+
   values.push(taskId);
-  
+
   const stmt = db.prepare(`
     UPDATE tasks SET ${sets.join(", ")} WHERE id = ?
   `);
-  
+
   const result = stmt.run(...values);
-  
+
   if (result.changes === 0) {
     return null;
   }
-  
+
   logger.debug(`[TaskQueue] Updated task ${taskId}: ${sets.join(", ")}`);
   return getTask(taskId);
 }
 
 export function getTask(taskId: string): QueuedTask | null {
   const db = getDb();
-  
+
   const stmt = db.prepare("SELECT * FROM tasks WHERE id = ?");
   const row = stmt.get(taskId) as Record<string, unknown> | undefined;
-  
+
   if (!row) {
     return null;
   }
-  
+
   return rowToTask(row);
 }
 
 export function getPendingTasks(limit: number = 10): QueuedTask[] {
   const db = getDb();
-  
+
   const stmt = db.prepare(`
     SELECT * FROM tasks 
     WHERE status = 'queued' 
     ORDER BY created_at ASC 
     LIMIT ?
   `);
-  
+
   const rows = stmt.all(limit) as Record<string, unknown>[];
   return rows.map(rowToTask);
 }
 
-export function getTasksByUser(userId: number, limit: number = 20): QueuedTask[] {
+export function getTasksByUser(
+  userId: number,
+  limit: number = 20,
+): QueuedTask[] {
   const db = getDb();
-  
+
   const stmt = db.prepare(`
     SELECT * FROM tasks 
     WHERE user_id = ? 
     ORDER BY created_at DESC 
     LIMIT ?
   `);
-  
+
   const rows = stmt.all(userId, limit) as Record<string, unknown>[];
   return rows.map(rowToTask);
 }
 
 export function getRunningTasks(): QueuedTask[] {
   const db = getDb();
-  
+
   const stmt = db.prepare(`
     SELECT * FROM tasks 
     WHERE status = 'running'
   `);
-  
+
   const rows = stmt.all() as Record<string, unknown>[];
   return rows.map(rowToTask);
 }
@@ -240,13 +251,13 @@ export function deleteOldTasks(olderThanDays: number = 7): number {
   const db = getDb();
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
-  
+
   const stmt = db.prepare(`
     DELETE FROM tasks 
     WHERE created_at < ? 
     AND status IN ('completed', 'error')
   `);
-  
+
   const result = stmt.run(cutoffDate.toISOString());
   logger.info(`[TaskQueue] Deleted ${result.changes} old tasks`);
   return result.changes;
@@ -310,7 +321,9 @@ function rowToSnapshot(row: Record<string, unknown>): SessionSnapshot {
   };
 }
 
-export function createSnapshot(options: SnapshotCreationOptions): SessionSnapshot {
+export function createSnapshot(
+  options: SnapshotCreationOptions,
+): SessionSnapshot {
   const db = getDb();
   const id = generateSnapshotId();
   const now = new Date().toISOString();
@@ -341,7 +354,9 @@ export function createSnapshot(options: SnapshotCreationOptions): SessionSnapsho
     snapshot.createdAt,
   );
 
-  logger.info(`[TaskQueue] Created snapshot ${id} for session ${options.sessionId}`);
+  logger.info(
+    `[TaskQueue] Created snapshot ${id} for session ${options.sessionId}`,
+  );
   return snapshot;
 }
 

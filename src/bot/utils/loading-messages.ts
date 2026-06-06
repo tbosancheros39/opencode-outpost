@@ -44,8 +44,14 @@ export async function clearLoadingMessage(
       `[LoadingMessages] Deleted loading message ${entry.messageId} for session ${sessionId}, reason=${reason}`,
     );
   } catch (error) {
-    const msg = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-    if (msg.includes("message to delete not found") || msg.includes("message identifier is not specified")) {
+    const msg =
+      error instanceof Error
+        ? error.message.toLowerCase()
+        : String(error).toLowerCase();
+    if (
+      msg.includes("message to delete not found") ||
+      msg.includes("message identifier is not specified")
+    ) {
       return;
     }
     logger.warn(

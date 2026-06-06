@@ -8,7 +8,9 @@ import { t } from "../../i18n/index.js";
  * Triggers the same flow as the 📊 reply keyboard button:
  * shows a confirmation menu, then calls the OpenCode summarize API.
  */
-export async function compactCommand(ctx: CommandContext<Context>): Promise<void> {
+export async function compactCommand(
+  ctx: CommandContext<Context>,
+): Promise<void> {
   logger.debug("[Bot] /compact command received");
 
   try {

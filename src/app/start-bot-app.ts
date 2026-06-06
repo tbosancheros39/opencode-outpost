@@ -13,40 +13,64 @@ import { getRuntimePaths } from "../runtime/paths.js";
 import { logger } from "../utils/logger.js";
 import { run } from "@grammyjs/runner";
 import type { RunnerHandle } from "@grammyjs/runner";
-import { initQueue, startWorker, setTelegramBotApi, type TelegramBotApi } from "../queue/index.js";
-import { initializeWatchdog, startWatchdog, stopWatchdog } from "../monitoring/opencode-watchdog.js";
+import {
+  initQueue,
+  startWorker,
+  setTelegramBotApi,
+  type TelegramBotApi,
+} from "../queue/index.js";
+import {
+  initializeWatchdog,
+  startWatchdog,
+  stopWatchdog,
+} from "../monitoring/opencode-watchdog.js";
 
 async function runStartupSecurityChecks(): Promise<void> {
   const warnings: string[] = [];
 
   // Warn if no allowed user IDs configured
   if (config.telegram.allowedUserIds.length === 0) {
-    warnings.push("⚠️  SECURITY WARNING: TELEGRAM_ALLOWED_USER_IDS is empty - bot will not respond to any users");
+    warnings.push(
+      "⚠️  SECURITY WARNING: TELEGRAM_ALLOWED_USER_IDS is empty - bot will not respond to any users",
+    );
   }
 
   // Warn if OpenCode API URL is remote without authentication
   const apiUrl = config.opencode.apiUrl;
-  const isRemote = !apiUrl.includes("localhost") && !apiUrl.includes("127.0.0.1");
-  const hasAuth = config.opencode.password && config.opencode.password.length > 0;
+  const isRemote =
+    !apiUrl.includes("localhost") && !apiUrl.includes("127.0.0.1");
+  const hasAuth =
+    config.opencode.password && config.opencode.password.length > 0;
 
   if (isRemote && !hasAuth) {
     warnings.push(
-      `⚠️  SECURITY WARNING: OPENCODE_API_URL points to remote server (${apiUrl}) but OPENCODE_SERVER_PASSWORD is not set`
+      `⚠️  SECURITY WARNING: OPENCODE_API_URL points to remote server (${apiUrl}) but OPENCODE_SERVER_PASSWORD is not set`,
     );
   }
 
   // Warn if Redis is configured but unavailable
   const redisEnabled = process.env.REDIS_ENABLED;
-  if (redisEnabled !== "false" && redisEnabled !== "0" && redisEnabled !== "no") {
+  if (
+    redisEnabled !== "false" &&
+    redisEnabled !== "0" &&
+    redisEnabled !== "no"
+  ) {
     try {
       const { Redis } = await import("ioredis");
       const redisUrl = config.redis.url;
-      const testClient = new Redis(redisUrl, { maxRetriesPerRequest: 1, connectTimeout: 2000 });
+      const testClient = new Redis(redisUrl, {
+        maxRetriesPerRequest: 1,
+        connectTimeout: 2000,
+      });
       try {
         await testClient.ping();
         await testClient.quit();
       } catch {
-        warnings.push(`⚠️  Redis configured at ${redisUrl} but not reachable - scheduled tasks will not run in background`);
+        const redisActionMsg = `⚠️  Redis not responding. Run: redis-server (Linux) or brew services start redis (macOS)`;
+        warnings.push(
+          `⚠️  Redis configured at ${redisUrl} but not reachable - scheduled tasks will not run in background`,
+        );
+        warnings.push(redisActionMsg);
       }
     } catch {
       // ioredis not available, skip check
@@ -55,7 +79,9 @@ async function runStartupSecurityChecks(): Promise<void> {
 
   // Warn if watchdog is enabled but no users configured
   if (config.watchdog.enabled && config.telegram.allowedUserIds.length === 0) {
-    warnings.push("⚠️  OpenCode watchdog is enabled but no allowed user IDs configured - notifications will not be sent");
+    warnings.push(
+      "⚠️  OpenCode watchdog is enabled but no allowed user IDs configured - notifications will not be sent",
+    );
   }
 
   // Log all warnings
@@ -113,7 +139,9 @@ export async function startBotApp(): Promise<void> {
     initializeWatchdog(bot, userId);
     startWatchdog();
   } else {
-    logger.warn("[App] No allowed user IDs configured, watchdog notifications disabled");
+    logger.warn(
+      "[App] No allowed user IDs configured, watchdog notifications disabled",
+    );
   }
 
   const webhookInfo = await bot.api.getWebhookInfo();
@@ -122,7 +150,6 @@ export async function startBotApp(): Promise<void> {
     await bot.api.deleteWebhook();
     logger.info("[Bot] Webhook removed, switching to long polling");
   }
-
 
   const botInfo = await bot.api.getMe();
   logger.info(`Bot @${botInfo.username} starting...`);
@@ -134,7 +161,9 @@ export async function startBotApp(): Promise<void> {
 
   await new Promise<void>((resolve) => {
     const shutdown = async (signal: string) => {
-      logger.info(`[App] Shutdown signal (${signal}) received, starting graceful shutdown...`);
+      logger.info(
+        `[App] Shutdown signal (${signal}) received, starting graceful shutdown...`,
+      );
 
       const shutdownPromise = (async () => {
         try {
@@ -174,7 +203,9 @@ export async function startBotApp(): Promise<void> {
       // Force exit after timeout
       const timeoutPromise = new Promise<void>((resolveTimeout) => {
         setTimeout(() => {
-          logger.warn(`[App] Graceful shutdown timed out after ${SHUTDOWN_TIMEOUT_MS}ms, forcing exit`);
+          logger.warn(
+            `[App] Graceful shutdown timed out after ${SHUTDOWN_TIMEOUT_MS}ms, forcing exit`,
+          );
           resolveTimeout();
         }, SHUTDOWN_TIMEOUT_MS);
       });

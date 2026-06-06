@@ -9,7 +9,10 @@ function collectResponseText(
   parts: Array<{ type?: string; text?: string; ignored?: boolean }>,
 ): string {
   return parts
-    .filter((part) => part.type === "text" && typeof part.text === "string" && !part.ignored)
+    .filter(
+      (part) =>
+        part.type === "text" && typeof part.text === "string" && !part.ignored,
+    )
     .map((part) => part.text)
     .join("")
     .trim();
@@ -34,13 +37,17 @@ export async function executeScheduledTask(
   let sessionId: string | null = null;
 
   try {
-    const { data: session, error: createError } = await opencodeClient.session.create({
-      directory: task.projectWorktree,
-      title: SCHEDULED_TASK_SESSION_TITLE,
-    });
+    const { data: session, error: createError } =
+      await opencodeClient.session.create({
+        directory: task.projectWorktree,
+        title: SCHEDULED_TASK_SESSION_TITLE,
+      });
 
     if (createError || !session) {
-      throw createError || new Error("Failed to create temporary scheduled task session");
+      throw (
+        createError ||
+        new Error("Failed to create temporary scheduled task session")
+      );
     }
 
     sessionId = session.id;

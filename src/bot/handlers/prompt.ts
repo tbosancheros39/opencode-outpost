@@ -1,7 +1,11 @@
 import { Bot, Context } from "grammy";
 import type { FilePartInput, TextPartInput } from "@opencode-ai/sdk/v2";
 import { opencodeClient } from "../../opencode/client.js";
-import { clearSession, getCurrentSession, setCurrentSession } from "../../session/manager.js";
+import {
+  clearSession,
+  getCurrentSession,
+  setCurrentSession,
+} from "../../session/manager.js";
 import { ingestSessionInfoForCache } from "../../session/cache-manager.js";
 import { getCurrentProject } from "../../settings/manager.js";
 import { getStoredAgent } from "../../agent/manager.js";
@@ -20,7 +24,10 @@ import { addTaskJob } from "../../queue/index.js";
 import { logger } from "../../utils/logger.js";
 import { t } from "../../i18n/index.js";
 import { foregroundSessionState } from "../../scheduled-task/foreground-state.js";
-import { getUserSystemPrompt, getUserModelVariant } from "../../users/access.js";
+import {
+  getUserSystemPrompt,
+  getUserModelVariant,
+} from "../../users/access.js";
 import { getOrCreateGlobalDirectory } from "../utils/global-mode.js";
 
 /** Module-level references for async callbacks that don't have ctx. */
@@ -35,7 +42,10 @@ export function getPromptChatId(): number | null {
   return chatIdInstance;
 }
 
-async function isSessionBusy(sessionId: string, directory: string): Promise<boolean> {
+async function isSessionBusy(
+  sessionId: string,
+  directory: string,
+): Promise<boolean> {
   try {
     const { data, error } = await opencodeClient.session.status({ directory });
 
@@ -44,12 +54,16 @@ async function isSessionBusy(sessionId: string, directory: string): Promise<bool
       return false;
     }
 
-    const sessionStatus = (data as Record<string, { type?: string }>)[sessionId];
+    const sessionStatus = (data as Record<string, { type?: string }>)[
+      sessionId
+    ];
     if (!sessionStatus) {
       return false;
     }
 
-    logger.debug(`[Bot] Current session status before prompt: ${sessionStatus.type || "unknown"}`);
+    logger.debug(
+      `[Bot] Current session status before prompt: ${sessionStatus.type || "unknown"}`,
+    );
     return sessionStatus.type === "busy";
   } catch (err) {
     logger.warn("[Bot] Error checking session status before prompt:", err);
@@ -72,7 +86,10 @@ async function resetMismatchedSessionContext(chatId: number): Promise<void> {
   try {
     await pinnedMessageManager.clear(chatId);
   } catch (err) {
-    logger.error("[Bot] Failed to clear pinned message during session reset:", err);
+    logger.error(
+      "[Bot] Failed to clear pinned message during session reset:",
+      err,
+    );
   }
 }
 
@@ -114,7 +131,9 @@ export async function processUserPrompt(
     // Global/Scratchpad mode — use a per-chat temporary directory so the user
     // can send prompts without selecting a project first.
     workingDirectory = await getOrCreateGlobalDirectory(chatId);
-    logger.info(`[Bot] Using Global Mode: chatId=${chatId}, directory=${workingDirectory}`);
+    logger.info(
+      `[Bot] Using Global Mode: chatId=${chatId}, directory=${workingDirectory}`,
+    );
   } else {
     // Project mode — use the worktree of the selected project.
     workingDirectory = currentProject.worktree;
@@ -177,7 +196,11 @@ export async function processUserPrompt(
 
     // Create pinned message for new session
     try {
-      await pinnedMessageManager.onSessionChange(chatId, session.id, session.title);
+      await pinnedMessageManager.onSessionChange(
+        chatId,
+        session.id,
+        session.title,
+      );
     } catch (err) {
       logger.error("[Bot] Error creating pinned message for new session:", err);
     }
@@ -185,7 +208,9 @@ export async function processUserPrompt(
     const currentAgent = getStoredAgent(chatId);
     const currentModel = getStoredModel(chatId);
     const contextInfo = pinnedMessageManager.getContextInfo(chatId);
-    const variantName = formatVariantForButton(currentModel.variant || "default");
+    const variantName = formatVariantForButton(
+      currentModel.variant || "default",
+    );
     const keyboard = createMainKeyboard(
       currentAgent,
       currentModel,
@@ -204,9 +229,16 @@ export async function processUserPrompt(
     // Ensure pinned message exists for existing session
     if (!pinnedMessageManager.getState(chatId).messageId) {
       try {
-        await pinnedMessageManager.onSessionChange(chatId, currentSession.id, currentSession.title);
+        await pinnedMessageManager.onSessionChange(
+          chatId,
+          currentSession.id,
+          currentSession.title,
+        );
       } catch (err) {
-        logger.error("[Bot] Error creating pinned message for existing session:", err);
+        logger.error(
+          "[Bot] Error creating pinned message for existing session:",
+          err,
+        );
       }
     }
   }
@@ -216,9 +248,14 @@ export async function processUserPrompt(
   summaryAggregator.setSession(currentSession.id);
   summaryAggregator.setBotAndChatId(bot, chatId);
 
-  const sessionIsBusy = await isSessionBusy(currentSession.id, currentSession.directory);
+  const sessionIsBusy = await isSessionBusy(
+    currentSession.id,
+    currentSession.directory,
+  );
   if (sessionIsBusy) {
-    logger.info(`[Bot] Ignoring new prompt: session ${currentSession.id} is busy`);
+    logger.info(
+      `[Bot] Ignoring new prompt: session ${currentSession.id} is busy`,
+    );
     await ctx.reply(t("bot.session_busy"));
     return false;
   }
@@ -239,7 +276,10 @@ export async function processUserPrompt(
     parts.push(...fileParts);
 
     // If no text and files exist, use a placeholder
-    if (parts.length === 0 || (parts.length > 0 && parts.every((p) => p.type === "file"))) {
+    if (
+      parts.length === 0 ||
+      (parts.length > 0 && parts.every((p) => p.type === "file"))
+    ) {
       if (fileParts.length > 0) {
         // Files without text - add a minimal system prompt
         parts.unshift({ type: "text", text: "See attached file" });
@@ -284,7 +324,8 @@ export async function processUserPrompt(
     );
 
     // Resolve the effective variant for task records
-    const effectiveVariant = promptOptions.variant ?? storedModel.variant ?? null;
+    const effectiveVariant =
+      promptOptions.variant ?? storedModel.variant ?? null;
 
     // Create a task record for persistence
     const task = createTask({

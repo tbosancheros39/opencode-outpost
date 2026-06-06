@@ -53,9 +53,14 @@ export function isWatchdogRunning(): boolean {
 
 async function runHealthCheck(): Promise<void> {
   try {
-    const response = await fetch(`${config.opencode.apiUrl}/global/health`, { signal: AbortSignal.timeout(5000) });
+    const response = await fetch(`${config.opencode.apiUrl}/global/health`, {
+      signal: AbortSignal.timeout(5000),
+    });
     if (response.ok) {
-      const data = (await response.json().catch(() => null)) as { healthy?: boolean; version?: string } | null;
+      const data = (await response.json().catch(() => null)) as {
+        healthy?: boolean;
+        version?: string;
+      } | null;
       const isHealthy = data && data.healthy === true;
       if (serverWasDown) {
         logger.info("[Watchdog] Server recovered after being down");
@@ -65,7 +70,9 @@ async function runHealthCheck(): Promise<void> {
       }
       failCount = 0;
       if (!isHealthy) {
-        throw new Error(`Health check returned unhealthy: ${JSON.stringify(data)}`);
+        throw new Error(
+          `Health check returned unhealthy: ${JSON.stringify(data)}`,
+        );
       }
       return;
     }
@@ -73,7 +80,10 @@ async function runHealthCheck(): Promise<void> {
     throw new Error(`Health check returned status ${response.status}`);
   } catch (err) {
     failCount++;
-    logger.warn(`[Watchdog] Health check failed (failCount=${failCount}):`, err);
+    logger.warn(
+      `[Watchdog] Health check failed (failCount=${failCount}):`,
+      err,
+    );
 
     if (failCount >= config.watchdog.maxRestarts) {
       await attemptRestart();
@@ -88,9 +98,13 @@ async function attemptRestart(): Promise<void> {
     return;
   }
 
-  logger.warn("[Watchdog] Max failures reached, attempting restart of OpenCode server");
+  logger.warn(
+    "[Watchdog] Max failures reached, attempting restart of OpenCode server",
+  );
   serverWasDown = true;
-  await notifyUser("⚠️ OpenCode server appears to be down, attempting restart...");
+  await notifyUser(
+    "⚠️ OpenCode server appears to be down, attempting restart...",
+  );
 
   lastRestartTime = now;
   failCount = 0;
@@ -105,7 +119,9 @@ async function attemptRestart(): Promise<void> {
 
 async function notifyUser(message: string): Promise<void> {
   if (!botInstance || !watchdogUserId) {
-    logger.warn("[Watchdog] Cannot notify user — bot or userId not initialized");
+    logger.warn(
+      "[Watchdog] Cannot notify user — bot or userId not initialized",
+    );
     return;
   }
   try {

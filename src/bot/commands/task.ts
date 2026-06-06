@@ -8,7 +8,10 @@ import { getStoredModel } from "../../model/manager.js";
 import { getCurrentProject } from "../../settings/manager.js";
 import { taskCreationManager } from "../../scheduled-task/creation-manager.js";
 import { parseTaskSchedule } from "../../scheduled-task/schedule-parser.js";
-import { addScheduledTask, listScheduledTasks } from "../../scheduled-task/store.js";
+import {
+  addScheduledTask,
+  listScheduledTasks,
+} from "../../scheduled-task/store.js";
 import { scheduledTaskRuntime } from "../../scheduled-task/runtime.js";
 import {
   createScheduledTaskModel,
@@ -37,7 +40,10 @@ function buildRetryScheduleKeyboard(): InlineKeyboard {
 }
 
 function buildCancelKeyboard(): InlineKeyboard {
-  return new InlineKeyboard().text(t("task.button.cancel"), TASK_CANCEL_CALLBACK);
+  return new InlineKeyboard().text(
+    t("task.button.cancel"),
+    TASK_CANCEL_CALLBACK,
+  );
 }
 
 function getCallbackMessageId(ctx: Context): number | null {
@@ -93,7 +99,9 @@ function getTaskKindLabel(schedule: ParsedTaskSchedule): string {
 
 function formatParsedScheduleMessage(schedule: ParsedTaskSchedule): string {
   const cronLine =
-    schedule.kind === "cron" ? `${t("task.schedule_preview.cron", { cron: schedule.cron })}\n` : "";
+    schedule.kind === "cron"
+      ? `${t("task.schedule_preview.cron", { cron: schedule.cron })}\n`
+      : "";
 
   return t("task.schedule_preview", {
     summary: schedule.summary,
@@ -104,14 +112,19 @@ function formatParsedScheduleMessage(schedule: ParsedTaskSchedule): string {
   });
 }
 
-function formatParsedSchedulePromptMessage(schedule: ParsedTaskSchedule): string {
+function formatParsedSchedulePromptMessage(
+  schedule: ParsedTaskSchedule,
+): string {
   return `${formatParsedScheduleMessage(schedule)}\n\n${t("task.prompt.body")}`;
 }
 
 function formatTaskCreatedMessage(task: ScheduledTask): string {
   const variant = task.model.variant ? ` (${task.model.variant})` : "";
   const model = `${task.model.providerID}/${task.model.modelID}${variant}`;
-  const cronLine = task.kind === "cron" ? `${t("task.created.cron", { cron: task.cron })}\n` : "";
+  const cronLine =
+    task.kind === "cron"
+      ? `${t("task.created.cron", { cron: task.cron })}\n`
+      : "";
 
   return t("task.created", {
     description: truncateTaskPrompt(task.prompt),
@@ -119,7 +132,9 @@ function formatTaskCreatedMessage(task: ScheduledTask): string {
     model,
     schedule: task.scheduleSummary,
     cronLine,
-    nextRunAt: task.nextRunAt ? formatScheduledDate(task.nextRunAt, task.timezone) : "-",
+    nextRunAt: task.nextRunAt
+      ? formatScheduledDate(task.nextRunAt, task.timezone)
+      : "-",
   });
 }
 
@@ -138,7 +153,9 @@ function validateCronMinutesFrequency(cron: string): void {
   for (let index = 0; index < minuteValues.length; index++) {
     const currentValue = minuteValues[index];
     const nextValue =
-      index === minuteValues.length - 1 ? minuteValues[0] + 60 : minuteValues[index + 1];
+      index === minuteValues.length - 1
+        ? minuteValues[0] + 60
+        : minuteValues[index + 1];
     minGap = Math.min(minGap, nextValue - currentValue);
   }
 
@@ -238,7 +255,10 @@ function isTaskInteraction(state: InteractionState | null): boolean {
   return state?.kind === "task";
 }
 
-function isTaskCallbackActive(flowState: TaskCreationState, messageId: number): boolean {
+function isTaskCallbackActive(
+  flowState: TaskCreationState,
+  messageId: number,
+): boolean {
   return [
     flowState.scheduleRequestMessageId,
     flowState.previewMessageId,
@@ -306,13 +326,19 @@ export async function taskCommand(ctx: CommandContext<Context>): Promise<void> {
   }
 
   if (isTaskLimitReached()) {
-    await ctx.reply(t("task.limit_reached", { limit: String(config.bot.taskLimit) }));
+    await ctx.reply(
+      t("task.limit_reached", { limit: String(config.bot.taskLimit) }),
+    );
     return;
   }
 
   const currentModel = createScheduledTaskModel(getStoredModel(chatId));
 
-  taskCreationManager.start(currentProject.id, currentProject.worktree, currentModel);
+  taskCreationManager.start(
+    currentProject.id,
+    currentProject.worktree,
+    currentModel,
+  );
   interactionManager.start(chatId, {
     kind: "task",
     expectedInput: "text",
@@ -350,7 +376,10 @@ export async function handleTaskCallback(ctx: Context): Promise<boolean> {
       clearTaskInteraction(chatId, "task_retry_inactive_state");
     }
 
-    await ctx.answerCallbackQuery({ text: t("task.inactive_callback"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("task.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
@@ -368,7 +397,10 @@ export async function handleTaskCallback(ctx: Context): Promise<boolean> {
     !taskCreationManager.isWaitingForPrompt() ||
     callbackMessageId !== flowState.previewMessageId
   ) {
-    await ctx.answerCallbackQuery({ text: t("task.inactive_callback"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("task.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
@@ -445,14 +477,20 @@ export async function handleTaskTextInput(ctx: Context): Promise<boolean> {
     const parsingMessage = await ctx.reply(t("task.parse.in_progress"));
 
     try {
-      const parsedSchedule = await parseTaskSchedule(scheduleText, flowState.projectWorktree);
+      const parsedSchedule = await parseTaskSchedule(
+        scheduleText,
+        flowState.projectWorktree,
+      );
       validateParsedSchedule(parsedSchedule);
       await deleteMessageIfPresent(ctx, parsingMessage.message_id);
       await deleteMessageIfPresent(ctx, flowState.scheduleRequestMessageId);
 
-      const previewMessage = await ctx.reply(formatParsedSchedulePromptMessage(parsedSchedule), {
-        reply_markup: buildRetryScheduleKeyboard(),
-      });
+      const previewMessage = await ctx.reply(
+        formatParsedSchedulePromptMessage(parsedSchedule),
+        {
+          reply_markup: buildRetryScheduleKeyboard(),
+        },
+      );
 
       taskCreationManager.setParsedSchedule(
         scheduleText,
@@ -471,8 +509,11 @@ export async function handleTaskTextInput(ctx: Context): Promise<boolean> {
       });
       taskCreationManager.setPromptRequestMessageId(previewMessage.message_id);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : t("common.unknown_error");
-      logger.warn(`[TaskCommand] Failed to parse task schedule: ${errorMessage}`);
+      const errorMessage =
+        error instanceof Error ? error.message : t("common.unknown_error");
+      logger.warn(
+        `[TaskCommand] Failed to parse task schedule: ${errorMessage}`,
+      );
       await deleteMessageIfPresent(ctx, flowState.scheduleRequestMessageId);
       taskCreationManager.resetSchedule();
       interactionManager.transition(chatId, {
@@ -485,9 +526,12 @@ export async function handleTaskTextInput(ctx: Context): Promise<boolean> {
         ),
       });
       await deleteMessageIfPresent(ctx, parsingMessage.message_id);
-      const errorReply = await ctx.reply(t("task.parse_error", { message: errorMessage }), {
-        reply_markup: buildCancelKeyboard(),
-      });
+      const errorReply = await ctx.reply(
+        t("task.parse_error", { message: errorMessage }),
+        {
+          reply_markup: buildCancelKeyboard(),
+        },
+      );
       taskCreationManager.setScheduleRequestMessageId(errorReply.message_id);
     }
 
@@ -515,7 +559,9 @@ export async function handleTaskTextInput(ctx: Context): Promise<boolean> {
       await deleteMessageIfPresent(ctx, flowState.previewMessageId);
       await deleteMessageIfPresent(ctx, flowState.promptRequestMessageId);
       clearTaskFlow(chatId, "task_limit_reached_before_save");
-      await ctx.reply(t("task.limit_reached", { limit: String(config.bot.taskLimit) }));
+      await ctx.reply(
+        t("task.limit_reached", { limit: String(config.bot.taskLimit) }),
+      );
       return true;
     }
 

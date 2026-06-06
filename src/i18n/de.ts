@@ -27,25 +27,33 @@ export const de: I18nDictionary = {
   "cmd.find.error": "Suche im Sitzungsverlauf fehlgeschlagen.",
   "cmd.find.no_messages": "Keine Nachrichten in dieser Sitzung gefunden.",
   "cmd.find.no_results": "Keine Ergebnisse für Ihre Suche gefunden.",
-  "cmd.find.no_session": "Keine aktive Sitzung. Starten Sie zuerst eine Sitzung mit /new.",
-  "cmd.find.results_header": "Suchergebnisse für \"{query}\" ({count} gefunden):\n\n",
+  "cmd.find.no_session":
+    "Keine aktive Sitzung. Starten Sie zuerst eine Sitzung mit /new.",
+  "cmd.find.results_header":
+    'Suchergebnisse für "{query}" ({count} gefunden):\n\n',
   "cmd.find.searching": "Suche nach: {query}...",
-  "cmd.find.usage": "Verwendung: /find <query> - Sitzungsverlauf durchsuchen\nBeispiel: /find authentication",
-  "cmd.find.error_query_too_long": "Suchanfrage zu lang. Bitte halte Suchen unter 500 Zeichen.",
+  "cmd.find.usage":
+    "Verwendung: /find <query> - Sitzungsverlauf durchsuchen\nBeispiel: /find authentication",
+  "cmd.find.error_query_too_long":
+    "Suchanfrage zu lang. Bitte halte Suchen unter 500 Zeichen.",
 
   // === Pin Command ===
   "cmd.pin.added": "Gepinnte Datei hinzugefügt: {path}",
   "cmd.pin.already_pinned": "Datei ist bereits gepinnt: {path}",
   "cmd.pin.cleared": "Alle gepinnten Dateien gelöscht.",
-  "cmd.pin.empty": "Keine gepinnten Dateien. Verwenden Sie /pin <filepath>, um eine Datei zu pinnen.",
+  "cmd.pin.empty":
+    "Keine gepinnten Dateien. Verwenden Sie /pin <filepath>, um eine Datei zu pinnen.",
   "cmd.pin.error_add": "Datei konnte nicht gepinnt werden.",
   "cmd.pin.error_clear": "Gepinnte Dateien konnten nicht gelöscht werden.",
-  "cmd.pin.error_is_directory": "Ein Verzeichnis kann nicht als Datei angeheftet werden: {path}",
+  "cmd.pin.error_is_directory":
+    "Ein Verzeichnis kann nicht als Datei angeheftet werden: {path}",
   "cmd.pin.error_remove": "Gepinnte Datei konnte nicht entfernt werden.",
   "cmd.pin.file_not_found": "Datei nicht gefunden: {path}",
   "cmd.pin.header": "📌 Gepinnte Dateien:",
-  "cmd.pin.hint": "Verwenden Sie /pin add <path> zum Hinzufügen, /pin remove <path> zum Entfernen, /pin clear zum Löschen.",
-  "cmd.pin.limit_reached": "Maximale Anzahl gepinnter Dateien erreicht ({limit}). Entfernen Sie zuerst eine.",
+  "cmd.pin.hint":
+    "Verwenden Sie /pin add <path> zum Hinzufügen, /pin remove <path> zum Entfernen, /pin clear zum Löschen.",
+  "cmd.pin.limit_reached":
+    "Maximale Anzahl gepinnter Dateien erreicht ({limit}). Entfernen Sie zuerst eine.",
   "cmd.pin.not_found": "Gepinnte Datei nicht gefunden: {path}",
   "cmd.pin.removed": "Gepinnte Datei entfernt: {path}",
   "cmd.pin.usage_add": "Verwendung: /pin add <filepath>",
@@ -54,7 +62,8 @@ export const de: I18nDictionary = {
   "cmd.pin.button_refresh": "🔄 Aktualisieren",
   "cmd.pin.callback_invalid_index": "Ungültiger Dateiindex.",
   "cmd.pin.menu_title": "📌 Dateien anheften",
-  "cmd.pin.no_files": "Keine aktuellen oder angehefteten Dateien.\nStarte eine Sitzung und interagiere mit Dateien — sie erscheinen hier automatisch.",
+  "cmd.pin.no_files":
+    "Keine aktuellen oder angehefteten Dateien.\nStarte eine Sitzung und interagiere mit Dateien — sie erscheinen hier automatisch.",
   "cmd.pin.pinned_header": "📌 Angeheftet — tippen zum Lösen:",
   "cmd.pin.recent_header": "📄 Aktuell — tippen zum Anheften:",
 
@@ -65,11 +74,14 @@ export const de: I18nDictionary = {
   "cmd.snapshot.error_list": "Snapshots konnten nicht aufgelistet werden.",
   "cmd.snapshot.error_load": "Snapshot konnte nicht geladen werden.",
   "cmd.snapshot.error_save": "Snapshot konnte nicht gespeichert werden.",
-  "cmd.snapshot.error_name_too_long": "Snapshot-Name zu lang. Maximum ist 100 Zeichen.",
-  "cmd.snapshot.info": "Snapshot: {name}\nID: {id}\nSitzung: {session}\nDatum: {date}",
+  "cmd.snapshot.error_name_too_long":
+    "Snapshot-Name zu lang. Maximum ist 100 Zeichen.",
+  "cmd.snapshot.info":
+    "Snapshot: {name}\nID: {id}\nSitzung: {session}\nDatum: {date}",
   "cmd.snapshot.list_header": "📸 Sitzungs-Snapshots:",
   "cmd.snapshot.list_page": "📸 Sitzungs-Snapshots (Seite {page}):",
-  "cmd.snapshot.no_session": "Keine aktive Sitzung. Starten Sie zuerst eine Sitzung mit /new.",
+  "cmd.snapshot.no_session":
+    "Keine aktive Sitzung. Starten Sie zuerst eine Sitzung mit /new.",
   "cmd.snapshot.not_found": "Snapshot nicht gefunden: {id}",
   "cmd.snapshot.prev_page": "Zurück",
   "cmd.snapshot.next_page": "Weiter",
@@ -79,20 +91,24 @@ export const de: I18nDictionary = {
 
   // === Resume Command ===
   "cmd.resume.error": "Sitzung konnte nicht wiederhergestellt werden.",
-  "cmd.resume.no_snapshots": "Keine Snapshots gefunden. Verwenden Sie /snapshot, um einen zu speichern.",
+  "cmd.resume.no_snapshots":
+    "Keine Snapshots gefunden. Verwenden Sie /snapshot, um einen zu speichern.",
   "cmd.resume.prev_page": "Zurück",
   "cmd.resume.next_page": "Weiter",
   "cmd.resume.select": "Wählen Sie einen Snapshot zur Wiederherstellung:",
-  "cmd.resume.select_page": "Wählen Sie einen Snapshot zur Wiederherstellung (Seite {page}):",
+  "cmd.resume.select_page":
+    "Wählen Sie einen Snapshot zur Wiederherstellung (Seite {page}):",
   "cmd.resume.session_not_found": "Sitzung nicht gefunden: {id}",
-  "cmd.resume.success": "Sitzung wiederhergestellt: {title}\nAus Snapshot: {name}",
+  "cmd.resume.success":
+    "Sitzung wiederhergestellt: {title}\nAus Snapshot: {name}",
 
   // === Digest Command ===
   "cmd.digest.empty": "Keine Nachrichten zum Zusammenfassen.",
   "cmd.digest.error": "Zusammenfassung konnte nicht erstellt werden.",
   "cmd.digest.generating": "Sitzungszusammenfassung wird erstellt...",
   "cmd.digest.header": "# Sitzungszusammenfassung: {title}\n\n",
-  "cmd.digest.no_session": "Keine aktive Sitzung. Starten Sie zuerst eine Sitzung mit /new.",
+  "cmd.digest.no_session":
+    "Keine aktive Sitzung. Starten Sie zuerst eine Sitzung mit /new.",
 
   "callback.unknown_command": "Unbekannter Befehl",
   "callback.processing_error": "Verarbeitungsfehler",
@@ -103,11 +119,14 @@ export const de: I18nDictionary = {
   "error.context_button": "❌ Kontext-Button konnte nicht verarbeitet werden",
   "error.generic": "🔴 Etwas ist schiefgelaufen.",
 
-  "interaction.blocked.expired": "⚠️ Diese Interaktion ist abgelaufen. Bitte starte sie erneut.",
+  "interaction.blocked.expired":
+    "⚠️ Diese Interaktion ist abgelaufen. Bitte starte sie erneut.",
   "interaction.blocked.expected_callback":
     "⚠️ Bitte benutze für diesen Schritt die Inline-Buttons oder tippe auf Abbrechen.",
-  "interaction.blocked.expected_text": "⚠️ Bitte sende für diesen Schritt eine Textnachricht.",
-  "interaction.blocked.expected_command": "⚠️ Bitte sende für diesen Schritt einen Befehl.",
+  "interaction.blocked.expected_text":
+    "⚠️ Bitte sende für diesen Schritt eine Textnachricht.",
+  "interaction.blocked.expected_command":
+    "⚠️ Bitte sende für diesen Schritt einen Befehl.",
   "interaction.blocked.command_not_allowed":
     "⚠️ Dieser Befehl ist in diesem Schritt nicht verfügbar.",
   "interaction.blocked.finish_current":
@@ -137,6 +156,15 @@ export const de: I18nDictionary = {
   "help.text":
     "📖 **Hilfe**\n\n/status - Serverstatus prüfen\n/sessions - Sitzungsliste\n/new - Neue Sitzung erstellen\n/help - Hilfe",
 
+  "help.category.session": "📁 Sitzung",
+  "help.category.tasks": "⚙️ Aufgaben",
+  "help.category.local_ops": "📂 Lokale Operationen",
+  "help.category.git": "🔧 Git",
+  "help.category.browse": "🔍 Durchsuchen",
+  "help.category.bot_control": "🤖 Bot-Steuerung",
+  "help.tip_commands":
+    "💡 Tipp: Verwende /commands für die interaktive Tastatur",
+
   "bot.thinking": "💭 Denke...",
   "bot.project_not_selected":
     "🏗 Projekt ist nicht ausgewählt.\n\nWähle zuerst ein Projekt mit /projects.",
@@ -164,9 +192,11 @@ export const de: I18nDictionary = {
   "bot.file_downloading": "⏳ Lade Datei herunter...",
   "bot.file_too_large": "⚠️ Datei ist zu groß (max. {maxSizeMb}MB)",
   "bot.file_download_error": "🔴 Datei konnte nicht heruntergeladen werden",
-  "bot.model_no_pdf": "⚠️ Das aktuelle Modell unterstützt keine PDF-Eingabe. Sende nur Text.",
+  "bot.model_no_pdf":
+    "⚠️ Das aktuelle Modell unterstützt keine PDF-Eingabe. Sende nur Text.",
   "bot.text_file_too_large": "⚠️ Textdatei ist zu groß (max. {maxSizeKb}KB)",
-  "chat_limit.exceeded": "⚠️ Too many active chats. Wait for previous conversations to finish.",
+  "chat_limit.exceeded":
+    "⚠️ Too many active chats. Wait for previous conversations to finish.",
   "rate_limit.exceeded": "⚠️ Too many messages. Please slow down.",
 
   "status.header_running": "🟢 OpenCode-Server läuft",
@@ -189,6 +219,15 @@ export const de: I18nDictionary = {
   "status.session_hint": "Nutze /sessions zur Auswahl oder /new zum Erstellen",
   "status.server_unavailable":
     "🔴 OpenCode-Server ist nicht verfügbar\n\nNutze /opencode_start, um den Server zu starten.",
+  "status.redis_down":
+    "❌ Redis antwortet nicht. Führe aus: redis-server (Linux) oder brew services start redis (macOS)",
+  "status.opencode_down": "❌ OpenCode läuft nicht. Führe aus: opencode serve",
+  "status.both_down":
+    "❌ OpenCode läuft nicht. Führe aus: opencode serve\n❌ Redis antwortet nicht. Führe aus: redis-server (Linux) oder brew services start redis (macOS)",
+  "status.redis.connected": "🟢 Redis: Verbunden ({latencyMs}ms)",
+  "status.redis.down": "🔴 Redis: Ausgefallen",
+  "status.redis.skipped": "⚪ Redis: Übersprungen (deaktiviert)",
+  "status.queue.stats": "📊 Warteschlange: {pending} anstehend, {active} aktiv",
 
   "projects.empty":
     "📭 Keine Projekte gefunden.\n\nÖffne ein Verzeichnis in OpenCode und erstelle mindestens eine Sitzung, dann erscheint es hier.",
@@ -199,19 +238,22 @@ export const de: I18nDictionary = {
   "projects.next_page": "Weiter ➡️",
   "projects.fetch_error":
     "🔴 OpenCode-Server ist nicht verfügbar oder beim Laden der Projekte ist ein Fehler aufgetreten.",
-  "projects.page_load_error": "Diese Seite konnte nicht geladen werden. Bitte versuche es erneut.",
+  "projects.page_load_error":
+    "Diese Seite konnte nicht geladen werden. Bitte versuche es erneut.",
   "projects.selected":
     "✅ Projekt ausgewählt: {project}\n\n📋 Sitzung wurde zurückgesetzt. Nutze /sessions oder /new für dieses Projekt.",
   "projects.select_error": "🔴 Projekt konnte nicht ausgewählt werden.",
 
   "sessions.project_not_selected":
     "🏗 Projekt ist nicht ausgewählt.\n\nWähle zuerst ein Projekt mit /projects.",
-  "sessions.empty": "📭 Keine Sitzungen gefunden.\n\nErstelle eine neue Sitzung mit /new.",
+  "sessions.empty":
+    "📭 Keine Sitzungen gefunden.\n\nErstelle eine neue Sitzung mit /new.",
   "sessions.select": "Sitzung auswählen:",
   "sessions.select_page": "Sitzung auswählen (Seite {page}):",
   "sessions.fetch_error":
     "🔴 OpenCode-Server ist nicht verfügbar oder beim Laden der Sitzungen ist ein Fehler aufgetreten.",
-  "sessions.select_project_first": "🔴 Projekt ist nicht ausgewählt. Nutze /projects.",
+  "sessions.select_project_first":
+    "🔴 Projekt ist nicht ausgewählt. Nutze /projects.",
   "sessions.page_empty_callback": "Auf dieser Seite gibt es keine Sitzungen",
   "sessions.page_load_error_callback":
     "Diese Seite kann nicht geladen werden. Bitte versuche es erneut.",
@@ -267,7 +309,8 @@ export const de: I18nDictionary = {
     "⚠️ OpenCode-Server läuft als externer Prozess\n\nDieser Server wurde nicht über /opencode-start gestartet.\nStoppe ihn manuell oder nutze /status, um den Zustand zu prüfen.",
   "opencode_stop.not_running": "⚠️ OpenCode-Server läuft nicht",
   "opencode_stop.stopping": "🛑 Stoppe OpenCode-Server...\n\nPID: {pid}",
-  "opencode_stop.stop_error": "🔴 OpenCode-Server konnte nicht gestoppt werden\n\nFehler: {error}",
+  "opencode_stop.stop_error":
+    "🔴 OpenCode-Server konnte nicht gestoppt werden\n\nFehler: {error}",
   "opencode_stop.success": "✅ OpenCode-Server erfolgreich gestoppt",
   "opencode_stop.error":
     "🔴 Beim Stoppen des Servers ist ein Fehler aufgetreten.\n\nSiehe Anwendungslogs für Details.",
@@ -305,7 +348,8 @@ export const de: I18nDictionary = {
   "variant.menu.error": "🔴 Variantenliste konnte nicht geladen werden",
 
   "context.button.confirm": "✅ Ja, Kontext komprimieren",
-  "context.no_active_session": "⚠️ Keine aktive Sitzung. Erstelle eine Sitzung mit /new",
+  "context.no_active_session":
+    "⚠️ Keine aktive Sitzung. Erstelle eine Sitzung mit /new",
   "context.confirm_text":
     '📊 Kontext-Komprimierung für Sitzung "{title}"\n\nDadurch wird die Kontextnutzung reduziert, indem alte Nachrichten aus dem Verlauf entfernt werden. Die aktuelle Aufgabe wird nicht unterbrochen.\n\nFortfahren?',
   "context.callback_session_not_found": "Sitzung nicht gefunden",
@@ -320,7 +364,8 @@ export const de: I18nDictionary = {
   "permission.reply.once": "Einmal erlaubt",
   "permission.reply.always": "Immer erlaubt",
   "permission.reply.reject": "Abgelehnt",
-  "permission.send_reply_error": "❌ Antwort auf Berechtigungsanfrage konnte nicht gesendet werden",
+  "permission.send_reply_error":
+    "❌ Antwort auf Berechtigungsanfrage konnte nicht gesendet werden",
   "permission.blocked.expected_reply":
     "⚠️ Bitte beantworte zuerst die Berechtigungsanfrage mit den Buttons oben.",
   "permission.blocked.command_not_allowed":
@@ -347,11 +392,13 @@ export const de: I18nDictionary = {
   "question.select_one_required_callback": "Wähle mindestens eine Option",
   "question.enter_custom_callback": "Sende deine eigene Antwort als Nachricht",
   "question.cancelled": "❌ Umfrage abgebrochen",
-  "question.answer_already_received": "Antwort bereits erhalten, bitte warten...",
+  "question.answer_already_received":
+    "Antwort bereits erhalten, bitte warten...",
   "question.completed_no_answers": "✅ Umfrage abgeschlossen (keine Antworten)",
   "question.no_active_project": "❌ Kein aktives Projekt",
   "question.no_active_request": "❌ Keine aktive Anfrage",
-  "question.send_answers_error": "❌ Antworten konnten nicht an den Agenten gesendet werden",
+  "question.send_answers_error":
+    "❌ Antworten konnten nicht an den Agenten gesendet werden",
   "question.multi_hint": "\n(Du kannst mehrere Optionen auswählen)",
   "question.button.submit": "✅ Fertig",
   "question.button.custom": "🔤 Eigene Antwort",
@@ -385,13 +432,15 @@ export const de: I18nDictionary = {
   "tool.file_header.edit":
     "Datei/Pfad bearbeiten: {path}\n============================================================\n\n",
 
-  "runtime.wizard.ask_token": "Telegram-Bot-Token eingeben (von @BotFather).\n> ",
+  "runtime.wizard.ask_token":
+    "Telegram-Bot-Token eingeben (von @BotFather).\n> ",
   "runtime.wizard.ask_language":
     "Oberflächensprache auswählen.\nGib die Sprach-Nummer aus der Liste oder den Locale-Code ein.\nDrücke Enter, um die Standardsprache beizubehalten: {defaultLocale}\n{options}\n> ",
   "runtime.wizard.language_invalid":
     "Gib eine Sprach-Nummer aus der Liste oder einen unterstützten Locale-Code ein.\n",
   "runtime.wizard.language_selected": "Ausgewählte Sprache: {language}\n",
-  "runtime.wizard.token_required": "Token ist erforderlich. Bitte versuche es erneut.\n",
+  "runtime.wizard.token_required":
+    "Token ist erforderlich. Bitte versuche es erneut.\n",
   "runtime.wizard.token_invalid":
     "Token sieht ungültig aus (erwartetes Format <id>:<secret>). Bitte versuche es erneut.\n",
   "runtime.wizard.ask_user_id":
@@ -406,20 +455,24 @@ export const de: I18nDictionary = {
   "runtime.wizard.api_url_invalid":
     "Gib eine gültige URL (http/https) ein oder drücke Enter für Standard.\n",
   "runtime.wizard.start": "OpenCode Telegram Bot Einrichtung.\n",
-  "runtime.wizard.saved": "Konfiguration gespeichert:\n- {envPath}\n- {settingsPath}\n",
+  "runtime.wizard.saved":
+    "Konfiguration gespeichert:\n- {envPath}\n- {settingsPath}\n",
   "runtime.wizard.not_configured_starting":
     "Anwendung ist noch nicht konfiguriert. Starte Assistent...\n",
   "runtime.wizard.tty_required":
     "Der interaktive Assistent erfordert ein TTY-Terminal. Führe `opencode-telegram config` in einer interaktiven Shell aus.",
 
-  "rename.no_session": "⚠️ Keine aktive Sitzung. Erstelle oder wähle zuerst eine Sitzung.",
-  "rename.prompt": "📝 Neuen Titel für die Sitzung eingeben:\n\nAktuell: {title}",
+  "rename.no_session":
+    "⚠️ Keine aktive Sitzung. Erstelle oder wähle zuerst eine Sitzung.",
+  "rename.prompt":
+    "📝 Neuen Titel für die Sitzung eingeben:\n\nAktuell: {title}",
   "rename.empty_title": "⚠️ Titel darf nicht leer sein.",
   "rename.success": "✅ Sitzung umbenannt in: {title}",
   "rename.error": "🔴 Sitzung konnte nicht umbenannt werden.",
   "rename.cancelled": "❌ Umbenennen abgebrochen.",
   "rename.inactive_callback": "Umbenennen-Anfrage ist inaktiv",
-  "rename.inactive": "⚠️ Umbenennen-Anfrage ist nicht aktiv. Starte /rename erneut.",
+  "rename.inactive":
+    "⚠️ Umbenennen-Anfrage ist nicht aktiv. Starte /rename erneut.",
   "rename.blocked.expected_name":
     "⚠️ Sende den neuen Sitzungsnamen als Text oder tippe in der Umbenennen-Nachricht auf Abbrechen.",
   "rename.blocked.command_not_allowed":
@@ -445,8 +498,10 @@ export const de: I18nDictionary = {
   "task.retry_schedule_callback": "Zeitplaneingabe wird zurückgesetzt...",
   "task.cancel_callback": "Abbruch...",
   "task.cancelled": "❌ Erstellung der geplanten Aufgabe abgebrochen.",
-  "task.inactive_callback": "Dieser Ablauf für geplante Aufgaben ist nicht mehr aktiv",
-  "task.inactive": "⚠️ Die Erstellung geplanter Aufgaben ist nicht aktiv. Starte /task erneut.",
+  "task.inactive_callback":
+    "Dieser Ablauf für geplante Aufgaben ist nicht mehr aktiv",
+  "task.inactive":
+    "⚠️ Die Erstellung geplanter Aufgaben ist nicht aktiv. Starte /task erneut.",
   "task.blocked.expected_input":
     "⚠️ Schließe zuerst die aktuelle geplante Aufgabe ab: Sende Text oder nutze die Schaltfläche in der Zeitplan-Nachricht.",
   "task.blocked.command_not_allowed":
@@ -458,7 +513,8 @@ export const de: I18nDictionary = {
   "task.kind.cron": "wiederkehrend",
   "task.kind.once": "einmalig",
   "task.run.success": "⏰ Geplante Aufgabe abgeschlossen: {description}",
-  "task.run.error": "🔴 Geplante Aufgabe fehlgeschlagen: {description}\n\nFehler: {error}",
+  "task.run.error":
+    "🔴 Geplante Aufgabe fehlgeschlagen: {description}\n\nFehler: {error}",
 
   "tasklist.empty": "📭 Noch keine geplanten Aufgaben.",
   "tasklist.select": "Wähle eine geplante Aufgabe:",
@@ -473,7 +529,8 @@ export const de: I18nDictionary = {
   "tasklist.load_error": "🔴 Geplante Aufgaben konnten nicht geladen werden.",
 
   "commands.select": "Wähle einen OpenCode-Befehl:",
-  "commands.empty": "📭 Für dieses Projekt sind keine OpenCode-Befehle verfügbar.",
+  "commands.empty":
+    "📭 Für dieses Projekt sind keine OpenCode-Befehle verfügbar.",
   "commands.fetch_error": "🔴 OpenCode-Befehle konnten nicht geladen werden.",
   "commands.no_description": "Keine Beschreibung",
   "commands.button.execute": "✅ Ausführen",
@@ -486,7 +543,8 @@ export const de: I18nDictionary = {
   "commands.executing_prefix": "⚡ Befehl wird ausgeführt:",
   "commands.arguments_empty":
     "⚠️ Argumente dürfen nicht leer sein. Sende Text oder tippe auf Ausführen.",
-  "commands.execute_error": "🔴 OpenCode-Befehl konnte nicht ausgeführt werden.",
+  "commands.execute_error":
+    "🔴 OpenCode-Befehl konnte nicht ausgeführt werden.",
   "commands.select_page": "Wähle einen OpenCode-Befehl (Seite {page}):",
   "commands.button.prev_page": "⬅️ Zurück",
   "commands.button.next_page": "Weiter ➡️",
@@ -505,18 +563,23 @@ export const de: I18nDictionary = {
   "cli.placeholder.unavailable": "Befehl ist nicht verfügbar.",
   "cli.error.prefix": "CLI-Fehler: {message}",
   "cli.args.unknown_command": "Unbekannter Befehl: {value}",
-  "cli.args.mode_requires_value": "Option --mode erfordert einen Wert: sources|installed",
-  "cli.args.invalid_mode": "Ungültiger Wert für --mode: {value}. Erwartet sources|installed",
+  "cli.args.mode_requires_value":
+    "Option --mode erfordert einen Wert: sources|installed",
+  "cli.args.invalid_mode":
+    "Ungültiger Wert für --mode: {value}. Erwartet sources|installed",
   "cli.args.unknown_option": "Unbekannte Option: {value}",
-  "cli.args.mode_only_start": "Option --mode wird nur für den start-Befehl unterstützt",
+  "cli.args.mode_only_start":
+    "Option --mode wird nur für den start-Befehl unterstützt",
 
   "legacy.models.fetch_error":
     "🔴 Modellliste konnte nicht geladen werden. Prüfe den Serverstatus mit /status.",
-  "legacy.models.empty": "📋 Keine verfügbaren Modelle. Konfiguriere Provider in OpenCode.",
+  "legacy.models.empty":
+    "📋 Keine verfügbaren Modelle. Konfiguriere Provider in OpenCode.",
   "legacy.models.header": "📋 Verfügbare Modelle:\n\n",
   "legacy.models.no_provider_models": "  ⚠️ Keine verfügbaren Modelle\n",
   "legacy.models.env_hint": "💡 Um ein Modell in .env zu nutzen:\n",
-  "legacy.models.error": "🔴 Beim Laden der Modellliste ist ein Fehler aufgetreten.",
+  "legacy.models.error":
+    "🔴 Beim Laden der Modellliste ist ein Fehler aufgetreten.",
 
   "stt.recognizing": "🎤 Erkenne Audio...",
   "stt.recognized": "🎤 Erkannt:\n{text}",
@@ -589,7 +652,8 @@ export const de: I18nDictionary = {
   "messages.button.prev": "⬅️ Prev",
   "messages.button.next": "Next ➡️",
   "messages.button.cancel": "Cancel",
-  "messages.error_no_session": "❌ No active session. Start a new session first.",
+  "messages.error_no_session":
+    "❌ No active session. Start a new session first.",
   "messages.no_session": "❌ No active session.",
   "messages.no_project": "❌ No active project. Select a project first.",
   "messages.empty": "📭 No messages in this session",
@@ -617,13 +681,17 @@ export const de: I18nDictionary = {
   "skills.cancelled_callback": "Cancelled",
   "skills.not_found": "❌ Skill not found: {name}",
   "skills.activating": "🔄 Activating {name}...",
-  "skills.activation_notice": "✅ Skill {name} activated. It will be loaded for the next prompt.",
-  "skills.no_session_warning": "⚠️ No active session. Activate after starting a session.",
+  "skills.activation_notice":
+    "✅ Skill {name} activated. It will be loaded for the next prompt.",
+  "skills.no_session_warning":
+    "⚠️ No active session. Activate after starting a session.",
 
-  "steer.usage": "📖 Usage: /steer <message> — Interrupt and redirect the agent with your message",
+  "steer.usage":
+    "📖 Usage: /steer <message> — Interrupt and redirect the agent with your message",
   "steer.abort_failed": "🔴 Failed to abort current task: {error}",
 
-  "ask_and_leave.usage": "📖 Usage: /ask_and_leave <question> — Ask in group and leave",
+  "ask_and_leave.usage":
+    "📖 Usage: /ask_and_leave <question> — Ask in group and leave",
   "ask_and_leave.no_group": "❌ This command only works in groups",
   "ask_and_leave.sending": "📨 Sending question to group admins...",
   "ask_and_leave.success": "✅ Question sent to group admins",
@@ -632,7 +700,8 @@ export const de: I18nDictionary = {
   "ask_and_leave.error.no_query": "❌ Please provide a question to ask",
 
   "llm.guard.blocked": "⛔️ Command blocked: {reason}",
-  "llm.guard.command_blocked": "⛔️ This command is not allowed by the LLM guard",
+  "llm.guard.command_blocked":
+    "⛔️ This command is not allowed by the LLM guard",
   "llm.guard.not_allowed": "⛔️ Not allowed",
   "llm.guard.fallback_query": "💭 Fallback query triggered",
   "llm.guard.query_timeout": "⏰ Query timeout",
@@ -643,7 +712,8 @@ export const de: I18nDictionary = {
   "llm.guard.edit_prompt": "Edit prompt",
   "llm.guard.queue_failed": "Failed to queue command",
 
-  "permission.denied.super_user_only": "⛔️ This action is restricted to super users only",
+  "permission.denied.super_user_only":
+    "⛔️ This action is restricted to super users only",
 
   "inline.cmd.button.generate": "Generate",
   "inline.cmd.button.edit": "Edit",
@@ -659,11 +729,14 @@ export const de: I18nDictionary = {
   "inline.cmd.deep_research.title": "Deep Research",
   "inline.cmd.deep_research.description": "Research a topic thoroughly",
   "inline.cmd.steel_man.title": "Steel Man",
-  "inline.cmd.steel_man.description": "Present the strongest argument for an opposing view",
+  "inline.cmd.steel_man.description":
+    "Present the strongest argument for an opposing view",
   "inline.cmd.feynman.title": "Feynman",
-  "inline.cmd.feynman.description": "Explain a concept as if teaching to a beginner",
+  "inline.cmd.feynman.description":
+    "Explain a concept as if teaching to a beginner",
   "inline.cmd.devils_advocate.title": "Devil's Advocate",
-  "inline.cmd.devils_advocate.description": "Argue against the current position",
+  "inline.cmd.devils_advocate.description":
+    "Argue against the current position",
 
   "inline.thinking": "💭 Thinking...",
 
@@ -674,7 +747,8 @@ export const de: I18nDictionary = {
   "tts.disabled": "🔇 Text-zu-Sprache deaktiviert",
   "tts.error": "❌ TTS-Fehler",
   "tts.failed": "❌ Audio-Antwort konnte nicht generiert werden.",
-  "tts.not_configured": "⚠️ TTS ist nicht konfiguriert. Setzen Sie TTS_API_URL und TTS_API_KEY.",
+  "tts.not_configured":
+    "⚠️ TTS ist nicht konfiguriert. Setzen Sie TTS_API_URL und TTS_API_KEY.",
   "tts.text_too_long": "⚠️ Text zu lang für TTS (maximal {max} Zeichen)",
   "cmd.description.tts": "Text-zu-Sprache für Antworten umschalten",
   "status.health.checking": "Checking...",
@@ -684,12 +758,14 @@ export const de: I18nDictionary = {
 
   // === Tasks Command ===
   "tasks.no_user": "❌ Benutzer konnte nicht identifiziert werden.",
-  "tasks.empty": "📋 Keine Aufgaben gefunden. Senden Sie eine Eingabe, um eine Aufgabe zu erstellen!",
+  "tasks.empty":
+    "📋 Keine Aufgaben gefunden. Senden Sie eine Eingabe, um eine Aufgabe zu erstellen!",
   "tasks.header": "📋 <b>Ihre letzten Aufgaben</b>",
   "tasks.error": "❌ Aufgaben konnten nicht abgerufen werden.",
 
   // === Shell Command ===
-  "shell.usage": "⚠️ Bitte geben Sie einen Befehl an.\nVerwendung: <code>/shell ls -la</code>",
+  "shell.usage":
+    "⚠️ Bitte geben Sie einen Befehl an.\nVerwendung: <code>/shell ls -la</code>",
   "shell.expired": "Befehl abgelaufen. Bitte erneut versuchen.",
   "shell.executing": "Wird ausgeführt...",
   "shell.cancelled": "Abgebrochen",
@@ -704,7 +780,8 @@ export const de: I18nDictionary = {
   // === Sandbox Command ===
   "sandbox.usage":
     "🔒 <b>Sandbox-Analysator</b>\n\nSkripte/URLs in einer isolierten Bubblewrap-Sandbox mit Sicherheitsanalyse ausführen.\n\nVerwendung:\n<code>/sandbox curl https://example.com/script.sh | sh</code>\n<code>/sandbox https://example.com/malware.sh</code>\n<code>/sandbox cat /etc/passwd</code>\n\nNetzwerk ist standardmäßig deaktiviert. Verwenden Sie /sandbox --network für Netzwerkzugriff.",
-  "sandbox.no_command": "⚠️ Bitte geben Sie einen Befehl oder eine URL zur Analyse an.",
+  "sandbox.no_command":
+    "⚠️ Bitte geben Sie einen Befehl oder eine URL zur Analyse an.",
   "sandbox.no_bwrap":
     "❌ <b>bubblewrap ist nicht verfügbar</b>\n\nDieser Befehl erfordert bubblewrap (bwrap) auf dem System.\nInstallation: sudo apt install bubblewrap",
   "sandbox.running":
@@ -730,7 +807,8 @@ export const de: I18nDictionary = {
   "journal.watch_started":
     "👀 <b>Journal-Überwachungsmodus gestartet</b>\n\nIch überwache neue Systemfehler und benachrichtige Sie.\n\nVerwenden Sie /journal, um aktuelle Fehler zu prüfen.",
   "journal.fetching": "📋 <i>Aktuelle Systemfehler werden abgerufen...</i>",
-  "journal.error": "❌ <b>Fehler beim Abrufen des Journals:</b>\n<pre>{message}</pre>",
+  "journal.error":
+    "❌ <b>Fehler beim Abrufen des Journals:</b>\n<pre>{message}</pre>",
 
   // === Health Command ===
   "health.checking": "📊 Systemzustand wird überprüft...",
@@ -751,7 +829,8 @@ export const de: I18nDictionary = {
   "git.branch.header": "🌿 <b>Git Branches</b>",
   "git.branch.header_part": "🌿 <b>Git Branches ({part}/{total})</b>",
   "git.branch.error": "❌ <b>Git Branch Fehler:</b>\n<pre>{message}</pre>",
-  "git.commit.usage": "⚠️ Bitte geben Sie eine Commit-Nachricht an.\nVerwendung: <code>/commit Ihre Nachricht hier</code>",
+  "git.commit.usage":
+    "⚠️ Bitte geben Sie eine Commit-Nachricht an.\nVerwendung: <code>/commit Ihre Nachricht hier</code>",
   "git.commit.committing": "📝 Änderungen werden committet...",
   "git.commit.success": "Änderungen erfolgreich committet.",
   "git.commit.header": "📝 <b>Git Commit</b>",

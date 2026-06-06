@@ -10,19 +10,26 @@ interface PendingCommand {
 const pendingCommands = new Map<string, PendingCommand>();
 const COMMAND_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
-export function storePendingCommand(messageId: number, command: string, sessionId: string, ctx: Context): void {
+export function storePendingCommand(
+  messageId: number,
+  command: string,
+  sessionId: string,
+  ctx: Context,
+): void {
   pendingCommands.set(messageId.toString(), {
     command,
     sessionId,
     ctx,
     timestamp: Date.now(),
   });
-  
+
   // Clean up old entries periodically
   cleanupExpiredCommands();
 }
 
-export function getPendingCommand(messageId: number): PendingCommand | undefined {
+export function getPendingCommand(
+  messageId: number,
+): PendingCommand | undefined {
   return pendingCommands.get(messageId.toString());
 }
 

@@ -1,4 +1,8 @@
-import type { ParsedTaskSchedule, ScheduledTaskModel, TaskCreationState } from "./types.js";
+import type {
+  ParsedTaskSchedule,
+  ScheduledTaskModel,
+  TaskCreationState,
+} from "./types.js";
 import { cloneParsedTaskSchedule, cloneScheduledTaskModel } from "./types.js";
 import { logger } from "../utils/logger.js";
 
@@ -6,14 +10,20 @@ function cloneState(state: TaskCreationState): TaskCreationState {
   return {
     ...state,
     model: cloneScheduledTaskModel(state.model),
-    parsedSchedule: state.parsedSchedule ? cloneParsedTaskSchedule(state.parsedSchedule) : null,
+    parsedSchedule: state.parsedSchedule
+      ? cloneParsedTaskSchedule(state.parsedSchedule)
+      : null,
   };
 }
 
 class TaskCreationManager {
   private state: TaskCreationState | null = null;
 
-  start(projectId: string, projectWorktree: string, model: ScheduledTaskModel): TaskCreationState {
+  start(
+    projectId: string,
+    projectWorktree: string,
+    model: ScheduledTaskModel,
+  ): TaskCreationState {
     this.state = {
       stage: "awaiting_schedule",
       projectId,
@@ -26,7 +36,9 @@ class TaskCreationManager {
       promptRequestMessageId: null,
     };
 
-    logger.info(`[TaskCreationManager] Started task creation flow for project=${projectWorktree}`);
+    logger.info(
+      `[TaskCreationManager] Started task creation flow for project=${projectWorktree}`,
+    );
 
     return cloneState(this.state);
   }
@@ -70,7 +82,9 @@ class TaskCreationManager {
       promptRequestMessageId: null,
     };
 
-    logger.info("[TaskCreationManager] Parsed schedule and switched flow to prompt input");
+    logger.info(
+      "[TaskCreationManager] Parsed schedule and switched flow to prompt input",
+    );
 
     return cloneState(this.state);
   }
@@ -131,7 +145,9 @@ class TaskCreationManager {
       promptRequestMessageId: null,
     };
 
-    logger.info("[TaskCreationManager] Reset task creation flow back to schedule input");
+    logger.info(
+      "[TaskCreationManager] Reset task creation flow back to schedule input",
+    );
 
     return cloneState(this.state);
   }

@@ -30,7 +30,10 @@ async function isLinkedGitWorktree(worktree: string): Promise<boolean> {
       return false;
     }
 
-    const gitDir = path.resolve(worktree, match[1].trim()).replace(/\\/g, "/").toLowerCase();
+    const gitDir = path
+      .resolve(worktree, match[1].trim())
+      .replace(/\\/g, "/")
+      .toLowerCase();
     return gitDir.includes("/.git/worktrees/");
   } catch {
     return false;
@@ -93,14 +96,20 @@ export async function getProjects(): Promise<ProjectInfo[]> {
     projectList.map((project) => isLinkedGitWorktree(project.worktree)),
   );
 
-  const visibleProjects = projectList.filter((_, index) => !linkedWorktreeFlags[index]);
+  const visibleProjects = projectList.filter(
+    (_, index) => !linkedWorktreeFlags[index],
+  );
   const hiddenLinkedWorktrees = projectList.length - visibleProjects.length;
 
   logger.debug(
     `[ProjectManager] Projects resolved: api=${projects.length}, cached=${cachedProjects.length}, hiddenLinkedWorktrees=${hiddenLinkedWorktrees}, total=${visibleProjects.length}`,
   );
 
-  return visibleProjects.map(({ id, worktree, name }) => ({ id, worktree, name }));
+  return visibleProjects.map(({ id, worktree, name }) => ({
+    id,
+    worktree,
+    name,
+  }));
 }
 
 export async function getProjectById(id: string): Promise<ProjectInfo> {
@@ -112,7 +121,9 @@ export async function getProjectById(id: string): Promise<ProjectInfo> {
   return project;
 }
 
-export async function getProjectByWorktree(worktree: string): Promise<ProjectInfo> {
+export async function getProjectByWorktree(
+  worktree: string,
+): Promise<ProjectInfo> {
   const projects = await getProjects();
   const project = projects.find((p) => p.worktree === worktree);
   if (!project) {
@@ -125,7 +136,9 @@ export async function getProjectByWorktree(worktree: string): Promise<ProjectInf
  * Returns projects visible to a specific user.
  * Users with a dedicated project restriction only see their assigned project.
  */
-export async function getProjectsForUser(userId: number): Promise<ProjectInfo[]> {
+export async function getProjectsForUser(
+  userId: number,
+): Promise<ProjectInfo[]> {
   const allProjects = await getProjects();
   return filterProjectsForUser(userId, allProjects);
 }

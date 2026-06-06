@@ -393,7 +393,10 @@ export async function handleLlmConfirmCallback(ctx: Context): Promise<boolean> {
     state.metadata.flow !== "llm_direct" ||
     state.metadata.stage !== "awaiting_confirm"
   ) {
-    await ctx.answerCallbackQuery({ text: t("llm.guard.nothing_pending"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("llm.guard.nothing_pending"),
+      show_alert: true,
+    });
     return true;
   }
 
@@ -406,7 +409,9 @@ export async function handleLlmConfirmCallback(ctx: Context): Promise<boolean> {
 
   if (snap.expiresAt && Date.now() > snap.expiresAt) {
     interactionManager.clear(chatId, "llm_confirm_timeout");
-    await ctx.api.editMessageText(chatId, snap.messageId, t("llm.guard.confirm_timeout")).catch(() => {});
+    await ctx.api
+      .editMessageText(chatId, snap.messageId, t("llm.guard.confirm_timeout"))
+      .catch(() => {});
     await ctx.answerCallbackQuery();
     return true;
   }
@@ -416,7 +421,9 @@ export async function handleLlmConfirmCallback(ctx: Context): Promise<boolean> {
 
   if (action === "cancel") {
     interactionManager.clear(chatId, "llm_confirm_cancelled");
-    await ctx.api.editMessageText(chatId, snap.messageId, t("llm.guard.cancelled")).catch(() => {});
+    await ctx.api
+      .editMessageText(chatId, snap.messageId, t("llm.guard.cancelled"))
+      .catch(() => {});
     return true;
   }
 
@@ -437,7 +444,10 @@ export async function handleLlmConfirmCallback(ctx: Context): Promise<boolean> {
       .editMessageText(
         chatId,
         snap.messageId,
-        t("llm.guard.edit_prompt", { command: snap.command, query: escapeHtml(snap.query) }),
+        t("llm.guard.edit_prompt", {
+          command: snap.command,
+          query: escapeHtml(snap.query),
+        }),
         { parse_mode: "HTML" },
       )
       .catch(() => {});
@@ -452,7 +462,9 @@ export async function handleLlmConfirmCallback(ctx: Context): Promise<boolean> {
 
     // Edit confirmation message to ack text instantly — gives user immediate feedback
     const ackText = getLlmCommandAck();
-    await ctx.api.editMessageText(chatId, snap.messageId, ackText).catch(() => {});
+    await ctx.api
+      .editMessageText(chatId, snap.messageId, ackText)
+      .catch(() => {});
 
     // Clear state AFTER successful enqueue — if addTaskJob throws, keyboard is restored (Fix #3)
     try {
@@ -485,7 +497,10 @@ export async function handleLlmConfirmCallback(ctx: Context): Promise<boolean> {
         .editMessageText(
           chatId,
           snap.messageId,
-          t("llm.guard.queue_failed", { command: snap.command, query: escapeHtml(snap.query) }),
+          t("llm.guard.queue_failed", {
+            command: snap.command,
+            query: escapeHtml(snap.query),
+          }),
           { parse_mode: "HTML", reply_markup: retryKeyboard },
         )
         .catch(() => {});

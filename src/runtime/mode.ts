@@ -79,7 +79,9 @@ function hasInvalidModeSyntax(argv: string[]): boolean {
   return false;
 }
 
-export function resolveRuntimeMode(options: ResolveRuntimeModeOptions): ResolveRuntimeModeResult {
+export function resolveRuntimeMode(
+  options: ResolveRuntimeModeOptions,
+): ResolveRuntimeModeResult {
   if (options.explicitMode) {
     return { mode: options.explicitMode };
   }

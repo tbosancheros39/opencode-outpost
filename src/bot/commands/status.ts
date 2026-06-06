@@ -1,5 +1,11 @@
 import { CommandContext, Context } from "grammy";
 import { opencodeClient } from "../../opencode/client.js";
+import {
+  checkRedisHealth,
+  checkOpencodeHealth,
+} from "../../monitoring/health-probes.js";
+import { getQueue } from "../../queue/queue.js";
+import { memoryQueue } from "../../queue/memory-queue.js";
 import { getCurrentSession } from "../../session/manager.js";
 import { getCurrentProject } from "../../settings/manager.js";
 import { fetchCurrentAgent } from "../../agent/manager.js";
@@ -21,10 +27,34 @@ export async function statusCommand(ctx: CommandContext<Context>) {
     }
 
     let message = `${t("status.header_running")}\n\n`;
-    const healthLabel = data.healthy ? t("status.health.healthy") : t("status.health.unhealthy");
+    const healthLabel = data.healthy
+      ? t("status.health.healthy")
+      : t("status.health.unhealthy");
     message += `${t("status.line.health", { health: healthLabel })}\n`;
     if (data.version) {
       message += `${t("status.line.version", { version: data.version })}\n`;
+    }
+
+    // Add Redis health information
+    const redisHealth = await checkRedisHealth();
+    if (redisHealth.ok && !redisHealth.skipped) {
+      message += `${t("status.redis.connected", { latencyMs: redisHealth.latencyMs ?? 0 })}\n`;
+    } else if (!redisHealth.ok) {
+      message += `${t("status.redis.down")}\n`;
+    } else {
+      message += `${t("status.redis.skipped")}\n`;
+    }
+
+    // Add queue statistics
+    const queue = getQueue();
+    if (queue) {
+      const [waiting, active] = await Promise.all([
+        queue.getWaiting(),
+        queue.getActive(),
+      ]);
+      message += `${t("status.queue.stats", { pending: waiting.length, active: active.length })}\n`;
+    } else if (memoryQueue.getPendingCount() > 0) {
+      message += `${t("status.queue.stats", { pending: memoryQueue.getPendingCount(), active: 0 })}\n`;
     }
 
     // Add process management information
@@ -81,7 +111,11 @@ export async function statusCommand(ctx: CommandContext<Context>) {
     // Sync current context (tokens used + limit) into keyboard state
     const contextInfo = pinnedMessageManager.getContextInfo(ctx.chat?.id);
     if (contextInfo) {
-      keyboardManager.updateContext(ctx.chat?.id ?? 0, contextInfo.tokensUsed, contextInfo.tokensLimit);
+      keyboardManager.updateContext(
+        ctx.chat?.id ?? 0,
+        contextInfo.tokensUsed,
+        contextInfo.tokensLimit,
+      );
     }
     const keyboard = keyboardManager.getKeyboard(ctx.chat?.id);
     if (ctx.chat) {
@@ -96,6 +130,18 @@ export async function statusCommand(ctx: CommandContext<Context>) {
     }
   } catch (error) {
     logger.error("[Bot] Error checking server status:", error);
-    await ctx.reply(t("status.server_unavailable"));
+    const [redis, opencode] = await Promise.all([
+      checkRedisHealth(),
+      checkOpencodeHealth(),
+    ]);
+    if (!opencode.ok && !redis.ok) {
+      await ctx.reply(t("status.both_down"));
+    } else if (!opencode.ok) {
+      await ctx.reply(t("status.opencode_down"));
+    } else if (!redis.ok) {
+      await ctx.reply(t("status.redis_down"));
+    } else {
+      await ctx.reply(t("status.server_unavailable"));
+    }
   }
 }

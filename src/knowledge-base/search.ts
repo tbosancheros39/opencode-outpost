@@ -1,4 +1,9 @@
-import { searchChunks, getDocumentCount, getChunkCount, getAllSourcePaths } from "./store.js";
+import {
+  searchChunks,
+  getDocumentCount,
+  getChunkCount,
+  getAllSourcePaths,
+} from "./store.js";
 import type { SearchOptions, SearchResult } from "./types.js";
 
 export function searchKnowledgeBase(options: SearchOptions): SearchResult[] {

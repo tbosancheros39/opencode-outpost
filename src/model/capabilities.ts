@@ -45,7 +45,9 @@ export async function getModelCapabilities(
     const model = provider.models[modelID];
 
     if (!model) {
-      logger.warn(`[ModelCapabilities] Model ${cacheKey} not found in provider`);
+      logger.warn(
+        `[ModelCapabilities] Model ${cacheKey} not found in provider`,
+      );
       capabilitiesCache[cacheKey] = null;
       return null;
     }
@@ -77,7 +79,9 @@ export function supportsInput(
 /**
  * Check if model supports attachments in general
  */
-export function supportsAttachment(capabilities: Model["capabilities"] | null): boolean {
+export function supportsAttachment(
+  capabilities: Model["capabilities"] | null,
+): boolean {
   if (!capabilities) {
     return false;
   }

@@ -115,10 +115,16 @@ function buildSkillsKeyboard(pageData: SkillsPage): InlineKeyboard {
 
   if (pageData.hasPrev || pageData.hasNext) {
     if (pageData.hasPrev) {
-      keyboard.text(t("skills.button.prev"), `${SKILLS_PAGE_PREFIX}${pageData.page - 1}`);
+      keyboard.text(
+        t("skills.button.prev"),
+        `${SKILLS_PAGE_PREFIX}${pageData.page - 1}`,
+      );
     }
     if (pageData.hasNext) {
-      keyboard.text(t("skills.button.next"), `${SKILLS_PAGE_PREFIX}${pageData.page + 1}`);
+      keyboard.text(
+        t("skills.button.next"),
+        `${SKILLS_PAGE_PREFIX}${pageData.page + 1}`,
+      );
     }
     keyboard.row();
   }
@@ -185,7 +191,10 @@ export async function skillsCommand(ctx: CommandContext<Context>) {
 
 export async function handleSkillsCallback(ctx: Context): Promise<boolean> {
   const callbackQuery = ctx.callbackQuery;
-  if (!callbackQuery?.data || !callbackQuery.data.startsWith(SKILLS_CALLBACK_PREFIX)) {
+  if (
+    !callbackQuery?.data ||
+    !callbackQuery.data.startsWith(SKILLS_CALLBACK_PREFIX)
+  ) {
     return false;
   }
 
@@ -198,7 +207,9 @@ export async function handleSkillsCallback(ctx: Context): Promise<boolean> {
   }
 
   const metadata = state.metadata as unknown as SkillsMetadata;
-  const callbackMessageId = (ctx.callbackQuery?.message as { message_id?: number })?.message_id;
+  const callbackMessageId = (
+    ctx.callbackQuery?.message as { message_id?: number }
+  )?.message_id;
 
   if (callbackMessageId !== metadata.messageId) {
     await ctx.answerCallbackQuery({ text: t("skills.inactive_callback") });
@@ -250,7 +261,9 @@ export async function handleSkillsCallback(ctx: Context): Promise<boolean> {
         return true;
       }
 
-      await ctx.answerCallbackQuery({ text: t("skills.activating", { name: skillName }) });
+      await ctx.answerCallbackQuery({
+        text: t("skills.activating", { name: skillName }),
+      });
 
       const session = getCurrentSession(chatId);
       if (session) {

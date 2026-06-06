@@ -187,7 +187,13 @@ function parseCronExpression(cron: string): ParsedCronExpression {
     hour: parseCronField(parts[1], 0, 23),
     dayOfMonth: parseCronField(parts[2], 1, 31),
     month: parseCronField(parts[3], 1, 12, MONTH_ALIASES),
-    dayOfWeek: parseCronField(parts[4], 0, 7, WEEKDAY_ALIASES, normalizeWeekday),
+    dayOfWeek: parseCronField(
+      parts[4],
+      0,
+      7,
+      WEEKDAY_ALIASES,
+      normalizeWeekday,
+    ),
   };
 }
 
@@ -213,7 +219,9 @@ function getZonedDateParts(date: Date, timezone: string): ZonedDateParts {
     !weekdayName ||
     !(weekdayName in WEEKDAY_ALIASES)
   ) {
-    throw new Error(`Failed to resolve zoned date parts for timezone: ${timezone}`);
+    throw new Error(
+      `Failed to resolve zoned date parts for timezone: ${timezone}`,
+    );
   }
 
   return {
@@ -230,7 +238,11 @@ function matchesCronField(field: CronFieldMatcher, value: number): boolean {
   return field.values.has(value);
 }
 
-function matchesCron(expression: ParsedCronExpression, date: Date, timezone: string): boolean {
+function matchesCron(
+  expression: ParsedCronExpression,
+  date: Date,
+  timezone: string,
+): boolean {
   const parts = getZonedDateParts(date, timezone);
   const minuteMatch = matchesCronField(expression.minute, parts.minute);
   const hourMatch = matchesCronField(expression.hour, parts.hour);
@@ -252,7 +264,10 @@ function matchesCron(expression: ParsedCronExpression, date: Date, timezone: str
   return minuteMatch && hourMatch && monthMatch && dayMatch;
 }
 
-export function isTaskDue(task: ScheduledTask, now: Date = new Date()): boolean {
+export function isTaskDue(
+  task: ScheduledTask,
+  now: Date = new Date(),
+): boolean {
   if (!task.nextRunAt) {
     return false;
   }
@@ -271,7 +286,8 @@ export function computeNextCronRunAt(
   fromDate: Date = new Date(),
 ): string {
   const expression = parseCronExpression(cron);
-  let candidateMs = Math.floor(fromDate.getTime() / MINUTE_MS) * MINUTE_MS + MINUTE_MS;
+  let candidateMs =
+    Math.floor(fromDate.getTime() / MINUTE_MS) * MINUTE_MS + MINUTE_MS;
 
   for (let attempt = 0; attempt < MAX_SEARCH_MINUTES; attempt++) {
     const candidate = new Date(candidateMs);
@@ -285,7 +301,10 @@ export function computeNextCronRunAt(
   throw new Error(`Unable to compute next cron run for expression: ${cron}`);
 }
 
-export function computeNextRunAt(task: ScheduledTask, fromDate: Date = new Date()): string | null {
+export function computeNextRunAt(
+  task: ScheduledTask,
+  fromDate: Date = new Date(),
+): string | null {
   if (task.kind === "once") {
     const runAtMs = Date.parse(task.runAt);
     if (Number.isNaN(runAtMs) || runAtMs <= fromDate.getTime()) {

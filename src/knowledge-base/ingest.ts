@@ -44,7 +44,9 @@ export async function ingestDocument(options: IngestOptions): Promise<number> {
     insertChunk(chunk, now);
   }
 
-  logger.info(`[KnowledgeBase] Ingested ${chunks.length} chunks from ${sourcePath}`);
+  logger.info(
+    `[KnowledgeBase] Ingested ${chunks.length} chunks from ${sourcePath}`,
+  );
   return chunks.length;
 }
 
@@ -53,7 +55,10 @@ export async function ingestDirectory(
   pattern: RegExp = /\.(md|txt|mdx)$/i,
 ): Promise<{ path: string; chunks: number }[]> {
   const absoluteDir = path.resolve(dirPath);
-  const entries = await fs.readdir(absoluteDir, { recursive: true, withFileTypes: true });
+  const entries = await fs.readdir(absoluteDir, {
+    recursive: true,
+    withFileTypes: true,
+  });
   const files = entries
     .filter((entry) => entry.isFile() && pattern.test(entry.name))
     .map((entry) => path.join(entry.parentPath || absoluteDir, entry.name));
@@ -73,7 +78,11 @@ export async function ingestDirectory(
   return results;
 }
 
-function createChunks(text: string, chunkSize: number, chunkOverlap: number): string[] {
+function createChunks(
+  text: string,
+  chunkSize: number,
+  chunkOverlap: number,
+): string[] {
   const chunks: string[] = [];
 
   if (text.length <= chunkSize) {
@@ -107,7 +116,11 @@ function createChunks(text: string, chunkSize: number, chunkOverlap: number): st
               previousTail = currentChunk.slice(-chunkOverlap);
             }
             if (sentence.length > chunkSize) {
-              for (let i = 0; i < sentence.length; i += chunkSize - chunkOverlap) {
+              for (
+                let i = 0;
+                i < sentence.length;
+                i += chunkSize - chunkOverlap
+              ) {
                 chunks.push(sentence.slice(i, i + chunkSize));
               }
               previousTail = "";

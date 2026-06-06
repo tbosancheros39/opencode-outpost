@@ -8,7 +8,10 @@ export interface AssistantRunState {
 
 const runStates = new Map<string, AssistantRunState>();
 
-export function setAssistantRunState(sessionId: string, state: Partial<AssistantRunState>): void {
+export function setAssistantRunState(
+  sessionId: string,
+  state: Partial<AssistantRunState>,
+): void {
   const existing = runStates.get(sessionId) ?? {
     sessionId,
     agentId: null,
@@ -19,7 +22,9 @@ export function setAssistantRunState(sessionId: string, state: Partial<Assistant
   runStates.set(sessionId, { ...existing, ...state });
 }
 
-export function getAssistantRunState(sessionId: string): AssistantRunState | null {
+export function getAssistantRunState(
+  sessionId: string,
+): AssistantRunState | null {
   return runStates.get(sessionId) ?? null;
 }
 

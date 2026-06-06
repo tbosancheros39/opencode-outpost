@@ -3,7 +3,10 @@ import { config } from "../config.js";
 import { opencodeClient } from "../opencode/client.js";
 import { logger } from "../utils/logger.js";
 import type { ModelInfo, FavoriteModel, ModelSelectionLists } from "./types.js";
-import { filterFreeModels, filterModelsByTelegramGroups } from "./free-models.js";
+import {
+  filterFreeModels,
+  filterModelsByTelegramGroups,
+} from "./free-models.js";
 import path from "node:path";
 
 interface OpenCodeModelState {
@@ -55,7 +58,9 @@ function filterModelsByCatalog(
     return models;
   }
 
-  return models.filter((model) => validModelKeys.has(getModelKey(model.providerID, model.modelID)));
+  return models.filter((model) =>
+    validModelKeys.has(getModelKey(model.providerID, model.modelID)),
+  );
 }
 
 async function getValidModelKeys(): Promise<Set<string> | null> {
@@ -77,10 +82,15 @@ async function getValidModelKeys(): Promise<Set<string> | null> {
       const response = await opencodeClient.config.providers();
 
       if (response.error || !response.data) {
-        logger.warn("[ModelManager] Failed to refresh model catalog:", response.error);
+        logger.warn(
+          "[ModelManager] Failed to refresh model catalog:",
+          response.error,
+        );
 
         if (cachedValidModelKeys) {
-          logger.warn("[ModelManager] Using stale model catalog cache after refresh failure");
+          logger.warn(
+            "[ModelManager] Using stale model catalog cache after refresh failure",
+          );
           return cachedValidModelKeys;
         }
 
@@ -91,17 +101,23 @@ async function getValidModelKeys(): Promise<Set<string> | null> {
 
       const rawProviders = Array.isArray(response.data)
         ? response.data
-        : response.data?.providers ?? [];
+        : (response.data?.providers ?? []);
 
       for (const provider of rawProviders) {
-        const providerID = provider.id ?? provider.providerId ?? provider.provider ?? '';
+        const providerID =
+          provider.id ?? provider.providerId ?? provider.provider ?? "";
         const models = provider.models;
         if (!providerID || !models) continue;
 
         const modelIDs = Array.isArray(models)
           ? models
-              .map((m) => (m as { id?: string; modelID?: string }).id ?? (m as { id?: string; modelID?: string }).modelID ?? m)
-              .filter((id): id is string => typeof id === 'string')
+              .map(
+                (m) =>
+                  (m as { id?: string; modelID?: string }).id ??
+                  (m as { id?: string; modelID?: string }).modelID ??
+                  m,
+              )
+              .filter((id): id is string => typeof id === "string")
           : Object.keys(models);
 
         for (const modelID of modelIDs) {
@@ -121,7 +137,9 @@ async function getValidModelKeys(): Promise<Set<string> | null> {
       logger.warn("[ModelManager] Error refreshing model catalog:", err);
 
       if (cachedValidModelKeys) {
-        logger.warn("[ModelManager] Using stale model catalog cache after refresh exception");
+        logger.warn(
+          "[ModelManager] Using stale model catalog cache after refresh exception",
+        );
         return cachedValidModelKeys;
       }
 
@@ -195,10 +213,16 @@ export async function getModelSelectionLists(): Promise<ModelSelectionLists> {
 
     const rawFavorites = normalizeFavoriteModels(state);
     const rawRecent = normalizeRecentModels(state);
-    const shouldValidateWithCatalog = rawFavorites.length > 0 || rawRecent.length > 0;
-    const validModelKeys = shouldValidateWithCatalog ? await getValidModelKeys() : null;
+    const shouldValidateWithCatalog =
+      rawFavorites.length > 0 || rawRecent.length > 0;
+    const validModelKeys = shouldValidateWithCatalog
+      ? await getValidModelKeys()
+      : null;
 
-    const validatedFavorites = filterModelsByCatalog(rawFavorites, validModelKeys);
+    const validatedFavorites = filterModelsByCatalog(
+      rawFavorites,
+      validModelKeys,
+    );
     const validatedRecent = filterModelsByCatalog(rawRecent, validModelKeys);
 
     const favorites = envDefaultModel
@@ -215,7 +239,8 @@ export async function getModelSelectionLists(): Promise<ModelSelectionLists> {
       logger.warn(`[ModelManager] No favorites in ${stateFilePath}`);
     }
 
-    const filteredOutFavorites = rawFavorites.length - validatedFavorites.length;
+    const filteredOutFavorites =
+      rawFavorites.length - validatedFavorites.length;
     const filteredOutRecent = rawRecent.length - validatedRecent.length;
 
     if (filteredOutFavorites > 0 || filteredOutRecent > 0) {
@@ -228,7 +253,8 @@ export async function getModelSelectionLists(): Promise<ModelSelectionLists> {
       favorites.map((model) => getModelKey(model.providerID, model.modelID)),
     );
     const recent = dedupeModels(validatedRecent).filter(
-      (model) => !favoriteKeys.has(getModelKey(model.providerID, model.modelID)),
+      (model) =>
+        !favoriteKeys.has(getModelKey(model.providerID, model.modelID)),
     );
 
     logger.debug(
@@ -264,16 +290,20 @@ export async function getTelegramModelGroups(): Promise<FavoriteModel[]> {
   try {
     const response = await opencodeClient.config.providers();
     if (response.error || !response.data) {
-      logger.warn("[ModelManager] Failed to fetch providers for Telegram groups");
+      logger.warn(
+        "[ModelManager] Failed to fetch providers for Telegram groups",
+      );
       return cachedTelegramGroupModels || [];
     }
 
     const rawProviders = Array.isArray(response.data)
       ? response.data
-      : response.data?.providers ?? [];
+      : (response.data?.providers ?? []);
     const filteredModels = filterModelsByTelegramGroups(rawProviders);
     cachedTelegramGroupModels = filteredModels;
-    logger.info(`[ModelManager] Telegram model groups: ${filteredModels.length} models`);
+    logger.info(
+      `[ModelManager] Telegram model groups: ${filteredModels.length} models`,
+    );
     filteredModels.forEach((m) => {
       logger.debug(`[ModelManager]   - ${m.providerID}/${m.modelID}`);
     });
@@ -288,12 +318,14 @@ async function findFirstAvailableFreeModel(): Promise<FavoriteModel | null> {
   try {
     const response = await opencodeClient.config.providers();
     if (response.error || !response.data) {
-      logger.warn("[ModelManager] Could not fetch providers for free model search");
+      logger.warn(
+        "[ModelManager] Could not fetch providers for free model search",
+      );
       return null;
     }
     const rawProviders = Array.isArray(response.data)
       ? response.data
-      : response.data?.providers ?? [];
+      : (response.data?.providers ?? []);
     const freeModels = filterFreeModels(rawProviders);
     if (freeModels.length === 0) {
       logger.warn("[ModelManager] No free models found in catalog");
@@ -306,7 +338,9 @@ async function findFirstAvailableFreeModel(): Promise<FavoriteModel | null> {
   }
 }
 
-export async function reconcileStoredModelSelection(chatId: number = DEFAULT_CHAT_ID): Promise<void> {
+export async function reconcileStoredModelSelection(
+  chatId: number = DEFAULT_CHAT_ID,
+): Promise<void> {
   const currentModel = getCurrentModel(chatId);
 
   if (!currentModel?.providerID || !currentModel.modelID) {
@@ -316,11 +350,16 @@ export async function reconcileStoredModelSelection(chatId: number = DEFAULT_CHA
   const validModelKeys = await getValidModelKeys();
 
   if (!validModelKeys) {
-    logger.warn("[ModelManager] Skipping stored model validation: model catalog unavailable");
+    logger.warn(
+      "[ModelManager] Skipping stored model validation: model catalog unavailable",
+    );
     return;
   }
 
-  const currentModelKey = getModelKey(currentModel.providerID, currentModel.modelID);
+  const currentModelKey = getModelKey(
+    currentModel.providerID,
+    currentModel.modelID,
+  );
 
   if (validModelKeys.has(currentModelKey)) {
     return;
@@ -328,7 +367,10 @@ export async function reconcileStoredModelSelection(chatId: number = DEFAULT_CHA
 
   const envDefaultModel = getEnvDefaultModel();
   if (envDefaultModel) {
-    const fallbackKey = getModelKey(envDefaultModel.providerID, envDefaultModel.modelID);
+    const fallbackKey = getModelKey(
+      envDefaultModel.providerID,
+      envDefaultModel.modelID,
+    );
     if (validModelKeys.has(fallbackKey)) {
       logger.warn(
         `[ModelManager] Stored model ${currentModelKey} is unavailable, falling back to env default ${fallbackKey}`,
@@ -378,7 +420,9 @@ export function fetchCurrentModel(chatId: number = DEFAULT_CHAT_ID): ModelInfo {
 }
 
 export function selectModel(chatId: number, modelInfo: ModelInfo): void {
-  logger.info(`[ModelManager] Selected model: ${modelInfo.providerID}/${modelInfo.modelID}`);
+  logger.info(
+    `[ModelManager] Selected model: ${modelInfo.providerID}/${modelInfo.modelID}`,
+  );
   setCurrentModel(chatId, modelInfo);
 }
 
@@ -401,7 +445,9 @@ export function getStoredModel(chatId: number = DEFAULT_CHAT_ID): ModelInfo {
     };
   }
 
-  logger.warn("[ModelManager] No model found in settings or config, returning empty model");
+  logger.warn(
+    "[ModelManager] No model found in settings or config, returning empty model",
+  );
   return {
     providerID: "",
     modelID: "",

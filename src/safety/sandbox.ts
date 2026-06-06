@@ -53,7 +53,11 @@ const NETWORK_PATTERNS = [
   { pattern: /\bfetch\b/, type: "fetch" },
 ];
 
-function analyzeSecurityRisks(command: string, stdout: string, stderr: string): SecurityReport {
+function analyzeSecurityRisks(
+  command: string,
+  stdout: string,
+  stderr: string,
+): SecurityReport {
   const combined = `${command} ${stdout} ${stderr}`;
   const sensitiveAccess: string[] = [];
   const networkAttempts: string[] = [];
@@ -93,7 +97,7 @@ export function isBwrapAvailable(): boolean {
 
 export async function runInSandbox(
   command: string,
-  options: SandboxOptions = {}
+  options: SandboxOptions = {},
 ): Promise<SandboxResult> {
   const { allowNetwork = false, timeoutMs = 30000 } = options;
 
@@ -119,21 +123,43 @@ export async function runInSandbox(
     "--unshare-user",
     "--unshare-ipc",
     "--unshare-uts",
-    "--chdir", sandboxHome,
+    "--chdir",
+    sandboxHome,
     "--clearenv", // Environment is already stripped by bubblewrap
-    "--setenv", "HOME", sandboxHome,
-    "--setenv", "TMPDIR", "/tmp",
-    "--setenv", "PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-    "--tmpfs", "/tmp",
-    "--tmpfs", "/var/tmp",
-    "--proc", "/proc",
-    "--dev", "/dev",
-    "--ro-bind-try", "/bin", "/bin",
-    "--ro-bind-try", "/lib", "/lib",
-    "--ro-bind-try", "/lib64", "/lib64",
-    "--ro-bind-try", "/usr", "/usr",
-    "--ro-bind-try", "/etc/alternatives", "/etc/alternatives",
-    "--dir", sandboxHome,
+    "--setenv",
+    "HOME",
+    sandboxHome,
+    "--setenv",
+    "TMPDIR",
+    "/tmp",
+    "--setenv",
+    "PATH",
+    "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "--tmpfs",
+    "/tmp",
+    "--tmpfs",
+    "/var/tmp",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--ro-bind-try",
+    "/bin",
+    "/bin",
+    "--ro-bind-try",
+    "/lib",
+    "/lib",
+    "--ro-bind-try",
+    "/lib64",
+    "/lib64",
+    "--ro-bind-try",
+    "/usr",
+    "/usr",
+    "--ro-bind-try",
+    "/etc/alternatives",
+    "/etc/alternatives",
+    "--dir",
+    sandboxHome,
   ];
 
   if (!allowNetwork) {
@@ -158,7 +184,9 @@ export async function runInSandbox(
 
     const timeout = setTimeout(() => {
       timedOut = true;
-      logger.warn(`[Sandbox] Command timed out after ${timeoutMs}ms: ${command}`);
+      logger.warn(
+        `[Sandbox] Command timed out after ${timeoutMs}ms: ${command}`,
+      );
       proc.kill("SIGKILL");
     }, timeoutMs);
 
@@ -174,16 +202,22 @@ export async function runInSandbox(
       clearTimeout(timeout);
       const elapsed = Date.now() - startTime;
 
-      logger.debug(`[Sandbox] Command finished in ${elapsed}ms with code ${code}`);
+      logger.debug(
+        `[Sandbox] Command finished in ${elapsed}ms with code ${code}`,
+      );
 
       const securityReport = analyzeSecurityRisks(command, stdout, stderr);
 
       if (securityReport.sensitiveAccess.length > 0) {
-        logger.warn(`[Sandbox] Sensitive access detected: ${securityReport.sensitiveAccess.join(", ")}`);
+        logger.warn(
+          `[Sandbox] Sensitive access detected: ${securityReport.sensitiveAccess.join(", ")}`,
+        );
       }
 
       if (securityReport.networkAttempts.length > 0) {
-        logger.warn(`[Sandbox] Network attempts detected: ${securityReport.networkAttempts.join(", ")}`);
+        logger.warn(
+          `[Sandbox] Network attempts detected: ${securityReport.networkAttempts.join(", ")}`,
+        );
       }
 
       resolve({
@@ -210,7 +244,10 @@ export async function runInSandbox(
   });
 }
 
-async function runDirect(command: string, timeoutMs: number): Promise<SandboxResult> {
+async function runDirect(
+  command: string,
+  timeoutMs: number,
+): Promise<SandboxResult> {
   return new Promise<SandboxResult>((resolve) => {
     let timedOut = false;
     let stdout = "";
@@ -266,20 +303,27 @@ export function formatSecurityPreview(report: SecurityReport): string {
 
   if (report.sensitiveAccess.length > 0) {
     const emojis = report.sensitiveAccess.map((access) => {
-      if (access.includes("credential") || access.includes("keyring")) return "🔐";
+      if (access.includes("credential") || access.includes("keyring"))
+        return "🔐";
       if (access.includes("shadow") || access.includes("passwd")) return "🔒";
       return "⚠️";
     });
-    parts.push(`${emojis.join("")} <b>Access to sensitive resources:</b>\n  ${report.sensitiveAccess.join(", ")}`);
+    parts.push(
+      `${emojis.join("")} <b>Access to sensitive resources:</b>\n  ${report.sensitiveAccess.join(", ")}`,
+    );
   }
 
   if (report.networkAttempts.length > 0) {
     const emojis = report.networkAttempts.map(() => "🌐");
-    parts.push(`${emojis.join("")} <b>Network activity detected:</b>\n  ${report.networkAttempts.join(", ")}`);
+    parts.push(
+      `${emojis.join("")} <b>Network activity detected:</b>\n  ${report.networkAttempts.join(", ")}`,
+    );
   }
 
   if (report.fileAccesses.length > 0) {
-    parts.push(`📁 <b>Filesystem probing detected:</b>\n  ${report.fileAccesses.join(", ")}`);
+    parts.push(
+      `📁 <b>Filesystem probing detected:</b>\n  ${report.fileAccesses.join(", ")}`,
+    );
   }
 
   if (parts.length === 0) {
@@ -302,10 +346,7 @@ export function shouldUseSandbox(command: string): boolean {
     /\|\s*bash/,
   ];
 
-  const urlPatterns = [
-    /https?:\/\//,
-    /ftp:\/\//,
-  ];
+  const urlPatterns = [/https?:\/\//, /ftp:\/\//];
 
   for (const pattern of scriptPatterns) {
     if (pattern.test(command)) {
@@ -324,7 +365,7 @@ export function shouldUseSandbox(command: string): boolean {
 
 export async function runScriptSafely(
   script: string,
-  options: SandboxOptions = {}
+  options: SandboxOptions = {},
 ): Promise<SandboxResult> {
   const scriptPath = path.join(os.tmpdir(), `sandbox-script-${Date.now()}.sh`);
 
@@ -346,7 +387,7 @@ export async function runScriptSafely(
 
 export async function downloadAndAnalyzeUrl(
   url: string,
-  options: SandboxOptions = {}
+  options: SandboxOptions = {},
 ): Promise<SandboxResult> {
   const allowNetwork = options.allowNetwork ?? true;
 
@@ -354,7 +395,8 @@ export async function downloadAndAnalyzeUrl(
     logger.warn("[Sandbox] Cannot download URL without network access");
     return {
       stdout: "",
-      stderr: "Network access is required to download URLs but sandbox network is disabled",
+      stderr:
+        "Network access is required to download URLs but sandbox network is disabled",
       exitCode: 1,
       timedOut: false,
       securityReport: {
@@ -366,7 +408,10 @@ export async function downloadAndAnalyzeUrl(
   }
 
   const command = `curl -sL -A "SandboxAnalysis/1.0" "${url}" 2>&1 || wget -qO- "${url}" 2>&1`;
-  const result = await runInSandbox(command, { ...options, allowNetwork: true });
+  const result = await runInSandbox(command, {
+    ...options,
+    allowNetwork: true,
+  });
 
   return result;
 }

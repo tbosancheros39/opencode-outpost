@@ -35,7 +35,9 @@ const ALLOWED_ENV_VARS = [
  * Creates a sanitized environment object safe for child processes.
  * Strips all sensitive credentials while preserving essential system variables.
  */
-export function sanitizeEnv(customVars: Record<string, string> = {}): NodeJS.ProcessEnv {
+export function sanitizeEnv(
+  customVars: Record<string, string> = {},
+): NodeJS.ProcessEnv {
   const sanitized: NodeJS.ProcessEnv = {};
 
   // Add allowed vars from current environment

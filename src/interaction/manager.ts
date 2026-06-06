@@ -6,7 +6,12 @@ import type {
 } from "./types.js";
 import { logger } from "../utils/logger.js";
 
-export const DEFAULT_ALLOWED_INTERACTION_COMMANDS = ["/help", "/status", "/abort", "/steer"] as const;
+export const DEFAULT_ALLOWED_INTERACTION_COMMANDS = [
+  "/help",
+  "/status",
+  "/abort",
+  "/steer",
+] as const;
 
 function normalizeCommand(command: string): string | null {
   const trimmed = command.trim().toLowerCase();
@@ -112,7 +117,10 @@ class InteractionManager {
     return referenceTimeMs >= state.expiresAt;
   }
 
-  transition(chatId: number, options: TransitionInteractionOptions): InteractionState | null {
+  transition(
+    chatId: number,
+    options: TransitionInteractionOptions,
+  ): InteractionState | null {
     const state = this.getState(chatId);
     if (!state) {
       return null;
@@ -128,7 +136,9 @@ class InteractionManager {
         options.allowedCommands !== undefined
           ? normalizeAllowedCommands(options.allowedCommands)
           : [...state.allowedCommands],
-      metadata: options.metadata ? { ...options.metadata } : { ...state.metadata },
+      metadata: options.metadata
+        ? { ...options.metadata }
+        : { ...state.metadata },
       expiresAt:
         options.expiresInMs === undefined
           ? state.expiresAt

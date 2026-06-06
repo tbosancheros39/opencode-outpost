@@ -78,7 +78,9 @@ export async function opencodeStartCommand(ctx: CommandContext<Context>) {
         api: ctx.api,
         chatId: ctx.chat.id,
         messageId: statusMessage.message_id,
-        text: t("opencode_start.start_error", { error: error || t("common.unknown_error") }),
+        text: t("opencode_start.start_error", {
+          error: error || t("common.unknown_error"),
+        }),
       });
       return;
     }
@@ -111,7 +113,9 @@ export async function opencodeStartCommand(ctx: CommandContext<Context>) {
       }),
     });
 
-    logger.info(`[Bot] OpenCode server started successfully, PID=${processManager.getPID()}`);
+    logger.info(
+      `[Bot] OpenCode server started successfully, PID=${processManager.getPID()}`,
+    );
   } catch (err) {
     logger.error("[Bot] Error in /opencode-start command:", err);
     await ctx.reply(t("opencode_start.error"));

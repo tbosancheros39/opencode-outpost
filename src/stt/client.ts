@@ -24,9 +24,14 @@ export function isSttConfigured(): boolean {
  * @returns Transcribed text
  * @throws Error if STT is not configured, the request fails, or the response is invalid
  */
-export async function transcribeAudio(audioBuffer: Buffer, filename: string): Promise<SttResult> {
+export async function transcribeAudio(
+  audioBuffer: Buffer,
+  filename: string,
+): Promise<SttResult> {
   if (!isSttConfigured()) {
-    throw new Error("STT is not configured: STT_API_URL and STT_API_KEY are required");
+    throw new Error(
+      "STT is not configured: STT_API_URL and STT_API_KEY are required",
+    );
   }
 
   const url = `${config.stt.apiUrl}/audio/transcriptions`;
@@ -75,7 +80,9 @@ export async function transcribeAudio(audioBuffer: Buffer, filename: string): Pr
     return { text: data.text };
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
-      throw new Error(`STT request timed out after ${STT_REQUEST_TIMEOUT_MS}ms`);
+      throw new Error(
+        `STT request timed out after ${STT_REQUEST_TIMEOUT_MS}ms`,
+      );
     }
 
     throw err;

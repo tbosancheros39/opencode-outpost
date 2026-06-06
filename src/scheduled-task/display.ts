@@ -1,7 +1,15 @@
 import type { ScheduledTask } from "./types.js";
 
 const BADGE_DATE_LOCALE = "en-US";
-const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+const WEEKDAY_LABELS = [
+  "Sun",
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat",
+] as const;
 
 interface CronParts {
   minute: string;
@@ -65,7 +73,10 @@ function getDateTimePart(
   return parts.find((part) => part.type === type)?.value ?? "";
 }
 
-function getZonedDateParts(date: Date, timezone: string): ZonedDateParts | null {
+function getZonedDateParts(
+  date: Date,
+  timezone: string,
+): ZonedDateParts | null {
   const parts = getZonedDateTimeFormatter(timezone).formatToParts(date);
   const year = Number.parseInt(getDateTimePart(parts, "year"), 10);
   const month = getDateTimePart(parts, "month");
@@ -136,7 +147,11 @@ function parseCronParts(cron: string): CronParts | null {
   };
 }
 
-function parseExactNumber(field: string, min: number, max: number): number | null {
+function parseExactNumber(
+  field: string,
+  min: number,
+  max: number,
+): number | null {
   const trimmedField = field.trim();
   if (!/^\d+$/.test(trimmedField)) {
     return null;
@@ -150,7 +165,11 @@ function parseExactNumber(field: string, min: number, max: number): number | nul
   return value;
 }
 
-function parseEveryStep(field: string, minStep: number, maxStep: number): number | null {
+function parseEveryStep(
+  field: string,
+  minStep: number,
+  maxStep: number,
+): number | null {
   const match = field.trim().match(/^\*\/(\d+)$/);
   if (!match) {
     return null;
@@ -223,9 +242,13 @@ function parseWeekdaySet(field: string): Set<number> | null {
   return values;
 }
 
-function hasExactValues(values: Set<number>, expectedValues: number[]): boolean {
+function hasExactValues(
+  values: Set<number>,
+  expectedValues: number[],
+): boolean {
   return (
-    values.size === expectedValues.length && expectedValues.every((value) => values.has(value))
+    values.size === expectedValues.length &&
+    expectedValues.every((value) => values.has(value))
   );
 }
 
@@ -260,7 +283,9 @@ function formatCronTaskBadge(cron: string): string {
     dayOfMonthIsWildcard &&
     dayOfWeekIsWildcard
   ) {
-    return minute === 0 ? `${everyHourStep}h` : `${everyHourStep}h :${padNumber(minute)}`;
+    return minute === 0
+      ? `${everyHourStep}h`
+      : `${everyHourStep}h :${padNumber(minute)}`;
   }
 
   if (
@@ -283,7 +308,12 @@ function formatCronTaskBadge(cron: string): string {
     return `daily ${formatTime(hour, minute)}`;
   }
 
-  if (minute !== null && hour !== null && monthIsWildcard && dayOfMonthIsWildcard) {
+  if (
+    minute !== null &&
+    hour !== null &&
+    monthIsWildcard &&
+    dayOfMonthIsWildcard
+  ) {
     const weekdayValues = parseWeekdaySet(parts.dayOfWeek);
     if (!weekdayValues) {
       return "cron";

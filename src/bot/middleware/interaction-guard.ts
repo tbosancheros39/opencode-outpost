@@ -83,7 +83,10 @@ function getInteractionBlockedMessage(
   }
 }
 
-export async function interactionGuardMiddleware(ctx: Context, next: NextFunction): Promise<void> {
+export async function interactionGuardMiddleware(
+  ctx: Context,
+  next: NextFunction,
+): Promise<void> {
   const decision = resolveInteractionGuardDecision(ctx);
   const textPreview = ctx.message?.text?.substring(0, 60) || "(no text)";
 
@@ -97,7 +100,8 @@ export async function interactionGuardMiddleware(ctx: Context, next: NextFunctio
   }
 
   const message = decision.busy
-    ? decision.state?.kind === "question" || decision.state?.kind === "permission"
+    ? decision.state?.kind === "question" ||
+      decision.state?.kind === "permission"
       ? getInteractionBlockedMessage(decision.reason, decision.state.kind)
       : t("interaction.blocked.finish_current")
     : getInteractionBlockedMessage(decision.reason, decision.state?.kind);
@@ -113,7 +117,10 @@ export async function interactionGuardMiddleware(ctx: Context, next: NextFunctio
 
   if (ctx.chat) {
     await ctx.reply(message).catch((err) => {
-      logger.error("[InteractionGuard] Failed to send blocked input message:", err);
+      logger.error(
+        "[InteractionGuard] Failed to send blocked input message:",
+        err,
+      );
     });
   }
 }

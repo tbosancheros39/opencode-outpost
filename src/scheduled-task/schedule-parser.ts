@@ -114,7 +114,11 @@ function validateParsedSchedule(value: unknown): ParsedTaskSchedule {
 function parseSchedulePayload(rawText: string): ParsedTaskSchedule {
   const payload = extractJsonPayload(rawText);
 
-  if (isRecord(payload) && typeof payload.error === "string" && payload.error.trim()) {
+  if (
+    isRecord(payload) &&
+    typeof payload.error === "string" &&
+    payload.error.trim()
+  ) {
     throw new Error(payload.error.trim());
   }
 
@@ -125,7 +129,10 @@ function collectResponseText(
   parts: Array<{ type?: string; text?: string; ignored?: boolean }>,
 ): string {
   return parts
-    .filter((part) => part.type === "text" && typeof part.text === "string" && !part.ignored)
+    .filter(
+      (part) =>
+        part.type === "text" && typeof part.text === "string" && !part.ignored,
+    )
     .map((part) => part.text)
     .join("")
     .trim();
@@ -168,24 +175,34 @@ export async function parseTaskSchedule(
   let sessionId: string | null = null;
 
   try {
-    const { data: session, error: createError } = await opencodeClient.session.create({
-      directory: trimmedDirectory,
-      title: SCHEDULE_PARSE_SESSION_TITLE,
-    });
+    const { data: session, error: createError } =
+      await opencodeClient.session.create({
+        directory: trimmedDirectory,
+        title: SCHEDULE_PARSE_SESSION_TITLE,
+      });
 
     if (createError || !session) {
-      throw createError || new Error("Failed to create temporary schedule parser session");
+      throw (
+        createError ||
+        new Error("Failed to create temporary schedule parser session")
+      );
     }
 
     sessionId = session.id;
 
-    const { data: response, error: promptError } = await opencodeClient.session.prompt({
-      sessionID: session.id,
-      directory: session.directory,
-      system:
-        "You are a schedule parser. Your only job is to convert user schedule text into strict JSON output.",
-      parts: [{ type: "text", text: buildSchedulePrompt(trimmedScheduleText, timezone) }],
-    });
+    const { data: response, error: promptError } =
+      await opencodeClient.session.prompt({
+        sessionID: session.id,
+        directory: session.directory,
+        system:
+          "You are a schedule parser. Your only job is to convert user schedule text into strict JSON output.",
+        parts: [
+          {
+            type: "text",
+            text: buildSchedulePrompt(trimmedScheduleText, timezone),
+          },
+        ],
+      });
 
     if (promptError || !response) {
       throw promptError || new Error("Failed to parse schedule");

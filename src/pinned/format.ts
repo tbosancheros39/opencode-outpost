@@ -25,8 +25,12 @@ export function formatModelDisplayName(
   return t("pinned.unknown");
 }
 
-export function formatContextLine(tokensUsed: number, tokensLimit?: number | null): string {
-  const safeLimit = typeof tokensLimit === "number" && tokensLimit > 0 ? tokensLimit : null;
+export function formatContextLine(
+  tokensUsed: number,
+  tokensLimit?: number | null,
+): string {
+  const safeLimit =
+    typeof tokensLimit === "number" && tokensLimit > 0 ? tokensLimit : null;
   const percentage = safeLimit ? Math.round((tokensUsed / safeLimit) * 100) : 0;
 
   return t("pinned.line.context", {

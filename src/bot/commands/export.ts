@@ -92,7 +92,9 @@ export async function exportCommand(ctx: CommandContext<Context>) {
     return;
   }
 
-  const statusMsg = await ctx.reply(t("export.exporting"), { parse_mode: "HTML" });
+  const statusMsg = await ctx.reply(t("export.exporting"), {
+    parse_mode: "HTML",
+  });
 
   try {
     await fs.mkdir(TEMP_DIR, { recursive: true });
@@ -160,7 +162,9 @@ export async function exportCommand(ctx: CommandContext<Context>) {
       parse_mode: "HTML",
     });
 
-    logger.info(`[Export] Session exported: ${session.id} (${messages.length} messages)`);
+    logger.info(
+      `[Export] Session exported: ${session.id} (${messages.length} messages)`,
+    );
 
     await fs.unlink(filePath).catch(() => {});
   } catch (error) {
@@ -168,9 +172,14 @@ export async function exportCommand(ctx: CommandContext<Context>) {
     logger.error("[Bot] Export command error:", error);
 
     await ctx.api
-      .editMessageText(chatId, statusMsg.message_id, t("export.error", { message }), {
-        parse_mode: "HTML",
-      })
+      .editMessageText(
+        chatId,
+        statusMsg.message_id,
+        t("export.error", { message }),
+        {
+          parse_mode: "HTML",
+        },
+      )
       .catch(() => {});
   }
 }

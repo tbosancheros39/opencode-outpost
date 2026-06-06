@@ -12,7 +12,10 @@ import { logger } from "../utils/logger.js";
 
 export type { SessionInfo };
 
-export function setCurrentSession(chatId: number, sessionInfo: SessionInfo): void {
+export function setCurrentSession(
+  chatId: number,
+  sessionInfo: SessionInfo,
+): void {
   setSettingsSession(chatId, sessionInfo);
   setLastSessionForProject(sessionInfo.directory, sessionInfo.id);
 }
@@ -38,7 +41,9 @@ export async function autoResumeLastSession(chatId: number): Promise<void> {
       directory: currentProject.worktree,
     });
     if (error || !session) {
-      logger.info(`[Session] Previous session ${lastSessionId} no longer exists, skipping`);
+      logger.info(
+        `[Session] Previous session ${lastSessionId} no longer exists, skipping`,
+      );
       return;
     }
     setSettingsSession(chatId, {
@@ -48,6 +53,8 @@ export async function autoResumeLastSession(chatId: number): Promise<void> {
     });
     logger.info(`[Session] Auto-resumed session ${lastSessionId}`);
   } catch {
-    logger.info(`[Session] Previous session ${lastSessionId} no longer exists, skipping`);
+    logger.info(
+      `[Session] Previous session ${lastSessionId} no longer exists, skipping`,
+    );
   }
 }

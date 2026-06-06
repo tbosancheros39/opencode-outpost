@@ -107,23 +107,34 @@ async function loadSessionPage(
   };
 }
 
-function buildSessionsKeyboard(pageData: SessionPage, pageSize: number): InlineKeyboard {
+function buildSessionsKeyboard(
+  pageData: SessionPage,
+  pageSize: number,
+): InlineKeyboard {
   const keyboard = new InlineKeyboard();
   const localeForDate = getDateLocale();
   const pageStartIndex = pageData.page * pageSize;
 
   pageData.sessions.forEach((session, index) => {
-    const date = new Date(session.time.created).toLocaleDateString(localeForDate);
+    const date = new Date(session.time.created).toLocaleDateString(
+      localeForDate,
+    );
     const label = `${pageStartIndex + index + 1}. ${session.title} (${date})`;
     keyboard.text(label, `${SESSION_CALLBACK_PREFIX}${session.id}`).row();
   });
 
   if (pageData.page > 0) {
-    keyboard.text(t("sessions.button.prev_page"), buildSessionPageCallback(pageData.page - 1));
+    keyboard.text(
+      t("sessions.button.prev_page"),
+      buildSessionPageCallback(pageData.page - 1),
+    );
   }
 
   if (pageData.hasNext) {
-    keyboard.text(t("sessions.button.next_page"), buildSessionPageCallback(pageData.page + 1));
+    keyboard.text(
+      t("sessions.button.next_page"),
+      buildSessionPageCallback(pageData.page + 1),
+    );
   }
 
   if (pageData.page > 0 || pageData.hasNext) {
@@ -149,13 +160,23 @@ export async function sessionsCommand(ctx: CommandContext<Context>) {
       return;
     }
 
-    logger.debug(`[Sessions] Fetching sessions for directory: ${currentProject.worktree}`);
+    logger.debug(
+      `[Sessions] Fetching sessions for directory: ${currentProject.worktree}`,
+    );
 
-    const firstPage = await loadSessionPage(currentProject.worktree, 0, pageSize);
+    const firstPage = await loadSessionPage(
+      currentProject.worktree,
+      0,
+      pageSize,
+    );
 
-    logger.debug(`[Sessions] Found ${firstPage.sessions.length} sessions on page 1`);
+    logger.debug(
+      `[Sessions] Found ${firstPage.sessions.length} sessions on page 1`,
+    );
     firstPage.sessions.forEach((session) => {
-      logger.debug(`[Sessions] Session: ${session.title} | ${session.directory}`);
+      logger.debug(
+        `[Sessions] Session: ${session.title} | ${session.directory}`,
+      );
     });
 
     if (firstPage.sessions.length === 0) {
@@ -178,7 +199,10 @@ export async function sessionsCommand(ctx: CommandContext<Context>) {
 
 export async function handleSessionSelect(ctx: Context): Promise<boolean> {
   const callbackQuery = ctx.callbackQuery;
-  if (!callbackQuery?.data || !callbackQuery.data.startsWith(SESSION_CALLBACK_PREFIX)) {
+  if (
+    !callbackQuery?.data ||
+    !callbackQuery.data.startsWith(SESSION_CALLBACK_PREFIX)
+  ) {
     return false;
   }
 
@@ -210,9 +234,15 @@ export async function handleSessionSelect(ctx: Context): Promise<boolean> {
     if (page !== null) {
       try {
         const pageSize = config.bot.sessionsListLimit;
-        const pageData = await loadSessionPage(currentProject.worktree, page, pageSize);
+        const pageData = await loadSessionPage(
+          currentProject.worktree,
+          page,
+          pageSize,
+        );
         if (pageData.sessions.length === 0) {
-          await ctx.answerCallbackQuery({ text: t("sessions.page_empty_callback") });
+          await ctx.answerCallbackQuery({
+            text: t("sessions.page_empty_callback"),
+          });
           return true;
         }
 
@@ -224,7 +254,9 @@ export async function handleSessionSelect(ctx: Context): Promise<boolean> {
         await ctx.answerCallbackQuery();
       } catch (error) {
         logger.error("[Sessions] Error loading sessions page:", error);
-        await ctx.answerCallbackQuery({ text: t("sessions.page_load_error_callback") });
+        await ctx.answerCallbackQuery({
+          text: t("sessions.page_load_error_callback"),
+        });
       }
 
       return true;
@@ -282,7 +314,11 @@ export async function handleSessionSelect(ctx: Context): Promise<boolean> {
       keyboardManager.initialize(ctx.api, ctx.chat.id);
 
       // Create new pinned message for this session
-      await pinnedMessageManager.onSessionChange(ctx.chat.id, session.id, session.title);
+      await pinnedMessageManager.onSessionChange(
+        ctx.chat.id,
+        session.id,
+        session.title,
+      );
       // Load context from session history (for existing sessions)
       // Wait for it to complete so keyboard has correct context
       await pinnedMessageManager.loadContextFromHistory(
@@ -298,7 +334,11 @@ export async function handleSessionSelect(ctx: Context): Promise<boolean> {
       // Update keyboard with loaded context (callback executes async via setImmediate, so update manually)
       const contextInfo = pinnedMessageManager.getContextInfo(chatId);
       if (contextInfo) {
-        keyboardManager.updateContext(chatId, contextInfo.tokensUsed, contextInfo.tokensLimit);
+        keyboardManager.updateContext(
+          chatId,
+          contextInfo.tokensUsed,
+          contextInfo.tokensLimit,
+        );
       }
 
       // Delete loading message
@@ -313,9 +353,13 @@ export async function handleSessionSelect(ctx: Context): Promise<boolean> {
       // Send session selection confirmation with updated keyboard
       const keyboard = keyboardManager.getKeyboard(chatId);
       try {
-        await ctx.api.sendMessage(chatId, t("sessions.selected", { title: session.title }), {
-          reply_markup: keyboard,
-        });
+        await ctx.api.sendMessage(
+          chatId,
+          t("sessions.selected", { title: session.title }),
+          {
+            reply_markup: keyboard,
+          },
+        );
       } catch (err) {
         logger.error("[Sessions] Failed to send selection message:", err);
       }
@@ -356,7 +400,9 @@ const PREVIEW_MESSAGES_LIMIT = 6;
 const PREVIEW_ITEM_MAX_LENGTH = 420;
 const TELEGRAM_MESSAGE_LIMIT = 4096;
 
-function extractTextParts(parts: Array<{ type: string; text?: string }>): string | null {
+function extractTextParts(
+  parts: Array<{ type: string; text?: string }>,
+): string | null {
   const textParts = parts
     .filter((part) => part.type === "text" && typeof part.text === "string")
     .map((part) => part.text as string);
@@ -405,7 +451,9 @@ async function loadSessionPreview(
           return null;
         }
 
-        const text = extractTextParts(parts as Array<{ type: string; text?: string }>);
+        const text = extractTextParts(
+          parts as Array<{ type: string; text?: string }>,
+        );
         if (!text) {
           return null;
         }
@@ -426,7 +474,10 @@ async function loadSessionPreview(
   }
 }
 
-function formatSessionPreview(_sessionTitle: string, items: SessionPreviewItem[]): string {
+function formatSessionPreview(
+  _sessionTitle: string,
+  items: SessionPreviewItem[],
+): string {
   const lines: string[] = [];
 
   if (items.length === 0) {
@@ -437,7 +488,10 @@ function formatSessionPreview(_sessionTitle: string, items: SessionPreviewItem[]
   lines.push(t("sessions.preview.title"));
 
   items.forEach((item, index) => {
-    const label = item.role === "user" ? t("sessions.preview.you") : t("sessions.preview.agent");
+    const label =
+      item.role === "user"
+        ? t("sessions.preview.you")
+        : t("sessions.preview.agent");
     lines.push(`${label} ${item.text}`);
     if (index < items.length - 1) {
       lines.push("");
@@ -464,7 +518,10 @@ async function sendSessionPreview(
       await api.editMessageText(chatId, messageId, finalText);
       return;
     } catch (err) {
-      logger.warn("[Sessions] Failed to edit preview message, sending new one:", err);
+      logger.warn(
+        "[Sessions] Failed to edit preview message, sending new one:",
+        err,
+      );
     }
   }
 

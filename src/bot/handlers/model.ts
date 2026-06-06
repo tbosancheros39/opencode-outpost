@@ -1,5 +1,9 @@
 import { Context, InlineKeyboard } from "grammy";
-import { selectModel, fetchCurrentModel, getTelegramModelGroups } from "../../model/manager.js";
+import {
+  selectModel,
+  fetchCurrentModel,
+  getTelegramModelGroups,
+} from "../../model/manager.js";
 import { formatModelForDisplay } from "../../model/types.js";
 import type { FavoriteModel, ModelInfo } from "../../model/types.js";
 import { formatVariantForButton } from "../../variant/manager.js";
@@ -46,7 +50,9 @@ export async function handleModelSelect(ctx: Context): Promise<boolean> {
     if (!model) {
       logger.error(`[ModelHandler] Invalid model index: ${index}`);
       clearActiveInlineMenu(ctx.chat?.id ?? 0, "model_select_invalid_index");
-      await ctx.answerCallbackQuery({ text: t("model.change_error_callback") }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: t("model.change_error_callback") })
+        .catch(() => {});
       return true;
     }
     providerID = model.providerID;
@@ -57,7 +63,9 @@ export async function handleModelSelect(ctx: Context): Promise<boolean> {
     if (parts.length < 3) {
       logger.error(`[ModelHandler] Invalid callback data format: ${data}`);
       clearActiveInlineMenu(ctx.chat?.id ?? 0, "model_select_invalid_callback");
-      await ctx.answerCallbackQuery({ text: t("model.change_error_callback") }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: t("model.change_error_callback") })
+        .catch(() => {});
       return true;
     }
     providerID = parts[1];
@@ -95,11 +103,18 @@ export async function handleModelSelect(ctx: Context): Promise<boolean> {
     const contextInfo =
       pinnedMessageManager.getContextInfo(chatId) ??
       (pinnedMessageManager.getContextLimit(chatId) > 0
-        ? { tokensUsed: 0, tokensLimit: pinnedMessageManager.getContextLimit(chatId) }
+        ? {
+            tokensUsed: 0,
+            tokensLimit: pinnedMessageManager.getContextLimit(chatId),
+          }
         : null);
 
     if (contextInfo) {
-      keyboardManager.updateContext(chatId, contextInfo.tokensUsed, contextInfo.tokensLimit);
+      keyboardManager.updateContext(
+        chatId,
+        contextInfo.tokensUsed,
+        contextInfo.tokensLimit,
+      );
     }
 
     const variantName = formatVariantForButton(modelInfo.variant || "default");
@@ -109,11 +124,16 @@ export async function handleModelSelect(ctx: Context): Promise<boolean> {
       contextInfo ?? undefined,
       variantName,
     );
-    const displayName = formatModelForDisplay(modelInfo.providerID, modelInfo.modelID);
+    const displayName = formatModelForDisplay(
+      modelInfo.providerID,
+      modelInfo.modelID,
+    );
 
     clearActiveInlineMenu(chatId, "model_selected");
 
-    await ctx.answerCallbackQuery({ text: t("model.changed_callback", { name: displayName }) });
+    await ctx.answerCallbackQuery({
+      text: t("model.changed_callback", { name: displayName }),
+    });
     await ctx.reply(t("model.changed_message", { name: displayName }), {
       reply_markup: keyboard,
     });
@@ -124,7 +144,9 @@ export async function handleModelSelect(ctx: Context): Promise<boolean> {
   } catch (err) {
     clearActiveInlineMenu(chatId, "model_select_error");
     logger.error("[ModelHandler] Error handling model select:", err);
-    await ctx.answerCallbackQuery({ text: t("model.change_error_callback") }).catch(() => {});
+    await ctx
+      .answerCallbackQuery({ text: t("model.change_error_callback") })
+      .catch(() => {});
     return false;
   }
 }
@@ -146,7 +168,11 @@ export async function buildModelSelectionMenu(
     return keyboard;
   }
 
-  const addButton = (model: FavoriteModel, label: string, idx: number): void => {
+  const addButton = (
+    model: FavoriteModel,
+    label: string,
+    idx: number,
+  ): void => {
     const isActive =
       currentModel &&
       model.providerID === currentModel.providerID &&
@@ -161,7 +187,10 @@ export async function buildModelSelectionMenu(
 
   let idx = 0;
   for (const model of models) {
-    const groupLabel = model.providerID === "github-copilot" ? "🦊 GitHub Copilot" : "✨ OpenCode Zen";
+    const groupLabel =
+      model.providerID === "github-copilot"
+        ? "🦊 GitHub Copilot"
+        : "✨ OpenCode Zen";
     addButton(model, `${groupLabel} ${model.modelID}`, idx++);
   }
 

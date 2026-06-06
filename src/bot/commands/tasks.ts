@@ -20,24 +20,25 @@ export async function tasksCommand(ctx: CommandContext<Context>) {
     }
 
     const lines: string[] = [t("tasks.header"), ""];
-    
+
     const statusEmojis: Record<TaskStatus, string> = {
       queued: "⏳",
       running: "🔄",
       completed: "✅",
       error: "❌",
     };
-    
+
     for (const task of tasks) {
       const statusEmoji = statusEmojis[task.status];
-      
-      const shortPrompt = task.promptText.substring(0, 40).replace(/[<>&]/g, "") + "...";
+
+      const shortPrompt =
+        task.promptText.substring(0, 40).replace(/[<>&]/g, "") + "...";
       const createdTime = new Date(task.createdAt).toLocaleTimeString();
-      
+
       lines.push(`${statusEmoji} <code>${task.id.slice(0, 20)}...</code>`);
       lines.push(`   ${shortPrompt}`);
       lines.push(`   Created: ${createdTime} | Status: ${task.status}`);
-      
+
       if (task.status === "completed" && task.resultText) {
         const preview = task.resultText.substring(0, 80).replace(/[<>&]/g, "");
         lines.push(`   Result: ${preview}...`);
@@ -45,12 +46,11 @@ export async function tasksCommand(ctx: CommandContext<Context>) {
         const error = task.errorMessage.substring(0, 80).replace(/[<>&]/g, "");
         lines.push(`   Error: ${error}...`);
       }
-      
+
       lines.push("");
     }
-    
+
     await ctx.reply(lines.join("\n"), { parse_mode: "HTML" });
-    
   } catch (err) {
     logger.error("[Bot] tasksCommand error:", err);
     await ctx.reply(t("tasks.error"));

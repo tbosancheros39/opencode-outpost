@@ -49,9 +49,11 @@ export const bs: I18nDictionary = {
   "ask_and_leave.no_group": "❌ Ova komanda radi samo u grupama",
   "ask_and_leave.sending": "📨 Slanje pitanja administratorima grupe...",
   "ask_and_leave.success": "✅ Pitanje poslano administratorima grupe",
-  "ask_and_leave.usage": "📖 Upotreba: /ask_and_leave <pitanje> — Pitaj u grupi i napusti",
+  "ask_and_leave.usage":
+    "📖 Upotreba: /ask_and_leave <pitanje> — Pitaj u grupi i napusti",
 
-  "steer.usage": "Usage: /steer <new instruction>\n\nExample: /steer Stop looping and use python",
+  "steer.usage":
+    "Usage: /steer <new instruction>\n\nExample: /steer Stop looping and use python",
   "steer.abort_failed":
     "Could not interrupt the agent. The session is still busy. Try again or use /abort first.",
 
@@ -64,18 +66,22 @@ export const bs: I18nDictionary = {
   "error.context_button": "❌ Neuspješna obrada kontekst dugmeta",
   "error.generic": "🔴 Nešto je pošlo po zlu.",
 
-  "interaction.blocked.expired": "⚠️ Ova interakcija je istekla. Molim vas pokrenite je ponovo.",
+  "interaction.blocked.expired":
+    "⚠️ Ova interakcija je istekla. Molim vas pokrenite je ponovo.",
   "interaction.blocked.expected_callback":
     "⚠️ Za ovaj korak koristite inline dugmad ili dodirnite Otkaži.",
-  "interaction.blocked.expected_text": "⚠️ Za ovaj korak pošaljite tekstualnu poruku.",
+  "interaction.blocked.expected_text":
+    "⚠️ Za ovaj korak pošaljite tekstualnu poruku.",
   "interaction.blocked.expected_command": "⚠️ Za ovaj korak pošaljite komandu.",
-  "interaction.blocked.command_not_allowed": "⚠️ Ova komanda nije dostupna u trenutnom koraku.",
+  "interaction.blocked.command_not_allowed":
+    "⚠️ Ova komanda nije dostupna u trenutnom koraku.",
   "interaction.blocked.finish_current":
     "⚠️ Završite trenutnu interakciju prvo (odgovorite ili otkažite), zatim otvorite drugi meni.",
 
   "inline.blocked.expected_choice":
     "⚠️ Odaberite opciju koristeći inline dugmad ili dodirnite Otkaži.",
-  "inline.blocked.command_not_allowed": "⚠️ Ova komanda nije dostupna dok je inline meni aktivan.",
+  "inline.blocked.command_not_allowed":
+    "⚠️ Ova komanda nije dostupna dok je inline meni aktivan.",
 
   "question.blocked.expected_answer":
     "⚠️ Odgovorite na trenutno pitanje koristeći dugmad, Prilagođeni odgovor, ili Otkaži.",
@@ -90,29 +96,36 @@ export const bs: I18nDictionary = {
   "common.unknown_error": "nepoznata greška",
 
   // === Find Command ===
-  "cmd.find.usage": "Upotreba: /find <upit> - Pretraži historiju sesije\nPrimjer: /find autentifikacija",
+  "cmd.find.usage":
+    "Upotreba: /find <upit> - Pretraži historiju sesije\nPrimjer: /find autentifikacija",
   "cmd.find.searching": "Pretraga za: {query}...",
   "cmd.find.no_session": "Nema aktivne sesije. Pokrenite sesiju sa /new prvo.",
   "cmd.find.no_messages": "Nema pronađenih poruka u ovoj sesiji.",
   "cmd.find.no_results": "Nema rezultata za vašu pretragu.",
-  "cmd.find.results_header": "Rezultati pretrage za \"{query}\" ({count} pronađeno):\n\n",
+  "cmd.find.results_header":
+    'Rezultati pretrage za "{query}" ({count} pronađeno):\n\n',
   "cmd.find.error": "Neuspješna pretraga historije sesije.",
-  "cmd.find.error_query_too_long": "Upit predug. Molimo držite pretrage ispod 500 karaktera.",
+  "cmd.find.error_query_too_long":
+    "Upit predug. Molimo držite pretrage ispod 500 karaktera.",
 
   // === Pin Command ===
   "cmd.pin.usage_add": "Upotreba: /pin add <putanja>",
   "cmd.pin.usage_remove": "Upotreba: /pin remove <putanja>",
-  "cmd.pin.empty": "Nema prikvačenih fajlova. Koristite /pin <putanja> za prikvačivanje.",
+  "cmd.pin.empty":
+    "Nema prikvačenih fajlova. Koristite /pin <putanja> za prikvačivanje.",
   "cmd.pin.header": "📌 Prikvačeni fajlovi:",
-  "cmd.pin.hint": "Koristite /pin add <putanja> za dodavanje, /pin remove <putanja> za uklanjanje, /pin clear za brisanje svih.",
+  "cmd.pin.hint":
+    "Koristite /pin add <putanja> za dodavanje, /pin remove <putanja> za uklanjanje, /pin clear za brisanje svih.",
   "cmd.pin.added": "Prikvačeni fajl dodan: {path}",
   "cmd.pin.removed": "Uklonjen prikvačeni fajl: {path}",
   "cmd.pin.cleared": "Svi prikvačeni fajlovi obrisani.",
   "cmd.pin.not_found": "Prikvačeni fajl nije pronađen: {path}",
   "cmd.pin.already_pinned": "Fajl je već prikvačen: {path}",
   "cmd.pin.file_not_found": "Fajl nije pronađen: {path}",
-  "cmd.pin.error_is_directory": "Ne može se prikvačiti direktorij kao fajl: {path}",
-  "cmd.pin.limit_reached": "Dostignut maksimalan broj prikvačenih fajlova ({limit}). Prvo uklonite jedan.",
+  "cmd.pin.error_is_directory":
+    "Ne može se prikvačiti direktorij kao fajl: {path}",
+  "cmd.pin.limit_reached":
+    "Dostignut maksimalan broj prikvačenih fajlova ({limit}). Prvo uklonite jedan.",
   "cmd.pin.error_add": "Neuspješno prikvačivanje fajla.",
   "cmd.pin.error_remove": "Neuspješno uklanjanje prikvačenog fajla.",
   "cmd.pin.error_clear": "Neuspješno brisanje prikvačenih fajlova.",
@@ -120,19 +133,22 @@ export const bs: I18nDictionary = {
   "cmd.pin.button_refresh": "🔄 Osvježi",
   "cmd.pin.callback_invalid_index": "Nevažeći indeks datoteke.",
   "cmd.pin.menu_title": "📌 Prikači datoteke",
-  "cmd.pin.no_files": "Nema nedavnih ili prikačenih datoteka.\nPokrenite sesiju i interaktujte sa datotekama — automatski će se pojaviti ovdje.",
+  "cmd.pin.no_files":
+    "Nema nedavnih ili prikačenih datoteka.\nPokrenite sesiju i interaktujte sa datotekama — automatski će se pojaviti ovdje.",
   "cmd.pin.pinned_header": "📌 Prikačene — dodirnite za otkači:",
   "cmd.pin.recent_header": "📄 Nedavne — dodirnite za prikači:",
 
   // === Snapshot Command ===
-  "cmd.snapshot.no_session": "Nema aktivne sesije. Pokrenite sesiju sa /new prvo.",
+  "cmd.snapshot.no_session":
+    "Nema aktivne sesije. Pokrenite sesiju sa /new prvo.",
   "cmd.snapshot.saved": "Snimak sačuvan: {name}\nID: {id}",
   "cmd.snapshot.empty": "Nema pronađenih snimaka za ovu sesiju.",
   "cmd.snapshot.list_header": "📸 Snimci sesije:",
   "cmd.snapshot.list_page": "📸 Snimci sesije (stranica {page}):",
   "cmd.snapshot.prev_page": "Prethodna",
   "cmd.snapshot.next_page": "Sljedeća",
-  "cmd.snapshot.info": "Snimak: {name}\nID: {id}\nSesija: {session}\nDatum: {date}",
+  "cmd.snapshot.info":
+    "Snimak: {name}\nID: {id}\nSesija: {session}\nDatum: {date}",
   "cmd.snapshot.not_found": "Snimak nije pronađen: {id}",
   "cmd.snapshot.deleted": "Snimak obrisan: {id}",
   "cmd.snapshot.usage_load": "Upotreba: /snapshot load <id>",
@@ -141,10 +157,12 @@ export const bs: I18nDictionary = {
   "cmd.snapshot.error_list": "Neuspješno listanje snimaka.",
   "cmd.snapshot.error_load": "Neuspješno učitavanje snimka.",
   "cmd.snapshot.error_delete": "Neuspješno brisanje snimka.",
-  "cmd.snapshot.error_name_too_long": "Ime snimka predugo. Maksimum je 100 karaktera.",
+  "cmd.snapshot.error_name_too_long":
+    "Ime snimka predugo. Maksimum je 100 karaktera.",
 
   // === Resume Command ===
-  "cmd.resume.no_snapshots": "Nema pronađenih snimaka. Koristite /snapshot za čuvanje.",
+  "cmd.resume.no_snapshots":
+    "Nema pronađenih snimaka. Koristite /snapshot za čuvanje.",
   "cmd.resume.select": "Odaberite snimak za vraćanje:",
   "cmd.resume.select_page": "Odaberite snimak za vraćanje (stranica {page}):",
   "cmd.resume.prev_page": "Prethodna",
@@ -154,7 +172,8 @@ export const bs: I18nDictionary = {
   "cmd.resume.error": "Neuspješno vraćanje sesije.",
 
   // === Digest Command ===
-  "cmd.digest.no_session": "Nema aktivne sesije. Pokrenite sesiju sa /new prvo.",
+  "cmd.digest.no_session":
+    "Nema aktivne sesije. Pokrenite sesiju sa /new prvo.",
   "cmd.digest.generating": "Generisanje sažetka sesije...",
   "cmd.digest.header": "# Sažetak sesije: {title}\n\n",
   "cmd.digest.empty": "Nema poruka za sažetak.",
@@ -167,9 +186,18 @@ export const bs: I18nDictionary = {
   "help.text":
     "📖 **Pomoć**\n\n/status - Provjeri status servera\n/sessions - Lista sesija\n/new - Kreiraj novu sesiju\n/help - Pomoć",
 
+  "help.category.session": "📁 Sesija",
+  "help.category.tasks": "⚙️ Zadaci",
+  "help.category.local_ops": "📂 Lokalne operacije",
+  "help.category.git": "🔧 Git",
+  "help.category.browse": "🔍 Pregled",
+  "help.category.bot_control": "🤖 Kontrola bota",
+  "help.tip_commands": "💡 Savjet: Koristi /commands za interaktivnu tastaturu",
+
   "bot.thinking": "💭 Razmišljam...",
   "bot.working_on_it": "⏳ Primljeno, radim na tome...",
-  "bot.project_not_selected": "🏗 Projekat nije odabran.\n\nPrvo odaberite projekat sa /projects.",
+  "bot.project_not_selected":
+    "🏗 Projekat nije odabran.\n\nPrvo odaberite projekat sa /projects.",
   "bot.session_reset_to_global":
     "⚠️ Sesija je prebačena u Global Mode. Koristite /projects za rad sa projektom.",
   "bot.creating_session": "🔄 Kreiram novu sesiju...",
@@ -184,19 +212,24 @@ export const bs: I18nDictionary = {
   "bot.session_error": "🔴 OpenCode je vratio grešku: {message}",
   "bot.session_retry":
     "🔁 {message}\n\nPružatelj usluga nastavlja davati istu grešku pri ponovljenim pokušajima. Koristite /abort za prekid.",
-  "bot.unknown_command": "⚠️ Nepoznata komanda: {command}. Koristite /help za dostupne komande.",
+  "bot.unknown_command":
+    "⚠️ Nepoznata komanda: {command}. Koristite /help za dostupne komande.",
   "bot.photo_downloading": "⏳ Preuzimanje fotografije...",
   "bot.photo_too_large": "⚠️ Fotografija je prevelika (maks. {maxSizeMb}MB)",
-  "bot.photo_model_no_image": "⚠️ Trenutni model ne podržava ulaz slike. Šaljem samo tekst.",
+  "bot.photo_model_no_image":
+    "⚠️ Trenutni model ne podržava ulaz slike. Šaljem samo tekst.",
   "bot.photo_download_error": "🔴 Neuspješno preuzimanje fotografije",
   "bot.photo_no_caption":
     "💡 Savjet: Dodajte opis kako biste opisali šta želite uraditi sa ovom fotografijom.",
   "bot.file_downloading": "⏳ Preuzimanje fajla...",
   "bot.file_too_large": "⚠️ Fajl je preveliki (maks. {maxSizeMb}MB)",
   "bot.file_download_error": "🔴 Neuspješno preuzimanje fajla",
-  "bot.model_no_pdf": "⚠️ Trenutni model ne podržava PDF ulaz. Šaljem samo tekst.",
-  "bot.text_file_too_large": "⚠️ Tekstualni fajl je preveliki (maks. {maxSizeKb}KB)",
-  "chat_limit.exceeded": "⚠️ Too many active chats. Wait for previous conversations to finish.",
+  "bot.model_no_pdf":
+    "⚠️ Trenutni model ne podržava PDF ulaz. Šaljem samo tekst.",
+  "bot.text_file_too_large":
+    "⚠️ Tekstualni fajl je preveliki (maks. {maxSizeKb}KB)",
+  "chat_limit.exceeded":
+    "⚠️ Too many active chats. Wait for previous conversations to finish.",
   "rate_limit.exceeded": "⚠️ Too many messages. Please slow down.",
 
   "status.header_running": "🟢 OpenCode Server je pokrenut",
@@ -219,6 +252,16 @@ export const bs: I18nDictionary = {
   "status.session_hint": "Koristite /sessions za odabir ili /new za kreiranje",
   "status.server_unavailable":
     "🔴 OpenCode Server je nedostupan\n\nKoristite /opencode_start za pokretanje servera.",
+  "status.redis_down":
+    "❌ Redis ne odgovara. Pokrenite: redis-server (Linux) ili brew services start redis (macOS)",
+  "status.opencode_down":
+    "❌ OpenCode nije pokrenut. Pokrenite: opencode serve",
+  "status.both_down":
+    "❌ OpenCode nije pokrenut. Pokrenite: opencode serve\n❌ Redis ne odgovara. Pokrenite: redis-server (Linux) ili brew services start redis (macOS)",
+  "status.redis.connected": "🟢 Redis: Povezan ({latencyMs}ms)",
+  "status.redis.down": "🔴 Redis: Nedostupan",
+  "status.redis.skipped": "⚪ Redis: Preskočeno (onemogućeno)",
+  "status.queue.stats": "📊 Red: {pending} na čekanju, {active} aktivno",
   "status.health.checking": "Provjera...",
 
   // === File Explorer ===
@@ -241,27 +284,32 @@ export const bs: I18nDictionary = {
   "projects.empty":
     "📭 Nema pronađenih projekata.\n\nOtvorite direktorij u OpenCode-u i kreirajte barem jednu sesiju, pa će se pojaviti ovdje.",
   "projects.select": "Odaberite projekat:",
-  "projects.select_with_current": "Odaberite projekat:\n\nTrenutni: 🏗 {project}",
+  "projects.select_with_current":
+    "Odaberite projekat:\n\nTrenutni: 🏗 {project}",
   "projects.page_indicator": "Stranica {current}/{total}",
   "projects.prev_page": "⬅️ Prethodna",
   "projects.next_page": "Sljedeća ➡️",
   "projects.fetch_error":
     "🔴 OpenCode Server je nedostupan ili je došlo do greške pri učitavanju projekata.",
-  "projects.page_load_error": "Ne može se učitati ova stranica. Pokušajte ponovo.",
+  "projects.page_load_error":
+    "Ne može se učitati ova stranica. Pokušajte ponovo.",
   "projects.selected":
     "✅ Projekat odabran: {project}\n\n📋 Sesija je resetovana. Koristite /sessions ili /new za ovaj projekat.",
   "projects.select_error": "🔴 Neuspješan odabir projekta.",
 
   "sessions.project_not_selected":
     "🏗 Projekat nije odabran.\n\nPrvo odaberite projekat sa /projects.",
-  "sessions.empty": "📭 Nema pronađenih sesija.\n\nKreirajte novu sesiju sa /new.",
+  "sessions.empty":
+    "📭 Nema pronađenih sesija.\n\nKreirajte novu sesiju sa /new.",
   "sessions.select": "Odaberite sesiju:",
   "sessions.select_page": "Odaberite sesiju (stranica {page}):",
   "sessions.fetch_error":
     "🔴 OpenCode Server je nedostupan ili je došlo do greške pri učitavanju sesija.",
-  "sessions.select_project_first": "🔴 Projekat nije odabran. Koristite /projects.",
+  "sessions.select_project_first":
+    "🔴 Projekat nije odabran. Koristite /projects.",
   "sessions.page_empty_callback": "Nema sesija na ovoj stranici",
-  "sessions.page_load_error_callback": "Ne može se učitati ova stranica. Pokušajte ponovo.",
+  "sessions.page_load_error_callback":
+    "Ne može se učitati ova stranica. Pokušajte ponovo.",
   "sessions.button.prev_page": "⬅️ Prethodna",
   "sessions.button.next_page": "Sljedeća ➡️",
   "sessions.loading_context": "⏳ Učitavanje konteksta i najnovijih poruka...",
@@ -272,7 +320,8 @@ export const bs: I18nDictionary = {
   "sessions.preview.you": "Vi:",
   "sessions.preview.agent": "Agent:",
 
-  "new.project_not_selected": "🏗 Projekat nije odabran.\n\nPrvo odaberite projekat sa /projects.",
+  "new.project_not_selected":
+    "🏗 Projekat nije odabran.\n\nPrvo odaberite projekat sa /projects.",
   "new.created": "✅ Novu sesiju kreirano: {title}",
   "new.create_error":
     "🔴 OpenCode Server je nedostupan ili je došlo do greške pri kreiranju sesije.",
@@ -283,13 +332,16 @@ export const bs: I18nDictionary = {
     "🛑 Event stream zaustavljen, šaljem abort signal...\n\nČekanje da se agent zaustavi.",
   "stop.warn_unconfirmed":
     "⚠️ Event stream zaustavljen, ali server nije potvrdio abort.\n\nProvjerite /status i pokušajte /abort ponovo za nekoliko sekundi.",
-  "stop.warn_maybe_finished": "⚠️ Event stream zaustavljen, ali agent je možda već završio.",
-  "stop.success": "✅ Akcija agenta prekinuta. Više poruka iz ovog izvršavanja neće biti poslano.",
+  "stop.warn_maybe_finished":
+    "⚠️ Event stream zaustavljen, ali agent je možda već završio.",
+  "stop.success":
+    "✅ Akcija agenta prekinuta. Više poruka iz ovog izvršavanja neće biti poslano.",
   "stop.warn_still_busy":
     "⚠️ Signal poslan, ali agent je i dalje zauzet.\n\nEvent stream je već onemogućen, tako da se srednje poruke neće slati.",
   "stop.warn_timeout":
     "⚠️ Timeout zahtjeva za abort.\n\nEvent stream je već onemogućen, pokušajte /abort ponovo za nekoliko sekundi.",
-  "stop.warn_local_only": "⚠️ Event stream zaustavljen lokalno, ali server-side abort nije uspio.",
+  "stop.warn_local_only":
+    "⚠️ Event stream zaustavljen lokalno, ali server-side abort nije uspio.",
   "stop.error":
     "🔴 Neuspješno zaustavljanje akcije.\n\nEvent stream je zaustavljen, pokušajte /abort ponovo.",
 
@@ -309,8 +361,10 @@ export const bs: I18nDictionary = {
   "opencode_stop.external_running":
     "⚠️ OpenCode Server je pokrenut kao vanjski proces\n\nOvaj server nije pokrenut putem /opencode-start.\nZaustavite ga ručno ili koristite /status za provjeru stanja.",
   "opencode_stop.not_running": "⚠️ OpenCode Server nije pokrenut",
-  "opencode_stop.stopping": "🛑 Zaustavljanje OpenCode Servera...\n\nPID: {pid}",
-  "opencode_stop.stop_error": "🔴 Neuspješno zaustavljanje OpenCode Servera\n\nGreška: {error}",
+  "opencode_stop.stopping":
+    "🛑 Zaustavljanje OpenCode Servera...\n\nPID: {pid}",
+  "opencode_stop.stop_error":
+    "🔴 Neuspješno zaustavljanje OpenCode Servera\n\nGreška: {error}",
   "opencode_stop.success": "✅ OpenCode Server uspješno zaustavljen",
   "opencode_stop.error":
     "🔴 Došlo je do greške pri zaustavljanju servera.\n\nProvjerite aplikacijske logove za detalje.",
@@ -329,11 +383,13 @@ export const bs: I18nDictionary = {
   "model.menu.empty": "⚠️ Nema dostupnih modela",
   "model.menu.select": "Odaberite model:",
   "model.menu.current": "Trenutni model: {name}\n\nOdaberite model:",
-  "model.menu.favorites_title": "⭐ Favoriti (Dodajte modele u favorite u OpenCode CLI)",
+  "model.menu.favorites_title":
+    "⭐ Favoriti (Dodajte modele u favorite u OpenCode CLI)",
   "model.menu.favorites_empty": "— Prazno.",
   "model.menu.recent_title": "🕘 Nedavno",
   "model.menu.recent_empty": "— Prazno.",
-  "model.menu.favorites_hint": "ℹ️ Dodajte modele u favorite u OpenCode CLI da bi ostali na vrhu.",
+  "model.menu.favorites_hint":
+    "ℹ️ Dodajte modele u favorite u OpenCode CLI da bi ostali na vrhu.",
   "model.menu.error": "🔴 Neuspješno učitavanje liste modela",
 
   "variant.model_not_selected_callback": "Greška: model nije odabran",
@@ -346,7 +402,8 @@ export const bs: I18nDictionary = {
   "variant.menu.error": "🔴 Neuspješno učitavanje liste varijanti",
 
   "context.button.confirm": "✅ Da, kompaktuj kontekst",
-  "context.no_active_session": "⚠️ Nema aktivne sesije. Kreirajte sesiju sa /new",
+  "context.no_active_session":
+    "⚠️ Nema aktivne sesije. Kreirajte sesiju sa /new",
   "context.confirm_text":
     '📊 Kompaktovanje konteksta za sesiju "{title}"\n\nOvo će smanjiti korištenje konteksta uklanjanjem starih poruka iz historije. Trenutni zadatak neće biti prekinut.\n\nNastaviti?',
   "context.callback_session_not_found": "Sesiju nije pronađena",
@@ -361,8 +418,10 @@ export const bs: I18nDictionary = {
   "permission.reply.once": "Dozvoljeno jednom",
   "permission.reply.always": "Uvijek dozvoljeno",
   "permission.reply.reject": "Odbijeno",
-  "permission.send_reply_error": "❌ Neuspješno slanje odgovora na zahtjev za dozvolu",
-  "permission.denied.super_user_only": "⚠️ Ova akcija zahtijeva dozvolu super korisnika.",
+  "permission.send_reply_error":
+    "❌ Neuspješno slanje odgovora na zahtjev za dozvolu",
+  "permission.denied.super_user_only":
+    "⚠️ Ova akcija zahtijeva dozvolu super korisnika.",
   "permission.blocked.expected_reply":
     "⚠️ Prvo odgovorite na zahtjev za dozvolu koristeći dugmad iznad.",
   "permission.blocked.command_not_allowed":
@@ -387,9 +446,11 @@ export const bs: I18nDictionary = {
   "question.inactive_callback": "Anketa je neaktivna",
   "question.processing_error_callback": "Greška pri obradi",
   "question.select_one_required_callback": "Odaberite barem jednu opciju",
-  "question.enter_custom_callback": "Pošaljite svoj prilagođeni odgovor kao poruku",
+  "question.enter_custom_callback":
+    "Pošaljite svoj prilagođeni odgovor kao poruku",
   "question.cancelled": "❌ Anketa otkazana",
-  "question.answer_already_received": "Odgovor već primljen, molim vas sačekajte...",
+  "question.answer_already_received":
+    "Odgovor već primljen, molim vas sačekajte...",
   "question.completed_no_answers": "✅ Anketa završena (bez odgovora)",
   "question.no_active_project": "❌ Nema aktivnog projekta",
   "question.no_active_request": "❌ Nema aktivnog zahtjeva",
@@ -427,12 +488,15 @@ export const bs: I18nDictionary = {
   "tool.file_header.edit":
     "Uredi Fajl/Putanja: {path}\n============================================================\n\n",
 
-  "runtime.wizard.ask_token": "Unesite Telegram bot token (dobijte ga od @BotFather).\n> ",
+  "runtime.wizard.ask_token":
+    "Unesite Telegram bot token (dobijte ga od @BotFather).\n> ",
   "runtime.wizard.ask_language":
     "Odaberite jezik interfejsa.\nUnesite broj jezika iz liste ili locale kod.\nPritisnite Enter za zadržavanje podrazumijevanog jezika: {defaultLocale}\n{options}\n> ",
-  "runtime.wizard.language_invalid": "Unesite broj jezika iz liste ili podržani locale kod.\n",
+  "runtime.wizard.language_invalid":
+    "Unesite broj jezika iz liste ili podržani locale kod.\n",
   "runtime.wizard.language_selected": "Odabrani jezik: {language}\n",
-  "runtime.wizard.token_required": "Token je obavezan. Molim vas pokušajte ponovo.\n",
+  "runtime.wizard.token_required":
+    "Token je obavezan. Molim vas pokušajte ponovo.\n",
   "runtime.wizard.token_invalid":
     "Token izgleda nevažeće (očekivani format <id>:<secret>). Molim vas pokušajte ponovo.\n",
   "runtime.wizard.ask_user_id":
@@ -447,20 +511,23 @@ export const bs: I18nDictionary = {
   "runtime.wizard.api_url_invalid":
     "Unesite važeći URL (http/https) ili pritisnite Enter za podrazumijevano.\n",
   "runtime.wizard.start": "OpenCode Telegram Bot postavljanje.\n",
-  "runtime.wizard.saved": "Konfiguracija sačuvana:\n- {envPath}\n- {settingsPath}\n",
+  "runtime.wizard.saved":
+    "Konfiguracija sačuvana:\n- {envPath}\n- {settingsPath}\n",
   "runtime.wizard.not_configured_starting":
     "Aplikacija još nije konfigurisana. Pokretanje čarobnjaka...\n",
   "runtime.wizard.tty_required":
     "Interaktivni čarobnjak zahtijeva TTY terminal. Pokrenite `opencode-telegram config` u interaktivnom shell-u.",
 
-  "rename.no_session": "⚠️ Nema aktivne sesije. Kreirajte ili odaberite sesiju prvo.",
+  "rename.no_session":
+    "⚠️ Nema aktivne sesije. Kreirajte ili odaberite sesiju prvo.",
   "rename.prompt": "📝 Unesite novi naslov za sesiju:\n\nTrenutni: {title}",
   "rename.empty_title": "⚠️ Naslov ne može biti prazan.",
   "rename.success": "✅ Sesiju preimenovano u: {title}",
   "rename.error": "�️ Neuspješno preimenovanje sesije.",
   "rename.cancelled": "❌ Preimenovanje otkazano.",
   "rename.inactive_callback": "Zahtjev za preimenovanje je neaktivan",
-  "rename.inactive": "⚠️ Zahtjev za preimenovanje nije aktivan. Pokrenite /rename ponovo.",
+  "rename.inactive":
+    "⚠️ Zahtjev za preimenovanje nije aktivan. Pokrenite /rename ponovo.",
   "rename.blocked.expected_name":
     "⚠️ Pošaljite novi naziv sesije kao tekst ili dodirnite Otkaži u poruci za preimenovanje.",
   "rename.blocked.command_not_allowed":
@@ -487,7 +554,8 @@ export const bs: I18nDictionary = {
   "task.cancel_callback": "Otkazivanje...",
   "task.cancelled": "❌ Kreiranje zakazanog zadatka otkazano.",
   "task.inactive_callback": "Ovaj tok zakazanog zadatka je neaktivan",
-  "task.inactive": "⚠️ Kreiranje zakazanog zadatka nije aktivan. Pokrenite /task ponovo.",
+  "task.inactive":
+    "⚠️ Kreiranje zakazanog zadatka nije aktivan. Pokrenite /task ponovo.",
   "task.blocked.expected_input":
     "⚠️ Završite trenutno postavljanje zakazanog zadatka slanjem teksta ili korištenjem dugmeta u poruci o rasporedu.",
   "task.blocked.command_not_allowed":
@@ -499,7 +567,8 @@ export const bs: I18nDictionary = {
   "task.kind.cron": "ponavljajući",
   "task.kind.once": "jednokratno",
   "task.run.success": "⏰ Zakazani zadatak završen: {description}",
-  "task.run.error": "🔴 Zakazani zadatak nije uspio: {description}\n\nGreška: {error}",
+  "task.run.error":
+    "🔴 Zakazani zadatak nije uspio: {description}\n\nGreška: {error}",
 
   "tasklist.empty": "📭 Još nema zakazanih zadataka.",
   "tasklist.select": "Odaberite zakazani zadatak:",
@@ -532,7 +601,8 @@ export const bs: I18nDictionary = {
   "commands.button.prev_page": "⬅️ Prethodna",
   "commands.button.next_page": "Sljedeća ➡️",
   "commands.page_empty_callback": "Nema komandi na ovoj stranici",
-  "commands.page_load_error_callback": "Ne može se učitati ova stranica. Pokušajte ponovo.",
+  "commands.page_load_error_callback":
+    "Ne može se učitati ova stranica. Pokušajte ponovo.",
 
   "cli.usage":
     "Upotreba:\n  opencode-telegram [start] [--mode sources|installed]\n  opencode-telegram status\n  opencode-telegram stop\n  opencode-telegram config\n\nNapomene:\n  - Bez komande podrazumijeva se `start`\n  - `--mode` je trenutno podržan samo za `start`",
@@ -543,19 +613,21 @@ export const bs: I18nDictionary = {
   "cli.placeholder.unavailable": "Komanda nije dostupna.",
   "cli.error.prefix": "CLI greška: {message}",
   "cli.args.unknown_command": "Nepoznata komanda: {value}",
-  "cli.args.mode_requires_value": "Opcija --mode zahtijeva vrijednost: sources|installed",
-  "cli.args.invalid_mode": "Nevažeća vrijednost za --mode: {value}. Očekivano sources|installed",
+  "cli.args.mode_requires_value":
+    "Opcija --mode zahtijeva vrijednost: sources|installed",
+  "cli.args.invalid_mode":
+    "Nevažeća vrijednost za --mode: {value}. Očekivano sources|installed",
   "cli.args.unknown_option": "Nepoznata opcija: {value}",
   "cli.args.mode_only_start": "Opcija --mode je podržana samo za start komandu",
 
   "legacy.models.fetch_error":
     "🔴 Neuspješno učitavanje liste modela. Provjerite status servera sa /status.",
-  "legacy.models.empty": "📋 Nema dostupnih modela. Konfigurišite pružaoce u OpenCode.",
+  "legacy.models.empty":
+    "📋 Nema dostupnih modela. Konfigurišite pružaoce u OpenCode.",
   "legacy.models.header": "📋 Dostupni modeli:\n\n",
   "legacy.models.no_provider_models": "  ⚠️ Nema dostupnih modela\n",
   "legacy.models.env_hint": "💡 Za korištenje modela u .env:\n",
   "legacy.models.error": "An error occurred while loading models list.",
-
 
   "stt.recognizing": "🎤 Prepoznavanje audio zapisa...",
   "stt.recognized": "🎤 Prepoznato:\n{text}",
@@ -564,18 +636,24 @@ export const bs: I18nDictionary = {
   "stt.error": "🔴 Neuspješno prepoznavanje audio zapisa: {error}",
   "stt.empty_result": "🎤 Govor nije detektovan u audio poruci.",
 
-  "export.no_session": "⚠️ No active session.\n\nCreate or select a session first.",
+  "export.no_session":
+    "⚠️ No active session.\n\nCreate or select a session first.",
   "export.exporting": "📤 <i>Exporting session...</i>",
   "export.success": "✅ Session exported: {title}",
   "export.error": "🔴 Export failed: {message}",
   "export.error_no_session": "⚠️ Unable to identify chat.",
 
-  "messages.no_session": "⚠️ No active session.\n\nCreate or select a session first.",
-  "messages.no_project": "🏗 Project is not selected.\n\nFirst select a project with /projects.",
-  "messages.empty": "📭 No messages in this session.\n\nStart a conversation to see messages here.",
-  "messages.error_load": "🔴 Failed to load messages.\n\nCheck server status with /status.",
+  "messages.no_session":
+    "⚠️ No active session.\n\nCreate or select a session first.",
+  "messages.no_project":
+    "🏗 Project is not selected.\n\nFirst select a project with /projects.",
+  "messages.empty":
+    "📭 No messages in this session.\n\nStart a conversation to see messages here.",
+  "messages.error_load":
+    "🔴 Failed to load messages.\n\nCheck server status with /status.",
   "messages.error_no_session": "⚠️ Unable to identify chat.",
-  "messages.header": "💬 Messages ({from}-{to} of {total})\n\nScroll through session history.",
+  "messages.header":
+    "💬 Messages ({from}-{to} of {total})\n\nScroll through session history.",
   "messages.button.prev": "◀ Prev",
   "messages.button.next": "Next ▶",
   "messages.button.fork": "🔄 Fork",
@@ -584,18 +662,24 @@ export const bs: I18nDictionary = {
   "messages.inactive_callback": "This messages menu is inactive",
   "messages.cancelled_callback": "Cancelled",
   "messages.forking": "🔄 Forking session...",
-  "messages.fork_success": "✅ Session forked successfully.\n\nNew session ID: {newSessionId}",
+  "messages.fork_success":
+    "✅ Session forked successfully.\n\nNew session ID: {newSessionId}",
   "messages.fork_error": "🔴 Failed to fork session.",
   "messages.reverting": "↩️ Reverting session...",
   "messages.revert_success": "✅ Session reverted successfully.",
   "messages.revert_error": "🔴 Failed to revert session.",
 
-  "skills.no_project": "🏗 Project is not selected.\n\nFirst select a project with /projects.",
-  "skills.empty": "📭 No skills available.\n\nSkills are defined in your OpenCode configuration.",
-  "skills.error_load": "🔴 Failed to load skills.\n\nCheck server status with /status.",
+  "skills.no_project":
+    "🏗 Project is not selected.\n\nFirst select a project with /projects.",
+  "skills.empty":
+    "📭 No skills available.\n\nSkills are defined in your OpenCode configuration.",
+  "skills.error_load":
+    "🔴 Failed to load skills.\n\nCheck server status with /status.",
   "skills.error_no_session": "⚠️ Unable to identify chat.",
-  "skills.header": "🛠 Skills ({from}-{to} of {total})\n\nSelect a skill to activate:",
-  "skills.hint": "💡 Skills extend OpenCode capabilities. Activation is per-session.",
+  "skills.header":
+    "🛠 Skills ({from}-{to} of {total})\n\nSelect a skill to activate:",
+  "skills.hint":
+    "💡 Skills extend OpenCode capabilities. Activation is per-session.",
   "skills.no_description": "No description",
   "skills.button.prev": "◀ Prev",
   "skills.button.next": "Next ▶",
@@ -609,12 +693,15 @@ export const bs: I18nDictionary = {
   "skills.no_session_warning":
     "⚠️ No active session.\n\nCreate or select a session first to use skills.",
 
-  "mcps.no_project": "🏗 Project is not selected.\n\nFirst select a project with /projects.",
+  "mcps.no_project":
+    "🏗 Project is not selected.\n\nFirst select a project with /projects.",
   "mcps.empty":
     "📭 No MCP servers configured.\n\nMCP servers are defined in your OpenCode configuration.",
-  "mcps.error_load": "🔴 Failed to load MCP servers.\n\nCheck server status with /status.",
+  "mcps.error_load":
+    "🔴 Failed to load MCP servers.\n\nCheck server status with /status.",
   "mcps.error_no_chat": "⚠️ Unable to identify chat.",
-  "mcps.header": "🔌 MCP Servers ({total})\n\nManage your Model Context Protocol servers:",
+  "mcps.header":
+    "🔌 MCP Servers ({total})\n\nManage your Model Context Protocol servers:",
   "mcps.hint": "💡 Use buttons below to connect or disconnect servers.",
   "mcps.status.connected": "Connected",
   "mcps.status.disabled": "Disabled",
@@ -641,18 +728,22 @@ export const bs: I18nDictionary = {
   "inline.cmd.deep_research.title": "🔬 Deep Research",
   "inline.cmd.deep_research.description": "Thorough, detailed investigation",
   "inline.cmd.steel_man.title": "💪 Steel-Man",
-  "inline.cmd.steel_man.description": "Make an argument stronger (opposite of straw-man)",
+  "inline.cmd.steel_man.description":
+    "Make an argument stronger (opposite of straw-man)",
   "inline.cmd.feynman.title": "🎓 Feynman",
-  "inline.cmd.feynman.description": "Teach a concept simply (Feynman technique)",
+  "inline.cmd.feynman.description":
+    "Teach a concept simply (Feynman technique)",
   "inline.cmd.devils_advocate.title": "😈 Devil's Advocate",
   "inline.cmd.devils_advocate.description": "Argue the opposing view",
   "inline.cmd.error.query_too_short":
     "⚠️ Please provide more context (at least {min} characters after the command)",
-  "inline.cmd.error.resolution_failed": "⚠️ Failed to generate response. Please try again.",
+  "inline.cmd.error.resolution_failed":
+    "⚠️ Failed to generate response. Please try again.",
   "inline.cmd.suggestion.usage": "Use: {prefix} [your question]",
   "inline.cmd.button.generate": "✅ Generate Answer",
   "inline.cmd.button.edit": "✏️ Edit Query",
-  "inline.cmd.error.callback_expired": "⚠️ This inline request expired. Please send it again.",
+  "inline.cmd.error.callback_expired":
+    "⚠️ This inline request expired. Please send it again.",
   "inline.cmd.error.callback_invalid": "⚠️ This inline action is invalid.",
   "inline.thinking": "🧠 Razmišljam... trenutak!",
   // ── LLM Guard (Two-Phase) ──────────────────────────────────────────────
@@ -667,23 +758,28 @@ export const bs: I18nDictionary = {
     '<b>/{command}</b>: "{query}"\n\n⚠️ Neuspješno dodavanje u red. Pokušati ponovo?',
   "llm.guard.fallback_query": "Koji je vaš upit?",
   "llm.guard.blocked": "⛔️ Komanda blokirana: {reason}",
-  "llm.guard.command_blocked": "⛔️ Ova komanda nije dozvoljena od strane LLM zaštite",
+  "llm.guard.command_blocked":
+    "⛔️ Ova komanda nije dozvoljena od strane LLM zaštite",
   "llm.guard.not_allowed": "⛔️ Nije dozvoljeno",
   "tts.enabled": "🔊 Text-to-speech uključen",
   "tts.disabled": "🔇 Text-to-speech isključen",
   "tts.error": "❌ TTS greška",
   "tts.failed": "❌ Neuspješno generisanje audio odgovora.",
-  "tts.not_configured": "⚠️ TTS nije konfigurisan. Postavite TTS_API_URL i TTS_API_KEY.",
-  "tts.text_too_long": "⚠️ Tekst previše dugačak za TTS (maksimalno {max} karaktera)",
+  "tts.not_configured":
+    "⚠️ TTS nije konfigurisan. Postavite TTS_API_URL i TTS_API_KEY.",
+  "tts.text_too_long":
+    "⚠️ Tekst previše dugačak za TTS (maksimalno {max} karaktera)",
 
   // === Tasks Command ===
   "tasks.no_user": "❌ Nije moguće identificirati korisnika.",
-  "tasks.empty": "📋 Nije pronađen nijedan zadatak. Pošaljite poruku da kreirate zadatak!",
+  "tasks.empty":
+    "📋 Nije pronađen nijedan zadatak. Pošaljite poruku da kreirate zadatak!",
   "tasks.header": "📋 <b>Vaši nedavni zadaci</b>",
   "tasks.error": "❌ Nije moguće dohvatiti zadatke.",
 
   // === Shell Command ===
-  "shell.usage": "⚠️ Molimo navedite komandu.\nUpotreba: <code>/shell ls -la</code>",
+  "shell.usage":
+    "⚠️ Molimo navedite komandu.\nUpotreba: <code>/shell ls -la</code>",
   "shell.expired": "Komanda je istekla. Molimo pokušajte ponovo.",
   "shell.executing": "Izvršava se...",
   "shell.cancelled": "Otkazano",
@@ -724,7 +820,8 @@ export const bs: I18nDictionary = {
   "journal.watch_started":
     "👀 <b>Journal način praćenja pokrenut</b>\n\nPratit ću nove sistemske greške i obavještavati vas.\n\nKoristite /journal za provjeru nedavnih grešaka.",
   "journal.fetching": "📋 <i>Dohvaćanje nedavnih sistemskih grešaka...</i>",
-  "journal.error": "❌ <b>Greška pri dohvaćanju journal-a:</b>\n<pre>{message}</pre>",
+  "journal.error":
+    "❌ <b>Greška pri dohvaćanju journal-a:</b>\n<pre>{message}</pre>",
 
   // === Health Command ===
   "health.checking": "📊 Provjera stanja sistema...",
@@ -745,7 +842,8 @@ export const bs: I18nDictionary = {
   "git.branch.header": "🌿 <b>Git grane</b>",
   "git.branch.header_part": "🌿 <b>Git grane ({part}/{total})</b>",
   "git.branch.error": "❌ <b>Git branch greška:</b>\n<pre>{message}</pre>",
-  "git.commit.usage": "⚠️ Molimo navedite poruku za commit.\nUpotreba: <code>/commit Vaša poruka</code>",
+  "git.commit.usage":
+    "⚠️ Molimo navedite poruku za commit.\nUpotreba: <code>/commit Vaša poruka</code>",
   "git.commit.committing": "📝 Commitovanje promjena...",
   "git.commit.success": "Promjene uspješno commitovane.",
   "git.commit.header": "📝 <b>Git Commit</b>",

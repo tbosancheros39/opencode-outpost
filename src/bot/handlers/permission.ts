@@ -113,19 +113,28 @@ export async function handlePermissionCallback(ctx: Context): Promise<boolean> {
 
   if (!permissionManager.isActive(chatId)) {
     clearPermissionInteraction(chatId, "permission_inactive_callback");
-    await ctx.answerCallbackQuery({ text: t("permission.inactive_callback"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("permission.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
   const callbackMessageId = getCallbackMessageId(ctx);
   if (!permissionManager.isActiveMessage(chatId, callbackMessageId)) {
-    await ctx.answerCallbackQuery({ text: t("permission.inactive_callback"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("permission.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
   const requestID = permissionManager.getRequestID(chatId, callbackMessageId);
   if (!requestID) {
-    await ctx.answerCallbackQuery({ text: t("permission.inactive_callback"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("permission.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
@@ -192,7 +201,9 @@ async function handlePermissionReply(
 
   summaryAggregator.stopTypingIndicator();
 
-  logger.info(`[PermissionHandler] Sending permission reply: ${reply}, requestID=${requestID}`);
+  logger.info(
+    `[PermissionHandler] Sending permission reply: ${reply}, requestID=${requestID}`,
+  );
 
   safeBackgroundTask({
     taskName: "permission.reply",
@@ -204,9 +215,14 @@ async function handlePermissionReply(
       }),
     onSuccess: ({ error }) => {
       if (error) {
-        logger.error("[PermissionHandler] Failed to send permission reply:", error);
+        logger.error(
+          "[PermissionHandler] Failed to send permission reply:",
+          error,
+        );
         if (ctx.api && chatId) {
-          void ctx.api.sendMessage(chatId, t("permission.send_reply_error")).catch(() => {});
+          void ctx.api
+            .sendMessage(chatId, t("permission.send_reply_error"))
+            .catch(() => {});
         }
         return;
       }
@@ -235,7 +251,9 @@ export async function showPermissionRequest(
   chatId: number,
   request: PermissionRequest,
 ): Promise<void> {
-  logger.debug(`[PermissionHandler] Showing permission request: ${request.permission}`);
+  logger.debug(
+    `[PermissionHandler] Showing permission request: ${request.permission}`,
+  );
 
   const text = formatPermissionText(request);
   const keyboard = buildPermissionKeyboard();
@@ -245,7 +263,9 @@ export async function showPermissionRequest(
       reply_markup: keyboard,
     });
 
-    logger.debug(`[PermissionHandler] Message sent, messageId=${message.message_id}`);
+    logger.debug(
+      `[PermissionHandler] Message sent, messageId=${message.message_id}`,
+    );
     permissionManager.startPermission(chatId, request, message.message_id);
 
     syncPermissionInteractionState(chatId, {

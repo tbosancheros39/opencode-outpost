@@ -52,7 +52,9 @@ function classifyIncomingInput(ctx: Context): {
   return { inputType: "other" };
 }
 
-function getExpectedInputBlockReason(expectedInput: ExpectedInput): BlockReason {
+function getExpectedInputBlockReason(
+  expectedInput: ExpectedInput,
+): BlockReason {
   switch (expectedInput) {
     case "callback":
       return "expected_callback";
@@ -112,7 +114,10 @@ function createBusyBlockDecision(
   };
 }
 
-function isAllowedRenameCancelCallback(ctx: Context, state: InteractionState): boolean {
+function isAllowedRenameCancelCallback(
+  ctx: Context,
+  state: InteractionState,
+): boolean {
   return (
     state.kind === "rename" &&
     state.expectedInput === "text" &&
@@ -123,7 +128,8 @@ function isAllowedRenameCancelCallback(ctx: Context, state: InteractionState): b
 function isAllowedTaskCallback(ctx: Context, state: InteractionState): boolean {
   return (
     state.kind === "task" &&
-    (ctx.callbackQuery?.data === "task:cancel" || ctx.callbackQuery?.data === "task:retry-schedule")
+    (ctx.callbackQuery?.data === "task:cancel" ||
+      ctx.callbackQuery?.data === "task:retry-schedule")
   );
 }
 
@@ -145,7 +151,12 @@ export function resolveInteractionGuardDecision(ctx: Context): GuardDecision {
         return createAllowDecision(inputType, state, command, true);
       }
 
-      return createBusyBlockDecision(inputType, state, "command_not_allowed", command);
+      return createBusyBlockDecision(
+        inputType,
+        state,
+        "command_not_allowed",
+        command,
+      );
     }
 
     if (state && allowsBusyInteraction(state.kind)) {
@@ -154,7 +165,12 @@ export function resolveInteractionGuardDecision(ctx: Context): GuardDecision {
           return createAllowDecision(inputType, state, command, true);
         }
 
-        return createBusyBlockDecision(inputType, state, "expected_text", command);
+        return createBusyBlockDecision(
+          inputType,
+          state,
+          "expected_text",
+          command,
+        );
       }
 
       if (state.expectedInput === inputType) {
@@ -185,7 +201,12 @@ export function resolveInteractionGuardDecision(ctx: Context): GuardDecision {
       return createAllowDecision(inputType, state, command);
     }
 
-    return createBlockDecision(inputType, state, "command_not_allowed", command);
+    return createBlockDecision(
+      inputType,
+      state,
+      "command_not_allowed",
+      command,
+    );
   }
 
   if (state.expectedInput === "mixed") {

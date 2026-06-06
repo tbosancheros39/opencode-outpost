@@ -1,4 +1,7 @@
-import type { StreamingMessagePayload, ResponseStreamer } from "../streaming/response-streamer.js";
+import type {
+  StreamingMessagePayload,
+  ResponseStreamer,
+} from "../streaming/response-streamer.js";
 import type { TelegramTextFormat } from "./telegram-text.js";
 
 interface FinalizeAssistantResponseOptions {
@@ -8,7 +11,9 @@ interface FinalizeAssistantResponseOptions {
   messageText: string;
   responseStreamer: Pick<ResponseStreamer, "complete">;
   flushPendingServiceMessages: () => Promise<void>;
-  prepareStreamingPayload: (messageText: string) => StreamingMessagePayload | null;
+  prepareStreamingPayload: (
+    messageText: string,
+  ) => StreamingMessagePayload | null;
   formatSummary: (messageText: string) => string[];
   resolveFormat: () => TelegramTextFormat;
   getReplyKeyboard: () => unknown;

@@ -2,7 +2,12 @@ import type { CodeFileData } from "./formatter.js";
 import { config } from "../config.js";
 import { logger } from "../utils/logger.js";
 
-const FILE_TOOL_NAMES = ["write_file", "edit_file", "create_file", "patch_file"];
+const FILE_TOOL_NAMES = [
+  "write_file",
+  "edit_file",
+  "create_file",
+  "patch_file",
+];
 
 export function shouldDisplayToolMessage(toolName: string): boolean {
   if (config.bot.hideToolFileMessages) {
@@ -17,7 +22,10 @@ const DEFAULT_INTERVAL_SECONDS = 5;
 const TELEGRAM_MESSAGE_MAX_LENGTH = 4096;
 
 type SendTextCallback = (sessionId: string, text: string) => Promise<void>;
-type SendFileCallback = (sessionId: string, fileData: CodeFileData) => Promise<void>;
+type SendFileCallback = (
+  sessionId: string,
+  fileData: CodeFileData,
+) => Promise<void>;
 
 interface ToolMessageBatcherOptions {
   intervalSeconds: number;
@@ -63,7 +71,8 @@ export class ToolMessageBatcher {
   private readonly sendText: SendTextCallback;
   private readonly sendFile: SendFileCallback;
   private readonly queues: Map<string, QueueItem[]> = new Map();
-  private readonly timers: Map<string, ReturnType<typeof setTimeout>> = new Map();
+  private readonly timers: Map<string, ReturnType<typeof setTimeout>> =
+    new Map();
   private readonly sessionTasks: Map<string, Promise<void>> = new Map();
   private generation = 0;
 
@@ -112,11 +121,20 @@ export class ToolMessageBatcher {
       `[ToolBatcher] Sending immediate text message outside queue: session=${sessionId}, reason=${reason}`,
     );
     void this.enqueueTask(sessionId, () =>
-      this.sendTextSafe(sessionId, normalizedMessage, reason, expectedGeneration),
+      this.sendTextSafe(
+        sessionId,
+        normalizedMessage,
+        reason,
+        expectedGeneration,
+      ),
     );
   }
 
-  enqueueUniqueByPrefix(sessionId: string, message: string, prefix: string): void {
+  enqueueUniqueByPrefix(
+    sessionId: string,
+    message: string,
+    prefix: string,
+  ): void {
     this.enqueueTextInternal(sessionId, message, prefix);
   }
 
@@ -127,7 +145,9 @@ export class ToolMessageBatcher {
 
     if (this.intervalSeconds === 0) {
       const expectedGeneration = this.generation;
-      logger.debug(`[ToolBatcher] Sending immediate file message: session=${sessionId}`);
+      logger.debug(
+        `[ToolBatcher] Sending immediate file message: session=${sessionId}`,
+      );
       void this.enqueueTask(sessionId, () =>
         this.sendFileSafe(sessionId, fileData, "immediate", expectedGeneration),
       );
@@ -145,7 +165,9 @@ export class ToolMessageBatcher {
   }
 
   async flushSession(sessionId: string, reason: string): Promise<void> {
-    await this.enqueueTask(sessionId, () => this.flushSessionInternal(sessionId, reason));
+    await this.enqueueTask(sessionId, () =>
+      this.flushSessionInternal(sessionId, reason),
+    );
   }
 
   async flushAll(reason: string): Promise<void> {
@@ -164,7 +186,9 @@ export class ToolMessageBatcher {
     this.clearTimer(sessionId);
 
     if (this.queues.delete(sessionId)) {
-      logger.debug(`[ToolBatcher] Cleared session queue: session=${sessionId}, reason=${reason}`);
+      logger.debug(
+        `[ToolBatcher] Cleared session queue: session=${sessionId}, reason=${reason}`,
+      );
     }
   }
 
@@ -215,7 +239,10 @@ export class ToolMessageBatcher {
     this.timers.set(sessionId, timer);
   }
 
-  private enqueueTask(sessionId: string, task: () => Promise<void>): Promise<void> {
+  private enqueueTask(
+    sessionId: string,
+    task: () => Promise<void>,
+  ): Promise<void> {
     const previousTask = this.sessionTasks.get(sessionId) ?? Promise.resolve();
     const nextTask = previousTask
       .catch(() => undefined)
@@ -230,7 +257,11 @@ export class ToolMessageBatcher {
     return nextTask;
   }
 
-  private enqueueTextInternal(sessionId: string, message: string, uniquePrefix?: string): void {
+  private enqueueTextInternal(
+    sessionId: string,
+    message: string,
+    uniquePrefix?: string,
+  ): void {
     const normalizedMessage = message.trim();
     if (!sessionId || normalizedMessage.length === 0) {
       return;
@@ -238,9 +269,16 @@ export class ToolMessageBatcher {
 
     if (this.intervalSeconds === 0) {
       const expectedGeneration = this.generation;
-      logger.debug(`[ToolBatcher] Sending immediate text message: session=${sessionId}`);
+      logger.debug(
+        `[ToolBatcher] Sending immediate text message: session=${sessionId}`,
+      );
       void this.enqueueTask(sessionId, () =>
-        this.sendTextSafe(sessionId, normalizedMessage, "immediate", expectedGeneration),
+        this.sendTextSafe(
+          sessionId,
+          normalizedMessage,
+          "immediate",
+          expectedGeneration,
+        ),
       );
       return;
     }
@@ -274,7 +312,10 @@ export class ToolMessageBatcher {
     this.ensureTimer(sessionId);
   }
 
-  private async flushSessionInternal(sessionId: string, reason: string): Promise<void> {
+  private async flushSessionInternal(
+    sessionId: string,
+    reason: string,
+  ): Promise<void> {
     const expectedGeneration = this.generation;
     this.clearTimer(sessionId);
 
@@ -292,9 +333,19 @@ export class ToolMessageBatcher {
 
     for (const item of flushItems) {
       if (item.kind === "text") {
-        await this.sendTextSafe(sessionId, item.text, reason, expectedGeneration);
+        await this.sendTextSafe(
+          sessionId,
+          item.text,
+          reason,
+          expectedGeneration,
+        );
       } else {
-        await this.sendFileSafe(sessionId, item.fileData, reason, expectedGeneration);
+        await this.sendFileSafe(
+          sessionId,
+          item.fileData,
+          reason,
+          expectedGeneration,
+        );
       }
     }
   }
@@ -377,7 +428,9 @@ export class ToolMessageBatcher {
 
   private packMessages(messages: string[]): string[] {
     const normalizedEntries = messages
-      .flatMap((message) => this.splitLongText(message, TELEGRAM_MESSAGE_MAX_LENGTH))
+      .flatMap((message) =>
+        this.splitLongText(message, TELEGRAM_MESSAGE_MAX_LENGTH),
+      )
       .filter((entry) => entry.length > 0);
 
     if (normalizedEntries.length === 0) {

@@ -13,7 +13,12 @@ const MCPS_CANCEL = `${MCPS_CALLBACK_PREFIX}cancel`;
 
 interface McpServerItem {
   name: string;
-  status: "connected" | "disabled" | "failed" | "needs_auth" | "needs_client_registration";
+  status:
+    | "connected"
+    | "disabled"
+    | "failed"
+    | "needs_auth"
+    | "needs_client_registration";
   error?: string;
 }
 
@@ -92,7 +97,10 @@ async function loadMcpServers(directory: string): Promise<McpServerItem[]> {
     servers.push({
       name,
       status: statusInfo.status,
-      error: "error" in statusInfo ? (statusInfo as { error: string }).error : undefined,
+      error:
+        "error" in statusInfo
+          ? (statusInfo as { error: string }).error
+          : undefined,
     });
   }
 
@@ -104,7 +112,10 @@ function formatMcpServerItem(index: number, server: McpServerItem): string {
   const statusText = getStatusText(server.status);
   let line = `${index + 1}. ${emoji} ${server.name}\n   └ ${statusText}`;
   if (server.status === "failed" && server.error) {
-    const truncatedError = server.error.length > 50 ? `${server.error.slice(0, 47)}...` : server.error;
+    const truncatedError =
+      server.error.length > 50
+        ? `${server.error.slice(0, 47)}...`
+        : server.error;
     line += `\n   └ Error: ${truncatedError}`;
   }
   return line;
@@ -169,7 +180,9 @@ export async function mcpsCommand(ctx: CommandContext<Context>) {
     }
 
     const header = formatMcpsHeader(servers.length);
-    const serverLines = servers.map((server, i) => formatMcpServerItem(i, server));
+    const serverLines = servers.map((server, i) =>
+      formatMcpServerItem(i, server),
+    );
     const hint = t("mcps.hint");
     const text = [header, "", ...serverLines, "", hint].join("\n");
 
@@ -189,7 +202,9 @@ export async function mcpsCommand(ctx: CommandContext<Context>) {
       },
     });
 
-    logger.info(`[MCPS] MCP servers list shown for project: ${project.worktree}`);
+    logger.info(
+      `[MCPS] MCP servers list shown for project: ${project.worktree}`,
+    );
   } catch (error) {
     logger.error("[MCPS] Error loading MCP servers:", error);
     await ctx.reply(t("mcps.error_load"));
@@ -198,7 +213,10 @@ export async function mcpsCommand(ctx: CommandContext<Context>) {
 
 export async function handleMcpsCallback(ctx: Context): Promise<boolean> {
   const callbackQuery = ctx.callbackQuery;
-  if (!callbackQuery?.data || !callbackQuery.data.startsWith(MCPS_CALLBACK_PREFIX)) {
+  if (
+    !callbackQuery?.data ||
+    !callbackQuery.data.startsWith(MCPS_CALLBACK_PREFIX)
+  ) {
     return false;
   }
 
@@ -211,7 +229,9 @@ export async function handleMcpsCallback(ctx: Context): Promise<boolean> {
   }
 
   const metadata = state.metadata as unknown as McpsMetadata;
-  const callbackMessageId = (ctx.callbackQuery?.message as { message_id?: number })?.message_id;
+  const callbackMessageId = (
+    ctx.callbackQuery?.message as { message_id?: number }
+  )?.message_id;
 
   if (callbackMessageId !== metadata.messageId) {
     await ctx.answerCallbackQuery({ text: t("mcps.inactive_callback") });
@@ -228,7 +248,10 @@ export async function handleMcpsCallback(ctx: Context): Promise<boolean> {
       return true;
     }
 
-    const serverName = parseReconnectCallback(data) || parseDisconnectCallback(data) || parseConnectCallback(data);
+    const serverName =
+      parseReconnectCallback(data) ||
+      parseDisconnectCallback(data) ||
+      parseConnectCallback(data);
 
     if (serverName !== null) {
       const server = metadata.servers.find((s) => s.name === serverName);
@@ -238,7 +261,9 @@ export async function handleMcpsCallback(ctx: Context): Promise<boolean> {
       }
 
       if (data.startsWith(MCPS_DISCONNECT_PREFIX)) {
-        await ctx.answerCallbackQuery({ text: t("mcps.disconnecting", { name: serverName }) });
+        await ctx.answerCallbackQuery({
+          text: t("mcps.disconnecting", { name: serverName }),
+        });
 
         try {
           await opencodeClient.mcp.disconnect({
@@ -248,11 +273,19 @@ export async function handleMcpsCallback(ctx: Context): Promise<boolean> {
           await ctx.reply(t("mcps.disconnected", { name: serverName }));
           logger.info(`[MCPS] Disconnected MCP server: ${serverName}`);
         } catch (error) {
-          logger.error(`[MCPS] Failed to disconnect MCP server ${serverName}:`, error);
+          logger.error(
+            `[MCPS] Failed to disconnect MCP server ${serverName}:`,
+            error,
+          );
           await ctx.reply(t("mcps.disconnect_error", { name: serverName }));
         }
-      } else if (data.startsWith(MCPS_CONNECT_PREFIX) || data.startsWith(MCPS_RECONNECT_PREFIX)) {
-        await ctx.answerCallbackQuery({ text: t("mcps.connecting", { name: serverName }) });
+      } else if (
+        data.startsWith(MCPS_CONNECT_PREFIX) ||
+        data.startsWith(MCPS_RECONNECT_PREFIX)
+      ) {
+        await ctx.answerCallbackQuery({
+          text: t("mcps.connecting", { name: serverName }),
+        });
 
         try {
           await opencodeClient.mcp.connect({
@@ -262,7 +295,10 @@ export async function handleMcpsCallback(ctx: Context): Promise<boolean> {
           await ctx.reply(t("mcps.connected", { name: serverName }));
           logger.info(`[MCPS] Connected MCP server: ${serverName}`);
         } catch (error) {
-          logger.error(`[MCPS] Failed to connect MCP server ${serverName}:`, error);
+          logger.error(
+            `[MCPS] Failed to connect MCP server ${serverName}:`,
+            error,
+          );
           await ctx.reply(t("mcps.connect_error", { name: serverName }));
         }
       }

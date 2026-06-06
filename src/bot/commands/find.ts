@@ -54,7 +54,10 @@ export async function findCommand(ctx: CommandContext<Context>): Promise<void> {
     await ctx.reply(t("cmd.find.searching", { query }));
 
     // Fetch messages directly via session.messages() API
-    const messages = await fetchSessionMessages(currentSession.id, currentProject.worktree);
+    const messages = await fetchSessionMessages(
+      currentSession.id,
+      currentProject.worktree,
+    );
 
     if (messages.length === 0) {
       await ctx.reply(t("cmd.find.no_messages"));
@@ -73,7 +76,10 @@ export async function findCommand(ctx: CommandContext<Context>): Promise<void> {
     const chunks = chunkOutput(formattedResults, MESSAGE_CHUNK_SIZE);
 
     for (let i = 0; i < chunks.length; i++) {
-      const prefix = i === 0 ? t("cmd.find.results_header", { query, count: results.length }) : "";
+      const prefix =
+        i === 0
+          ? t("cmd.find.results_header", { query, count: results.length })
+          : "";
       await sendBotText({
         api: ctx.api,
         chatId,
@@ -86,7 +92,10 @@ export async function findCommand(ctx: CommandContext<Context>): Promise<void> {
   }
 }
 
-async function fetchSessionMessages(sessionId: string, directory: string): Promise<SessionMessage[]> {
+async function fetchSessionMessages(
+  sessionId: string,
+  directory: string,
+): Promise<SessionMessage[]> {
   const messages: SessionMessage[] = [];
 
   try {
@@ -102,7 +111,9 @@ async function fetchSessionMessages(sessionId: string, directory: string): Promi
 
     for (const msg of data) {
       const info = msg.info;
-      const textParts = msg.parts.filter((p) => "text" in p && p.type === "text") as Array<{ text: string }>;
+      const textParts = msg.parts.filter(
+        (p) => "text" in p && p.type === "text",
+      ) as Array<{ text: string }>;
       const text = textParts.map((p) => p.text).join("");
 
       if (text.trim()) {
@@ -126,7 +137,10 @@ async function fetchSessionMessages(sessionId: string, directory: string): Promi
 /**
  * Search messages using fuse.js fuzzy matching
  */
-function searchMessages(messages: SessionMessage[], query: string): SessionMessage[] {
+function searchMessages(
+  messages: SessionMessage[],
+  query: string,
+): SessionMessage[] {
   const fuse = new Fuse(messages, {
     keys: ["text"],
     threshold: 0.4,
@@ -137,13 +151,18 @@ function searchMessages(messages: SessionMessage[], query: string): SessionMessa
   return fuse.search(query).map((result) => result.item);
 }
 
-function formatSearchResults(results: SessionMessage[], _query: string, maxResults: number): string {
+function formatSearchResults(
+  results: SessionMessage[],
+  _query: string,
+  maxResults: number,
+): string {
   const lines: string[] = [];
   const toShow = results.slice(0, maxResults);
 
   toShow.forEach((msg, index) => {
     const role = msg.role === "user" ? "You" : "Assistant";
-    const truncated = msg.text.length > 300 ? `${msg.text.slice(0, 297)}...` : msg.text;
+    const truncated =
+      msg.text.length > 300 ? `${msg.text.slice(0, 297)}...` : msg.text;
     lines.push(`${index + 1}. **${role}**: ${truncated}`);
     lines.push("");
   });

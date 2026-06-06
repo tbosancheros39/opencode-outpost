@@ -1,13 +1,21 @@
 import { CommandContext, Context } from "grammy";
 import { opencodeClient } from "../../opencode/client.js";
-import { getCurrentSession, setCurrentSession, type SessionInfo } from "../../session/manager.js";
+import {
+  getCurrentSession,
+  setCurrentSession,
+  type SessionInfo,
+} from "../../session/manager.js";
 import { getStoredAgent } from "../../agent/manager.js";
 import { getCurrentProject } from "../../settings/manager.js";
 import { logger } from "../../utils/logger.js";
 import { escapeHtml } from "../../utils/html.js";
 import { t } from "../../i18n/index.js";
 import { chunkOutput } from "../utils/chunk.js";
-import { quoteShellArg, validateShellPathInput, extractShellOutput } from "../utils/shell-security.js";
+import {
+  quoteShellArg,
+  validateShellPathInput,
+  extractShellOutput,
+} from "../utils/shell-security.js";
 
 export async function readCommand(ctx: CommandContext<Context>) {
   if (!ctx.chat) {
@@ -30,9 +38,12 @@ export async function readCommand(ctx: CommandContext<Context>) {
     return;
   }
 
-  const statusMsg = await ctx.reply(t("read.reading", { file: escapeHtml(targetFile) }), {
-    parse_mode: "HTML",
-  });
+  const statusMsg = await ctx.reply(
+    t("read.reading", { file: escapeHtml(targetFile) }),
+    {
+      parse_mode: "HTML",
+    },
+  );
 
   try {
     let session = getCurrentSession(chatId);
@@ -73,7 +84,11 @@ export async function readCommand(ctx: CommandContext<Context>) {
     for (let i = 0; i < chunks.length; i++) {
       const header =
         chunks.length > 1
-          ? t("read.header_part", { file: escapeHtml(targetFile), part: String(i + 1), total: String(chunks.length) })
+          ? t("read.header_part", {
+              file: escapeHtml(targetFile),
+              part: String(i + 1),
+              total: String(chunks.length),
+            })
           : t("read.header", { file: escapeHtml(targetFile) });
       await ctx.reply(`${header}\n<pre><code>${chunks[i]}</code></pre>`, {
         parse_mode: "HTML",

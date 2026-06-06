@@ -37,7 +37,10 @@ export function transformNode(node: RootContent): string {
       return renderInlineCode((node as InlineCode).value);
 
     case "code":
-      return renderCodeBlock((node as Code).lang ?? null, (node as Code).value) + "\n";
+      return (
+        renderCodeBlock((node as Code).lang ?? null, (node as Code).value) +
+        "\n"
+      );
 
     case "link": {
       const link = node as Link;

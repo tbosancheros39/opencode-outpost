@@ -22,7 +22,8 @@ export async function getAvailableAgents(chatId: number): Promise<AgentInfo[]> {
     }
 
     const filtered = agents.filter(
-      (agent) => !agent.hidden && (agent.mode === "primary" || agent.mode === "all"),
+      (agent) =>
+        !agent.hidden && (agent.mode === "primary" || agent.mode === "all"),
     );
 
     logger.debug(`[AgentManager] Fetched ${filtered.length} available agents`);

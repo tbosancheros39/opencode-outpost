@@ -3,7 +3,10 @@ import { extractCommandName, isKnownCommand } from "../utils/commands.js";
 import { logger } from "../../utils/logger.js";
 import { t } from "../../i18n/index.js";
 
-export async function unknownCommandMiddleware(ctx: Context, next: NextFunction): Promise<void> {
+export async function unknownCommandMiddleware(
+  ctx: Context,
+  next: NextFunction,
+): Promise<void> {
   const text = ctx.message?.text;
   const textPreview = text?.substring(0, 60) || "(no text)";
   logger.info(
@@ -36,6 +39,8 @@ export async function unknownCommandMiddleware(ctx: Context, next: NextFunction)
   }
 
   const commandToken = text.trim().split(/\s+/)[0];
-  logger.info(`[DIAGNOSTIC] UnknownCommandMiddleware: UNKNOWN command "${commandToken}", replying with error`);
+  logger.info(
+    `[DIAGNOSTIC] UnknownCommandMiddleware: UNKNOWN command "${commandToken}", replying with error`,
+  );
   await ctx.reply(t("bot.unknown_command", { command: commandToken }));
 }

@@ -16,15 +16,22 @@ const APP_DIR_NAME = "opencode-outpost";
 
 function getInstalledAppHome(): string {
   if (process.platform === "win32") {
-    const appData = process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming");
+    const appData =
+      process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming");
     return path.join(appData, APP_DIR_NAME);
   }
 
   if (process.platform === "darwin") {
-    return path.join(os.homedir(), "Library", "Application Support", APP_DIR_NAME);
+    return path.join(
+      os.homedir(),
+      "Library",
+      "Application Support",
+      APP_DIR_NAME,
+    );
   }
 
-  const xdgConfigHome = process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
+  const xdgConfigHome =
+    process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
   return path.join(xdgConfigHome, APP_DIR_NAME);
 }
 

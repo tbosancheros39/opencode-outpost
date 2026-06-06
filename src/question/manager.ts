@@ -23,14 +23,20 @@ class QuestionManager {
     return state;
   }
 
-  startQuestions(chatId: number, questions: Question[], requestID: string): void {
+  startQuestions(
+    chatId: number,
+    questions: Question[],
+    requestID: string,
+  ): void {
     const state = this.getState(chatId);
     logger.debug(
       `[QuestionManager] startQuestions called: isActive=${state.isActive}, currentQuestions=${state.questions.length}, newQuestions=${questions.length}, requestID=${requestID}`,
     );
 
     if (state.isActive) {
-      logger.info(`[QuestionManager] Poll already active! Forcing reset before starting new poll.`);
+      logger.info(
+        `[QuestionManager] Poll already active! Forcing reset before starting new poll.`,
+      );
       this.clear(chatId);
     }
 
@@ -60,7 +66,11 @@ class QuestionManager {
     return state.questions[state.currentIndex];
   }
 
-  selectOption(chatId: number, questionIndex: number, optionIndex: number): void {
+  selectOption(
+    chatId: number,
+    questionIndex: number,
+    optionIndex: number,
+  ): void {
     const state = this.getState(chatId);
     if (!state.isActive) {
       return;
@@ -92,7 +102,9 @@ class QuestionManager {
   }
 
   getSelectedOptions(chatId: number, questionIndex: number): Set<number> {
-    return this.getState(chatId).selectedOptions.get(questionIndex) || new Set();
+    return (
+      this.getState(chatId).selectedOptions.get(questionIndex) || new Set()
+    );
   }
 
   getSelectedAnswer(chatId: number, questionIndex: number): string {
@@ -138,7 +150,10 @@ class QuestionManager {
   }
 
   hasNextQuestion(chatId: number): boolean {
-    return this.getState(chatId).currentIndex < this.getState(chatId).questions.length;
+    return (
+      this.getState(chatId).currentIndex <
+      this.getState(chatId).questions.length
+    );
   }
 
   getCurrentIndex(chatId: number): number {

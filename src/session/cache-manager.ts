@@ -2,7 +2,10 @@ import { createHash } from "node:crypto";
 import path from "node:path";
 import Database from "better-sqlite3";
 import { opencodeClient } from "../opencode/client.js";
-import { getSessionDirectoryCache, setSessionDirectoryCache } from "../settings/manager.js";
+import {
+  getSessionDirectoryCache,
+  setSessionDirectoryCache,
+} from "../settings/manager.js";
 import { logger } from "../utils/logger.js";
 
 export interface CachedSessionDirectory {
@@ -83,7 +86,8 @@ function normalizeCacheData(raw: unknown): SessionDirectoryCacheData {
   };
 
   const lastSyncedUpdatedAt =
-    typeof value.lastSyncedUpdatedAt === "number" && Number.isFinite(value.lastSyncedUpdatedAt)
+    typeof value.lastSyncedUpdatedAt === "number" &&
+    Number.isFinite(value.lastSyncedUpdatedAt)
       ? value.lastSyncedUpdatedAt
       : 0;
 
@@ -211,7 +215,9 @@ function createVirtualProjectId(worktree: string): string {
 
 function hasServerUnavailableMarker(value: string): boolean {
   const lower = value.toLowerCase();
-  return SERVER_UNAVAILABLE_ERROR_MARKERS.some((marker) => lower.includes(marker));
+  return SERVER_UNAVAILABLE_ERROR_MARKERS.some((marker) =>
+    lower.includes(marker),
+  );
 }
 
 function isServerUnavailableError(error: unknown): boolean {
@@ -255,11 +261,17 @@ function isServerUnavailableError(error: unknown): boolean {
         cause?: unknown;
       };
 
-      if (typeof value.code === "string" && hasServerUnavailableMarker(value.code)) {
+      if (
+        typeof value.code === "string" &&
+        hasServerUnavailableMarker(value.code)
+      ) {
         return true;
       }
 
-      if (typeof value.message === "string" && hasServerUnavailableMarker(value.message)) {
+      if (
+        typeof value.message === "string" &&
+        hasServerUnavailableMarker(value.message)
+      ) {
         return true;
       }
 
@@ -310,7 +322,10 @@ async function runSync(): Promise<void> {
   );
 }
 
-function getStorageRootCandidates(pathInfo: { home?: string; state?: string }): string[] {
+function getStorageRootCandidates(pathInfo: {
+  home?: string;
+  state?: string;
+}): string[] {
   const candidates = new Set<string>();
 
   if (pathInfo.home) {
@@ -324,7 +339,10 @@ function getStorageRootCandidates(pathInfo: { home?: string; state?: string }): 
     const lowerMarker = marker.toLowerCase();
 
     if (lowerState.endsWith(lowerMarker)) {
-      const prefix = normalizedState.slice(0, normalizedState.length - marker.length);
+      const prefix = normalizedState.slice(
+        0,
+        normalizedState.length - marker.length,
+      );
       candidates.add(path.join(prefix, "share", "opencode"));
     }
   }
@@ -384,7 +402,10 @@ async function querySessionDirectoriesFromSqlite(
             LIMIT ?
           `,
         )
-        .all(SQLITE_FALLBACK_QUERY_LIMIT) as Array<{ directory?: string; updated?: number | null }>;
+        .all(SQLITE_FALLBACK_QUERY_LIMIT) as Array<{
+        directory?: string;
+        updated?: number | null;
+      }>;
 
       return rows
         .filter(
@@ -394,13 +415,18 @@ async function querySessionDirectoriesFromSqlite(
         .map((item) => ({
           worktree: item.directory,
           lastUpdated:
-            typeof item.updated === "number" && Number.isFinite(item.updated) ? item.updated : 0,
+            typeof item.updated === "number" && Number.isFinite(item.updated)
+              ? item.updated
+              : 0,
         }));
     } finally {
       db.close();
     }
   } catch (error) {
-    logger.debug(`[SessionCache] Failed to read sqlite fallback at ${dbPath}`, error);
+    logger.debug(
+      `[SessionCache] Failed to read sqlite fallback at ${dbPath}`,
+      error,
+    );
   }
 
   return null;
@@ -547,7 +573,9 @@ export async function warmupSessionDirectoryCache(): Promise<void> {
   }
 }
 
-export async function syncSessionDirectoryCache(options?: { force?: boolean }): Promise<void> {
+export async function syncSessionDirectoryCache(options?: {
+  force?: boolean;
+}): Promise<void> {
   await ensureCacheLoaded();
 
   if (!options?.force && Date.now() - lastSyncAttemptAt < SYNC_COOLDOWN_MS) {
@@ -564,7 +592,9 @@ export async function syncSessionDirectoryCache(options?: { force?: boolean }): 
     })
     .catch((error) => {
       if (isServerUnavailableError(error)) {
-        logger.warn("[SessionCache] OpenCode server is not running. Start it with: opencode serve");
+        logger.warn(
+          "[SessionCache] OpenCode server is not running. Start it with: opencode serve",
+        );
       } else {
         logger.warn("[SessionCache] Failed to sync sessions cache", error);
       }
@@ -578,12 +608,16 @@ export async function syncSessionDirectoryCache(options?: { force?: boolean }): 
   return syncInFlight;
 }
 
-export async function getCachedSessionDirectories(): Promise<CachedSessionDirectory[]> {
+export async function getCachedSessionDirectories(): Promise<
+  CachedSessionDirectory[]
+> {
   await ensureCacheLoaded();
   return cacheData.directories.map((item) => ({ ...item }));
 }
 
-export async function getCachedSessionProjects(): Promise<SessionDirectoryProject[]> {
+export async function getCachedSessionProjects(): Promise<
+  SessionDirectoryProject[]
+> {
   const directories = await getCachedSessionDirectories();
 
   return directories.map((item) => ({

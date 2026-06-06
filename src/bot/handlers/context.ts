@@ -73,7 +73,9 @@ export async function handleCompactConfirm(ctx: Context): Promise<boolean> {
 
     if (!session) {
       clearActiveInlineMenu(chatId, "context_session_missing");
-      await ctx.answerCallbackQuery({ text: t("context.callback_session_not_found") });
+      await ctx.answerCallbackQuery({
+        text: t("context.callback_session_not_found"),
+      });
       await ctx.reply(t("context.no_active_session"));
       await ctx.deleteMessage().catch(() => {});
       return true;
@@ -123,7 +125,9 @@ export async function handleCompactConfirm(ctx: Context): Promise<boolean> {
   } catch (err) {
     clearActiveInlineMenu(chatId, "context_compact_error");
     logger.error("[ContextHandler] Compact exception:", err);
-    await ctx.answerCallbackQuery({ text: t("callback.processing_error") }).catch(() => {});
+    await ctx
+      .answerCallbackQuery({ text: t("callback.processing_error") })
+      .catch(() => {});
     await ctx.reply(t("context.error"));
     await ctx.deleteMessage().catch(() => {});
     return false;

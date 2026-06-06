@@ -17,9 +17,17 @@ export interface SummaryInfo {
   lastUpdated: number;
 }
 
-type MessageCompleteCallback = (sessionId: string, messageId: string, messageText: string) => void;
+type MessageCompleteCallback = (
+  sessionId: string,
+  messageId: string,
+  messageText: string,
+) => void;
 
-type MessagePartialCallback = (sessionId: string, messageId: string, messageText: string) => void;
+type MessagePartialCallback = (
+  sessionId: string,
+  messageId: string,
+  messageText: string,
+) => void;
 
 interface MessagePartDeltaEventRaw {
   type: "message.part.delta";
@@ -122,7 +130,10 @@ function extractFirstUpdatedFileFromTitle(title: string): string {
   return "";
 }
 
-function countDiffChangesFromText(text: string): { additions: number; deletions: number } {
+function countDiffChangesFromText(text: string): {
+  additions: number;
+  deletions: number;
+} {
   let additions = 0;
   let deletions = 0;
 
@@ -365,10 +376,14 @@ class SummaryAggregator {
         this.handleQuestionAsked(event);
         break;
       case "question.replied":
-        logger.info(`[Aggregator] Question replied: requestID=${event.properties.requestID}`);
+        logger.info(
+          `[Aggregator] Question replied: requestID=${event.properties.requestID}`,
+        );
         break;
       case "question.rejected":
-        logger.info(`[Aggregator] Question rejected: requestID=${event.properties.requestID}`);
+        logger.info(
+          `[Aggregator] Question rejected: requestID=${event.properties.requestID}`,
+        );
         break;
       case "session.diff":
         this.handleSessionDiff(event);
@@ -377,7 +392,9 @@ class SummaryAggregator {
         this.handlePermissionAsked(event);
         break;
       case "permission.replied":
-        logger.info(`[Aggregator] Permission replied: requestID=${event.properties.requestID}`);
+        logger.info(
+          `[Aggregator] Permission replied: requestID=${event.properties.requestID}`,
+        );
         break;
       default:
         logger.debug(`[Aggregator] Unhandled event type: ${event.type}`);
@@ -441,7 +458,9 @@ class SummaryAggregator {
 
       const textState = this.getOrCreateTextMessageState(messageID);
 
-      const assistantMessage = info as { time?: { created: number; completed?: number } };
+      const assistantMessage = info as {
+        time?: { created: number; completed?: number };
+      };
       const time = assistantMessage.time;
       const isCompleted = Boolean(time?.completed);
       const messageText = this.getCombinedMessageText(messageID);
@@ -503,7 +522,9 @@ class SummaryAggregator {
         );
 
         if (this.textMessageStates.size === 0) {
-          logger.debug("[Aggregator] No more active messages, stopping typing indicator");
+          logger.debug(
+            "[Aggregator] No more active messages, stopping typing indicator",
+          );
           this.stopTypingIndicator();
           this.subagents.clear();
           this.emitThinkingUpdate();
@@ -537,14 +558,23 @@ class SummaryAggregator {
       typeof deltaFromUpdated === "string" &&
       deltaFromUpdated.length > 0
     ) {
-      this.applyTextDelta(part.sessionID, messageID, part.id, deltaFromUpdated, part.text);
+      this.applyTextDelta(
+        part.sessionID,
+        messageID,
+        part.id,
+        deltaFromUpdated,
+        part.text,
+      );
       return;
     }
 
     if (part.type === "reasoning") {
       // Fire the thinking callback once per message on the first reasoning part.
       // This is the signal that the model is actually doing extended thinking.
-      if (!this.thinkingFiredForMessages.has(messageID) && this.onThinkingCallback) {
+      if (
+        !this.thinkingFiredForMessages.has(messageID) &&
+        this.onThinkingCallback
+      ) {
         this.thinkingFiredForMessages.add(messageID);
         const callback = this.onThinkingCallback;
         const sessionID = part.sessionID;
@@ -594,7 +624,10 @@ class SummaryAggregator {
       }
     } else if (part.type === "tool") {
       const state = part.state;
-      const input = "input" in state ? (state.input as { [key: string]: unknown }) : undefined;
+      const input =
+        "input" in state
+          ? (state.input as { [key: string]: unknown })
+          : undefined;
       const title = "title" in state ? state.title : undefined;
 
       logger.debug(
@@ -602,7 +635,10 @@ class SummaryAggregator {
       );
 
       if (part.tool === "question") {
-        logger.debug(`[Aggregator] Question tool part update:`, JSON.stringify(part, null, 2));
+        logger.debug(
+          `[Aggregator] Question tool part update:`,
+          JSON.stringify(part, null, 2),
+        );
 
         // If the question tool fails, clear the active poll
         // so the agent can recreate it with corrected data
@@ -687,7 +723,12 @@ class SummaryAggregator {
     const partType = part?.type || event.properties.type;
     const delta = event.properties.delta;
 
-    if (!sessionID || !messageID || typeof delta !== "string" || delta.length === 0) {
+    if (
+      !sessionID ||
+      !messageID ||
+      typeof delta !== "string" ||
+      delta.length === 0
+    ) {
       return;
     }
 
@@ -733,7 +774,10 @@ class SummaryAggregator {
     const previous = state.partTexts.get(partID) || "";
     let accumulated = `${previous}${delta}`;
 
-    if (typeof fullTextHint === "string" && fullTextHint.length > accumulated.length) {
+    if (
+      typeof fullTextHint === "string" &&
+      fullTextHint.length > accumulated.length
+    ) {
       accumulated = fullTextHint;
     }
 
@@ -748,7 +792,11 @@ class SummaryAggregator {
     this.emitPartialText(sessionID, messageID, combined);
   }
 
-  private emitPartialText(sessionId: string, messageId: string, messageText: string): void {
+  private emitPartialText(
+    sessionId: string,
+    messageId: string,
+    messageText: string,
+  ): void {
     if (!this.onPartialCallback || !messageText.trim()) {
       return;
     }
@@ -790,7 +838,11 @@ class SummaryAggregator {
     }
   }
 
-  private setTextPartSnapshot(messageID: string, partID: string, text: string): boolean {
+  private setTextPartSnapshot(
+    messageID: string,
+    partID: string,
+    text: string,
+  ): boolean {
     const normalized = text;
     const partHash = this.hashString(`${partID}\n${normalized}`);
 
@@ -811,7 +863,11 @@ class SummaryAggregator {
     return true;
   }
 
-  private setOptimisticTextSnapshot(messageID: string, partID: string, text: string): boolean {
+  private setOptimisticTextSnapshot(
+    messageID: string,
+    partID: string,
+    text: string,
+  ): boolean {
     const wasUpdated = this.setTextPartSnapshot(messageID, partID, text);
     if (!wasUpdated) {
       return false;
@@ -829,7 +885,9 @@ class SummaryAggregator {
       return "";
     }
 
-    return state.orderedPartIds.map((partID) => state.partTexts.get(partID) || "").join("");
+    return state.orderedPartIds
+      .map((partID) => state.partTexts.get(partID) || "")
+      .join("");
   }
 
   private prepareToolFileContext(
@@ -840,7 +898,9 @@ class SummaryAggregator {
   ): PreparedToolFileContext {
     if (tool === "write" && input) {
       const filePath =
-        typeof input.filePath === "string" ? normalizePathForDisplay(input.filePath) : "";
+        typeof input.filePath === "string"
+          ? normalizePathForDisplay(input.filePath)
+          : "";
       const hasContent = typeof input.content === "string";
       const content = hasContent ? (input.content as string) : "";
 
@@ -866,7 +926,8 @@ class SummaryAggregator {
       const filePath = editMetadata.filediff?.file
         ? normalizePathForDisplay(editMetadata.filediff.file)
         : "";
-      const diffText = typeof editMetadata.diff === "string" ? editMetadata.diff : "";
+      const diffText =
+        typeof editMetadata.diff === "string" ? editMetadata.diff : "";
 
       if (!filePath || !diffText) {
         return { fileData: null, fileChange: null };
@@ -885,7 +946,11 @@ class SummaryAggregator {
     if (tool === "apply_patch") {
       const patchMetadata = metadata as
         | {
-            filediff?: { file?: string; additions?: number; deletions?: number };
+            filediff?: {
+              file?: string;
+              additions?: number;
+              deletions?: number;
+            };
             diff?: string;
           }
         | undefined;
@@ -896,10 +961,13 @@ class SummaryAggregator {
           : input && typeof input.path === "string"
             ? normalizePathForDisplay(input.path)
             : "";
-      const filePathFromTitle = title ? extractFirstUpdatedFileFromTitle(title) : "";
+      const filePathFromTitle = title
+        ? extractFirstUpdatedFileFromTitle(title)
+        : "";
 
       const filePath =
-        (patchMetadata?.filediff?.file && normalizePathForDisplay(patchMetadata.filediff.file)) ||
+        (patchMetadata?.filediff?.file &&
+          normalizePathForDisplay(patchMetadata.filediff.file)) ||
         filePathFromInput ||
         normalizePathForDisplay(filePathFromTitle);
       const diffText =
@@ -1025,7 +1093,9 @@ class SummaryAggregator {
     // Reload context from history after compaction
     if (this.onSessionCompactedCallback) {
       setImmediate(() => {
-        const project = this.chatId ? getCurrentProject(this.chatId) : undefined;
+        const project = this.chatId
+          ? getCurrentProject(this.chatId)
+          : undefined;
         if (project) {
           this.onSessionCompactedCallback!(sessionID, project.worktree);
         }
@@ -1052,7 +1122,10 @@ class SummaryAggregator {
     }
 
     const message =
-      error?.data?.message || error?.message || error?.name || "Unknown session error";
+      error?.data?.message ||
+      error?.message ||
+      error?.name ||
+      "Unknown session error";
 
     logger.warn(`[Aggregator] Session error: ${sessionID}: ${message}`);
     this.stopTypingIndicator();
@@ -1079,7 +1152,9 @@ class SummaryAggregator {
       return;
     }
 
-    logger.info(`[Aggregator] Question asked: requestID=${id}, questions=${questions.length}`);
+    logger.info(
+      `[Aggregator] Question asked: requestID=${id}, questions=${questions.length}`,
+    );
 
     if (this.onQuestionCallback) {
       const callback = this.onQuestionCallback;
@@ -1103,7 +1178,9 @@ class SummaryAggregator {
       return;
     }
 
-    logger.debug(`[Aggregator] Session diff: ${properties.diff.length} files changed`);
+    logger.debug(
+      `[Aggregator] Session diff: ${properties.diff.length} files changed`,
+    );
 
     if (this.onSessionDiffCallback) {
       const diffs: FileChange[] = properties.diff.map((d) => ({

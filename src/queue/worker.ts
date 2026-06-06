@@ -29,8 +29,17 @@ function getBackoffMs(attempt: number): number {
 }
 
 export interface TelegramBotApi {
-  sendMessage(chatId: number, text: string, extra?: Record<string, unknown>): Promise<{ message_id: number }>;
-  editMessageText(chatId: number, messageId: number, text: string, extra?: Record<string, unknown>): Promise<true>;
+  sendMessage(
+    chatId: number,
+    text: string,
+    extra?: Record<string, unknown>,
+  ): Promise<{ message_id: number }>;
+  editMessageText(
+    chatId: number,
+    messageId: number,
+    text: string,
+    extra?: Record<string, unknown>,
+  ): Promise<true>;
   raw: {
     editMessageText(params: Record<string, unknown>): Promise<unknown>;
   };
@@ -76,7 +85,11 @@ function getProgressBar(percent: number): string {
   return `[${"█".repeat(filled)}${"░".repeat(empty)}]`;
 }
 
-export async function startWorker(): Promise<Worker<TaskJobData, TaskJobResult, string> | null> {
+export async function startWorker(): Promise<Worker<
+  TaskJobData,
+  TaskJobResult,
+  string
+> | null> {
   if (workerInstance) {
     logger.warn("[Worker] Worker already running");
     return workerInstance;
@@ -84,14 +97,18 @@ export async function startWorker(): Promise<Worker<TaskJobData, TaskJobResult, 
 
   if (!isRedisAvailable()) {
     logger.warn("[Worker] Redis not available, BullMQ worker disabled");
-    memoryQueue.setProcessor((data) => processJob({ data } as Job<TaskJobData, TaskJobResult, string>));
+    memoryQueue.setProcessor((data) =>
+      processJob({ data } as Job<TaskJobData, TaskJobResult, string>),
+    );
     return null;
   }
 
   const connection = getRedisConnection();
   if (!connection) {
     logger.warn("[Worker] Redis connection not available");
-    memoryQueue.setProcessor((data) => processJob({ data } as Job<TaskJobData, TaskJobResult, string>));
+    memoryQueue.setProcessor((data) =>
+      processJob({ data } as Job<TaskJobData, TaskJobResult, string>),
+    );
     return null;
   }
 
@@ -123,16 +140,22 @@ export async function startWorker(): Promise<Worker<TaskJobData, TaskJobResult, 
     });
 
     logger.info("[Worker] BullMQ worker started");
-    memoryQueue.setProcessor((data) => processJob({ data } as Job<TaskJobData, TaskJobResult, string>));
+    memoryQueue.setProcessor((data) =>
+      processJob({ data } as Job<TaskJobData, TaskJobResult, string>),
+    );
     return workerInstance;
   } catch (error) {
     logger.warn("[Worker] Redis not available, BullMQ worker disabled:", error);
-    memoryQueue.setProcessor((data) => processJob({ data } as Job<TaskJobData, TaskJobResult, string>));
+    memoryQueue.setProcessor((data) =>
+      processJob({ data } as Job<TaskJobData, TaskJobResult, string>),
+    );
     return null;
   }
 }
 
-async function processJob(job: Job<TaskJobData, TaskJobResult, string>): Promise<TaskJobResult> {
+async function processJob(
+  job: Job<TaskJobData, TaskJobResult, string>,
+): Promise<TaskJobResult> {
   if (job.data.jobType === "llm_direct") {
     return processLlmDirectJob(job.data);
   }
@@ -182,12 +205,28 @@ async function processLlmDirectJob(data: TaskJobData): Promise<TaskJobResult> {
         }
       } catch {}
     }
-    return { success: false, error: err instanceof Error ? err.message : String(err) };
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 }
 
-async function processOpencodeJob(job: Job<TaskJobData, TaskJobResult, string>): Promise<TaskJobResult> {
-  const { taskId, chatId, sessionId, directory, agent, modelProvider, modelId, variant, system, parts } = job.data;
+async function processOpencodeJob(
+  job: Job<TaskJobData, TaskJobResult, string>,
+): Promise<TaskJobResult> {
+  const {
+    taskId,
+    chatId,
+    sessionId,
+    directory,
+    agent,
+    modelProvider,
+    modelId,
+    variant,
+    system,
+    parts,
+  } = job.data;
 
   if (!sessionId) {
     logger.error(`[Worker] opencode job ${job.id} missing sessionId`);
@@ -204,7 +243,12 @@ async function processOpencodeJob(job: Job<TaskJobData, TaskJobResult, string>):
       startedAt: new Date().toISOString(),
     });
 
-    progressMessageId = await sendProgressHeartbeat(chatId, progressMessageId, 5, "Starting task...");
+    progressMessageId = await sendProgressHeartbeat(
+      chatId,
+      progressMessageId,
+      5,
+      "Starting task...",
+    );
 
     const promptOptions: {
       sessionID: string;
@@ -236,7 +280,12 @@ async function processOpencodeJob(job: Job<TaskJobData, TaskJobResult, string>):
       promptOptions.system = system;
     }
 
-    progressMessageId = await sendProgressHeartbeat(chatId, progressMessageId, 10, "Sending prompt to OpenCode...");
+    progressMessageId = await sendProgressHeartbeat(
+      chatId,
+      progressMessageId,
+      10,
+      "Sending prompt to OpenCode...",
+    );
 
     const result = await opencodeClient.session.prompt(promptOptions, {
       signal: AbortSignal.timeout(PROMPT_TIMEOUT_MS),
@@ -252,7 +301,12 @@ async function processOpencodeJob(job: Job<TaskJobData, TaskJobResult, string>):
         finishedAt: new Date().toISOString(),
       });
 
-      await sendProgressHeartbeat(chatId, progressMessageId, 0, `Error: ${errorMessage}`);
+      await sendProgressHeartbeat(
+        chatId,
+        progressMessageId,
+        0,
+        `Error: ${errorMessage}`,
+      );
 
       return { success: false, error: errorMessage };
     }
@@ -264,7 +318,12 @@ async function processOpencodeJob(job: Job<TaskJobData, TaskJobResult, string>):
       finishedAt: new Date().toISOString(),
     });
 
-    await sendProgressHeartbeat(chatId, progressMessageId, 100, "Task completed!");
+    await sendProgressHeartbeat(
+      chatId,
+      progressMessageId,
+      100,
+      "Task completed!",
+    );
 
     return { success: true };
   } catch (error) {
@@ -275,14 +334,19 @@ async function processOpencodeJob(job: Job<TaskJobData, TaskJobResult, string>):
       const cause = (error as Error & { cause?: unknown }).cause;
       logger.error(
         `[Worker] Job ${job.id} fetch failed (network error). Cause:`,
-        cause instanceof Error ? `${cause.name}: ${cause.message}` : String(cause),
+        cause instanceof Error
+          ? `${cause.name}: ${cause.message}`
+          : String(cause),
       );
     }
 
     const attempts = (taskRetries.get(job.id!) || 0) + 1;
     taskRetries.set(job.id!, attempts);
 
-    logger.error(`[Worker] Job ${job.id} failed (attempt ${attempts}/${MAX_RETRIES}):`, error);
+    logger.error(
+      `[Worker] Job ${job.id} failed (attempt ${attempts}/${MAX_RETRIES}):`,
+      error,
+    );
 
     if (attempts < MAX_RETRIES) {
       const backoffMs = getBackoffMs(attempts);
@@ -300,7 +364,12 @@ async function processOpencodeJob(job: Job<TaskJobData, TaskJobResult, string>):
       finishedAt: new Date().toISOString(),
     });
 
-    await sendProgressHeartbeat(chatId, progressMessageId, 0, `Error: ${errorMessage}`);
+    await sendProgressHeartbeat(
+      chatId,
+      progressMessageId,
+      0,
+      `Error: ${errorMessage}`,
+    );
 
     return { success: false, error: errorMessage };
   }
@@ -308,7 +377,9 @@ async function processOpencodeJob(job: Job<TaskJobData, TaskJobResult, string>):
 
 export async function stopWorker(): Promise<void> {
   if (workerInstance) {
-    logger.info("[Worker] Gracefully closing worker (waiting for active jobs to complete)...");
+    logger.info(
+      "[Worker] Gracefully closing worker (waiting for active jobs to complete)...",
+    );
     await workerInstance.close();
     workerInstance = null;
     logger.info("[Worker] Worker stopped gracefully");

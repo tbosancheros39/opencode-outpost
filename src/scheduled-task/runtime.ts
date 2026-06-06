@@ -20,13 +20,16 @@ import type { QueuedScheduledTaskDelivery, ScheduledTask } from "./types.js";
 const MAX_TIMER_DELAY_MS = 2_147_483_647;
 const TELEGRAM_MESSAGE_LIMIT = 4096;
 const TASK_DESCRIPTION_PREVIEW_LENGTH = 64;
-const RESTART_INTERRUPTED_ERROR = "Interrupted by bot restart during scheduled task execution.";
+const RESTART_INTERRUPTED_ERROR =
+  "Interrupted by bot restart during scheduled task execution.";
 
 function getScheduledTaskDeliveryFormat(): "raw" | "markdown_v2" {
   return config.bot.messageFormatMode === "markdown" ? "markdown_v2" : "raw";
 }
 
-function buildScheduledTaskSuccessMessageParts(delivery: QueuedScheduledTaskDelivery): string[] {
+function buildScheduledTaskSuccessMessageParts(
+  delivery: QueuedScheduledTaskDelivery,
+): string[] {
   if (!delivery.resultText) {
     return [delivery.notificationText];
   }
@@ -39,7 +42,10 @@ function buildScheduledTaskSuccessMessageParts(delivery: QueuedScheduledTaskDeli
   }
 
   const header = delivery.notificationText;
-  const resultParts = formatSummaryWithMode(delivery.resultText, config.bot.messageFormatMode);
+  const resultParts = formatSummaryWithMode(
+    delivery.resultText,
+    config.bot.messageFormatMode,
+  );
   if (resultParts.length === 0) {
     return [header];
   }
@@ -135,7 +141,9 @@ export class ScheduledTaskRuntime {
     }
 
     this.runningTaskIds.delete(taskId);
-    this.deliveryQueue = this.deliveryQueue.filter((delivery) => delivery.taskId !== taskId);
+    this.deliveryQueue = this.deliveryQueue.filter(
+      (delivery) => delivery.taskId !== taskId,
+    );
   }
 
   async flushDeferredDeliveries(): Promise<void> {
@@ -152,7 +160,10 @@ export class ScheduledTaskRuntime {
     this.flushInProgress = true;
 
     try {
-      while (this.deliveryQueue.length > 0 && !foregroundSessionState.isBusy()) {
+      while (
+        this.deliveryQueue.length > 0 &&
+        !foregroundSessionState.isBusy()
+      ) {
         const nextDelivery = this.deliveryQueue[0];
         const sent = await this.sendDelivery(nextDelivery);
         if (!sent) {
@@ -189,7 +200,10 @@ export class ScheduledTaskRuntime {
     const now = new Date();
     let hasChanges = false;
     const normalizedTasks = tasks.map((task) => {
-      const normalizedTask: ScheduledTask = { ...task, model: { ...task.model } };
+      const normalizedTask: ScheduledTask = {
+        ...task,
+        model: { ...task.model },
+      };
 
       if (normalizedTask.lastStatus === "running") {
         normalizedTask.lastStatus = "error";
@@ -198,7 +212,10 @@ export class ScheduledTaskRuntime {
       }
 
       if (normalizedTask.kind === "cron") {
-        if (!normalizedTask.nextRunAt || Number.isNaN(Date.parse(normalizedTask.nextRunAt))) {
+        if (
+          !normalizedTask.nextRunAt ||
+          Number.isNaN(Date.parse(normalizedTask.nextRunAt))
+        ) {
           try {
             normalizedTask.nextRunAt = computeNextRunAt(normalizedTask, now);
           } catch (error) {
@@ -221,7 +238,10 @@ export class ScheduledTaskRuntime {
           normalizedTask.lastError =
             normalizedTask.lastError || "Invalid one-time task runAt value.";
           hasChanges = true;
-        } else if (normalizedTask.nextRunAt === null && normalizedTask.lastStatus === "idle") {
+        } else if (
+          normalizedTask.nextRunAt === null &&
+          normalizedTask.lastStatus === "idle"
+        ) {
           normalizedTask.nextRunAt = new Date(runAtMs).toISOString();
           hasChanges = true;
         }
@@ -312,7 +332,10 @@ export class ScheduledTaskRuntime {
         await this.executeTask(taskId);
       },
       onError: (error) => {
-        logger.error(`[ScheduledTaskRuntime] Scheduled task run crashed: id=${taskId}`, error);
+        logger.error(
+          `[ScheduledTaskRuntime] Scheduled task run crashed: id=${taskId}`,
+          error,
+        );
         this.runningTaskIds.delete(taskId);
       },
     });
@@ -446,7 +469,9 @@ export class ScheduledTaskRuntime {
     await this.enqueueDelivery(delivery);
   }
 
-  private async enqueueDelivery(delivery: QueuedScheduledTaskDelivery): Promise<void> {
+  private async enqueueDelivery(
+    delivery: QueuedScheduledTaskDelivery,
+  ): Promise<void> {
     if (
       this.deliveryQueue.length === 0 &&
       !this.flushInProgress &&
@@ -459,7 +484,9 @@ export class ScheduledTaskRuntime {
     this.deliveryQueue.push(delivery);
   }
 
-  private async sendDelivery(delivery: QueuedScheduledTaskDelivery): Promise<boolean> {
+  private async sendDelivery(
+    delivery: QueuedScheduledTaskDelivery,
+  ): Promise<boolean> {
     if (!this.botApi || this.chatId === null) {
       return false;
     }
@@ -469,7 +496,10 @@ export class ScheduledTaskRuntime {
         delivery.status === "success"
           ? buildScheduledTaskSuccessMessageParts(delivery)
           : [delivery.notificationText];
-      const format = delivery.status === "success" ? getScheduledTaskDeliveryFormat() : "raw";
+      const format =
+        delivery.status === "success"
+          ? getScheduledTaskDeliveryFormat()
+          : "raw";
 
       for (const part of messageParts) {
         await sendBotText({

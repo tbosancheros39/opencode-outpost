@@ -13,7 +13,9 @@ const GLOBAL_BASE_DIR = path.join(os.tmpdir(), "opencode-global-sessions");
  * Returns (and creates if needed) a per-chat temporary working directory
  * used when the user sends a prompt without selecting a project first.
  */
-export async function getOrCreateGlobalDirectory(chatId: number): Promise<string> {
+export async function getOrCreateGlobalDirectory(
+  chatId: number,
+): Promise<string> {
   const chatDir = path.join(GLOBAL_BASE_DIR, `chat-${chatId}`);
 
   try {
@@ -42,7 +44,9 @@ export function isGlobalDirectory(directory: string): boolean {
  *
  * @param maxAgeHours - Default 168 hours (7 days)
  */
-export async function cleanupOldGlobalDirectories(maxAgeHours: number = 168): Promise<void> {
+export async function cleanupOldGlobalDirectories(
+  maxAgeHours: number = 168,
+): Promise<void> {
   try {
     const entries = await fs.readdir(GLOBAL_BASE_DIR, { withFileTypes: true });
     const now = Date.now();

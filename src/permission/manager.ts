@@ -15,14 +15,20 @@ class PermissionManager {
     return state;
   }
 
-  startPermission(chatId: number, request: PermissionRequest, messageId: number): void {
+  startPermission(
+    chatId: number,
+    request: PermissionRequest,
+    messageId: number,
+  ): void {
     const state = this.getState(chatId);
     logger.debug(
       `[PermissionManager] startPermission: id=${request.id}, permission=${request.permission}, messageId=${messageId}`,
     );
 
     if (state.requestsByMessageId.has(messageId)) {
-      logger.warn(`[PermissionManager] Message ID already tracked, replacing: ${messageId}`);
+      logger.warn(
+        `[PermissionManager] Message ID already tracked, replacing: ${messageId}`,
+      );
     }
 
     state.requestsByMessageId.set(messageId, request);
@@ -32,7 +38,10 @@ class PermissionManager {
     );
   }
 
-  getRequest(chatId: number, messageId: number | null): PermissionRequest | null {
+  getRequest(
+    chatId: number,
+    messageId: number | null,
+  ): PermissionRequest | null {
     if (messageId === null) {
       return null;
     }
@@ -53,7 +62,10 @@ class PermissionManager {
   }
 
   isActiveMessage(chatId: number, messageId: number | null): boolean {
-    return messageId !== null && this.getState(chatId).requestsByMessageId.has(messageId);
+    return (
+      messageId !== null &&
+      this.getState(chatId).requestsByMessageId.has(messageId)
+    );
   }
 
   getMessageId(chatId: number): number | null {
@@ -69,7 +81,10 @@ class PermissionManager {
     return Array.from(this.getState(chatId).requestsByMessageId.keys());
   }
 
-  removeByMessageId(chatId: number, messageId: number | null): PermissionRequest | null {
+  removeByMessageId(
+    chatId: number,
+    messageId: number | null,
+  ): PermissionRequest | null {
     const request = this.getRequest(chatId, messageId);
     if (!request || messageId === null) {
       return null;

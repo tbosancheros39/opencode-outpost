@@ -17,7 +17,10 @@ class PinnedMessageManager {
   private states: Map<number, PinnedMessageState> = new Map();
   private apiByChat: Map<number, Api> = new Map();
   private contextLimitByChat: Map<number, number | null> = new Map();
-  private onKeyboardUpdateCallback?: (tokensUsed: number, tokensLimit: number) => void;
+  private onKeyboardUpdateCallback?: (
+    tokensUsed: number,
+    tokensLimit: number,
+  ) => void;
 
   private getOrCreateState(chatId: number): PinnedMessageState {
     let state = this.states.get(chatId);
@@ -63,8 +66,14 @@ class PinnedMessageManager {
     }
   }
 
-  async onSessionChange(chatId: number, sessionId: string, sessionTitle: string): Promise<void> {
-    logger.info(`[PinnedManager] Session changed: ${sessionId}, title: ${sessionTitle}`);
+  async onSessionChange(
+    chatId: number,
+    sessionId: string,
+    sessionTitle: string,
+  ): Promise<void> {
+    logger.info(
+      `[PinnedManager] Session changed: ${sessionId}, title: ${sessionTitle}`,
+    );
 
     const state = this.getOrCreateState(chatId);
 
@@ -76,7 +85,9 @@ class PinnedMessageManager {
 
     const project = getCurrentProject(chatId);
     state.projectName =
-      project?.name || this.extractProjectName(project?.worktree) || t("pinned.unknown");
+      project?.name ||
+      this.extractProjectName(project?.worktree) ||
+      t("pinned.unknown");
 
     await this.fetchContextLimit(chatId);
 
@@ -107,12 +118,15 @@ class PinnedMessageManager {
     directory: string,
   ): Promise<void> {
     try {
-      logger.debug(`[PinnedManager] Loading context from history for session: ${sessionId}`);
+      logger.debug(
+        `[PinnedManager] Loading context from history for session: ${sessionId}`,
+      );
 
-      const { data: messagesData, error } = await opencodeClient.session.messages({
-        sessionID: sessionId,
-        directory,
-      });
+      const { data: messagesData, error } =
+        await opencodeClient.session.messages({
+          sessionID: sessionId,
+          directory,
+        });
 
       if (error || !messagesData) {
         logger.warn("[PinnedManager] Failed to load session history:", error);
@@ -121,7 +135,9 @@ class PinnedMessageManager {
 
       let maxContextSize = 0;
       let totalCost = 0;
-      logger.debug(`[PinnedManager] Processing ${messagesData.length} messages from history`);
+      logger.debug(
+        `[PinnedManager] Processing ${messagesData.length} messages from history`,
+      );
 
       messagesData.forEach(({ info }) => {
         if (info.role === "assistant") {
@@ -171,8 +187,14 @@ class PinnedMessageManager {
     }
   }
 
-  async onSessionCompacted(chatId: number, sessionId: string, directory: string): Promise<void> {
-    logger.info(`[PinnedManager] Session compacted, reloading context: ${sessionId}`);
+  async onSessionCompacted(
+    chatId: number,
+    sessionId: string,
+    directory: string,
+  ): Promise<void> {
+    logger.info(
+      `[PinnedManager] Session compacted, reloading context: ${sessionId}`,
+    );
 
     await this.loadContextFromHistory(chatId, sessionId, directory);
   }
@@ -186,7 +208,9 @@ class PinnedMessageManager {
 
     state.tokensUsed = tokens.input + tokens.cacheRead;
 
-    logger.debug(`[PinnedManager] Tokens updated: ${state.tokensUsed}/${state.tokensLimit}`);
+    logger.debug(
+      `[PinnedManager] Tokens updated: ${state.tokensUsed}/${state.tokensLimit}`,
+    );
 
     await this.refreshSessionTitle(chatId);
 
@@ -203,15 +227,21 @@ class PinnedMessageManager {
     await this.updatePinnedMessage(chatId);
   }
 
-  setOnKeyboardUpdate(callback: (tokensUsed: number, tokensLimit: number) => void): void {
+  setOnKeyboardUpdate(
+    callback: (tokensUsed: number, tokensLimit: number) => void,
+  ): void {
     this.onKeyboardUpdateCallback = callback;
     logger.debug("[PinnedManager] Keyboard update callback registered");
   }
 
-  getContextInfo(chatId: number): { tokensUsed: number; tokensLimit: number } | null {
+  getContextInfo(
+    chatId: number,
+  ): { tokensUsed: number; tokensLimit: number } | null {
     const state = this.getOrCreateState(chatId);
     const limit =
-      state.tokensLimit > 0 ? state.tokensLimit : this.getContextLimitForChat(chatId) || 0;
+      state.tokensLimit > 0
+        ? state.tokensLimit
+        : this.getContextLimitForChat(chatId) || 0;
     if (limit === 0) {
       return null;
     }
@@ -233,7 +263,9 @@ class PinnedMessageManager {
   async onSessionDiff(chatId: number, diffs: FileChange[]): Promise<void> {
     const state = this.getOrCreateState(chatId);
     if (diffs.length === 0 && state.changedFiles.length > 0) {
-      logger.debug("[PinnedManager] Ignoring empty session.diff, keeping tool-collected data");
+      logger.debug(
+        "[PinnedManager] Ignoring empty session.diff, keeping tool-collected data",
+      );
       return;
     }
     state.changedFiles = diffs;
@@ -269,7 +301,10 @@ class PinnedMessageManager {
     }, 500);
   }
 
-  private async loadDiffsFromApi(chatId: number, sessionId: string): Promise<void> {
+  private async loadDiffsFromApi(
+    chatId: number,
+    sessionId: string,
+  ): Promise<void> {
     try {
       const project = getCurrentProject(chatId);
       if (!project) {
@@ -277,7 +312,9 @@ class PinnedMessageManager {
         return;
       }
 
-      logger.debug(`[PinnedManager] loadDiffsFromApi: trying session.diff() for ${sessionId}`);
+      logger.debug(
+        `[PinnedManager] loadDiffsFromApi: trying session.diff() for ${sessionId}`,
+      );
 
       const { data, error } = await opencodeClient.session.diff({
         sessionID: sessionId,
@@ -291,11 +328,13 @@ class PinnedMessageManager {
       const state = this.getOrCreateState(chatId);
 
       if (!error && data && data.length > 0) {
-        state.changedFiles = data.map((d) => ({
-          file: d.file,
-          additions: d.additions,
-          deletions: d.deletions,
-        }));
+        state.changedFiles = data
+          .filter((d): d is typeof d & { file: string } => d.file !== undefined)
+          .map((d) => ({
+            file: d.file,
+            additions: d.additions,
+            deletions: d.deletions,
+          }));
         logger.info(
           `[PinnedManager] Loaded ${state.changedFiles.length} file diffs from session.diff()`,
         );
@@ -303,7 +342,9 @@ class PinnedMessageManager {
         return;
       }
 
-      logger.debug("[PinnedManager] session.diff() empty, trying loadDiffsFromMessages()");
+      logger.debug(
+        "[PinnedManager] session.diff() empty, trying loadDiffsFromMessages()",
+      );
       await this.loadDiffsFromMessages(chatId, sessionId, project.worktree);
     } catch (err) {
       logger.debug("[PinnedManager] Could not load diffs from API:", err);
@@ -316,19 +357,24 @@ class PinnedMessageManager {
     directory: string,
   ): Promise<void> {
     try {
-      logger.debug(`[PinnedManager] loadDiffsFromMessages: fetching messages for ${sessionId}`);
+      logger.debug(
+        `[PinnedManager] loadDiffsFromMessages: fetching messages for ${sessionId}`,
+      );
 
-      const { data: messagesData, error } = await opencodeClient.session.messages({
-        sessionID: sessionId,
-        directory,
-      });
+      const { data: messagesData, error } =
+        await opencodeClient.session.messages({
+          sessionID: sessionId,
+          directory,
+        });
 
       if (error || !messagesData) {
         logger.debug(`[PinnedManager] loadDiffsFromMessages: error or no data`);
         return;
       }
 
-      logger.debug(`[PinnedManager] loadDiffsFromMessages: ${messagesData.length} messages`);
+      logger.debug(
+        `[PinnedManager] loadDiffsFromMessages: ${messagesData.length} messages`,
+      );
 
       const filesMap = new Map<string, FileChange>();
 
@@ -413,10 +459,14 @@ class PinnedMessageManager {
 
       if (filesMap.size > 0) {
         state.changedFiles = Array.from(filesMap.values());
-        logger.info(`[PinnedManager] Loaded ${state.changedFiles.length} file diffs from messages`);
+        logger.info(
+          `[PinnedManager] Loaded ${state.changedFiles.length} file diffs from messages`,
+        );
         await this.updatePinnedMessage(chatId);
       } else {
-        logger.debug("[PinnedManager] loadDiffsFromMessages: no file changes found");
+        logger.debug(
+          "[PinnedManager] loadDiffsFromMessages: no file changes found",
+        );
       }
     } catch (err) {
       logger.debug("[PinnedManager] Could not load diffs from messages:", err);
@@ -441,7 +491,9 @@ class PinnedMessageManager {
 
       if (sessionData && sessionData.title !== state.sessionTitle) {
         state.sessionTitle = sessionData.title;
-        logger.debug(`[PinnedManager] Session title refreshed: ${sessionData.title}`);
+        logger.debug(
+          `[PinnedManager] Session title refreshed: ${sessionData.title}`,
+        );
       }
     } catch (err) {
       logger.debug("[PinnedManager] Could not refresh session title:", err);
@@ -486,10 +538,13 @@ class PinnedMessageManager {
         return;
       }
 
-      const { data: providersData, error } = await opencodeClient.config.providers();
+      const { data: providersData, error } =
+        await opencodeClient.config.providers();
 
       if (error || !providersData) {
-        logger.warn("[PinnedManager] Failed to fetch providers, using default limit");
+        logger.warn(
+          "[PinnedManager] Failed to fetch providers, using default limit",
+        );
         const limit = 200000;
         this.setContextLimitForChat(chatId, limit);
         const state = this.getOrCreateState(chatId);
@@ -511,7 +566,9 @@ class PinnedMessageManager {
         }
       }
 
-      logger.warn("[PinnedManager] Model not found in providers, using default limit");
+      logger.warn(
+        "[PinnedManager] Model not found in providers, using default limit",
+      );
       const limit = 200000;
       this.setContextLimitForChat(chatId, limit);
       const state = this.getOrCreateState(chatId);
@@ -528,7 +585,9 @@ class PinnedMessageManager {
   private formatMessage(chatId: number): string {
     const state = this.getOrCreateState(chatId);
     const percentage =
-      state.tokensLimit > 0 ? Math.round((state.tokensUsed / state.tokensLimit) * 100) : 0;
+      state.tokensLimit > 0
+        ? Math.round((state.tokensUsed / state.tokensLimit) * 100)
+        : 0;
 
     const tokensFormatted = this.formatTokenCount(state.tokensUsed);
     const limitFormatted = this.formatTokenCount(state.tokensLimit);
@@ -568,7 +627,9 @@ class PinnedMessageManager {
         if (f.additions > 0) parts.push(`+${f.additions}`);
         if (f.deletions > 0) parts.push(`-${f.deletions}`);
         const diffStr = parts.length > 0 ? ` (${parts.join(" ")})` : "";
-        lines.push(t("pinned.files.item", { path: relativePath, diff: diffStr }));
+        lines.push(
+          t("pinned.files.item", { path: relativePath, diff: diffStr }),
+        );
       }
 
       if (total > maxFiles) {
@@ -612,7 +673,9 @@ class PinnedMessageManager {
         disable_notification: true,
       });
 
-      logger.info(`[PinnedManager] Created and pinned message: ${sentMessage.message_id}`);
+      logger.info(
+        `[PinnedManager] Created and pinned message: ${sentMessage.message_id}`,
+      );
     } catch (err) {
       logger.error("[PinnedManager] Error creating pinned message:", err);
     }
@@ -636,7 +699,9 @@ class PinnedMessageManager {
       );
       state.lastUpdated = Date.now();
 
-      logger.debug(`[PinnedManager] Updated pinned message: ${state.messageId}`);
+      logger.debug(
+        `[PinnedManager] Updated pinned message: ${state.messageId}`,
+      );
 
       if (this.onKeyboardUpdateCallback && state.tokensLimit > 0) {
         setImmediate(() => {
@@ -644,12 +709,20 @@ class PinnedMessageManager {
         });
       }
     } catch (err: unknown) {
-      if (err instanceof Error && err.message.includes("message is not modified")) {
+      if (
+        err instanceof Error &&
+        err.message.includes("message is not modified")
+      ) {
         return;
       }
 
-      if (err instanceof Error && err.message.includes("message to edit not found")) {
-        logger.warn("[PinnedManager] Pinned message was deleted, recreating...");
+      if (
+        err instanceof Error &&
+        err.message.includes("message to edit not found")
+      ) {
+        logger.warn(
+          "[PinnedManager] Pinned message was deleted, recreating...",
+        );
         state.messageId = null;
         clearPinnedMessageId(chatId);
         await this.createPinnedMessage(chatId);

@@ -48,7 +48,9 @@ class RecentFilesTracker {
     }
 
     this.recentFiles.set(worktree, files);
-    logger.debug(`[RecentFiles] Added ${normalized} to ${worktree} (${files.length} files)`);
+    logger.debug(
+      `[RecentFiles] Added ${normalized} to ${worktree} (${files.length} files)`,
+    );
   }
 
   /**
@@ -76,7 +78,10 @@ class RecentFilesTracker {
    * Extract a file path from a tool call's input.
    * Returns the path if found, null otherwise.
    */
-  extractFilePath(tool: string, input?: { [key: string]: unknown }): string | null {
+  extractFilePath(
+    tool: string,
+    input?: { [key: string]: unknown },
+  ): string | null {
     if (!FILE_TOOLS.has(tool) || !input) return null;
 
     // Check common path fields

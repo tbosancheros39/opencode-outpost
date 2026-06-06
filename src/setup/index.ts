@@ -1,6 +1,6 @@
 /**
  * Setup Module
- * 
+ *
  * Zero-config setup with smart defaults
  */
 

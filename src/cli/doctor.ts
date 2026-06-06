@@ -32,7 +32,9 @@ export async function runDoctor(): Promise<void> {
   checks.push({
     name: "Environment File",
     status: envExists ? "ok" : "error",
-    message: envExists ? `Found at ${paths.envFilePath}` : `Missing: ${paths.envFilePath}`,
+    message: envExists
+      ? `Found at ${paths.envFilePath}`
+      : `Missing: ${paths.envFilePath}`,
   });
 
   if (!envExists) {
@@ -110,7 +112,8 @@ export async function runDoctor(): Promise<void> {
 
   // Check OpenCode auth if remote
   if (!isLocal) {
-    const hasPassword = config.opencode.password && config.opencode.password.length > 0;
+    const hasPassword =
+      config.opencode.password && config.opencode.password.length > 0;
     checks.push({
       name: "OpenCode Server Auth",
       status: hasPassword ? "ok" : "warn",
@@ -122,11 +125,18 @@ export async function runDoctor(): Promise<void> {
 
   // Check Redis (optional)
   const redisEnabled = process.env.REDIS_ENABLED;
-  if (redisEnabled !== "false" && redisEnabled !== "0" && redisEnabled !== "no") {
+  if (
+    redisEnabled !== "false" &&
+    redisEnabled !== "0" &&
+    redisEnabled !== "no"
+  ) {
     try {
       const { default: Redis } = await import("ioredis");
       const redisUrl = config.redis.url;
-      const testClient = new Redis(redisUrl, { maxRetriesPerRequest: 1, connectTimeout: 3000 });
+      const testClient = new Redis(redisUrl, {
+        maxRetriesPerRequest: 1,
+        connectTimeout: 3000,
+      });
 
       try {
         await testClient.ping();
@@ -178,9 +188,13 @@ export async function runDoctor(): Promise<void> {
   if (errorCount === 0 && warnCount === 0) {
     console.log("✅ All checks passed - bot is ready to start");
   } else if (errorCount === 0) {
-    console.log(`⚠️  ${warnCount} warning(s) - bot should work but review warnings above`);
+    console.log(
+      `⚠️  ${warnCount} warning(s) - bot should work but review warnings above`,
+    );
   } else {
-    console.log(`❌ ${errorCount} error(s) - bot cannot start until errors are resolved`);
+    console.log(
+      `❌ ${errorCount} error(s) - bot cannot start until errors are resolved`,
+    );
   }
   console.log("=".repeat(60) + "\n");
 
@@ -193,7 +207,8 @@ function printChecks(checks: DiagnosticCheck[]): void {
   console.log("\n📊 Diagnostic Checks:\n");
 
   for (const check of checks) {
-    const icon = check.status === "ok" ? "✅" : check.status === "warn" ? "⚠️ " : "❌";
+    const icon =
+      check.status === "ok" ? "✅" : check.status === "warn" ? "⚠️ " : "❌";
     console.log(`${icon} ${check.name}`);
     console.log(`   ${check.message}`);
   }

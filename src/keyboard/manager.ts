@@ -57,7 +57,10 @@ class KeyboardManager {
         `[KeyboardManager] Initialized with agent="${state.currentAgent}", model="${state.currentModel.providerID}/${state.currentModel.modelID}", variant="${currentModel.variant || "default"}", chatId=${chatId}`,
       );
     } else {
-      logger.debug("[KeyboardManager] Already initialized, updating chatId:", chatId);
+      logger.debug(
+        "[KeyboardManager] Already initialized, updating chatId:",
+        chatId,
+      );
     }
   }
 
@@ -94,14 +97,20 @@ class KeyboardManager {
     logger.debug(`[KeyboardManager] Variant updated: ${variantId}`);
   }
 
-  public updateContext(chatId: number, tokensUsed: number, tokensLimit: number): void {
+  public updateContext(
+    chatId: number,
+    tokensUsed: number,
+    tokensLimit: number,
+  ): void {
     const state = this.getOrCreateState(chatId);
     if (!this.states.has(chatId)) {
       logger.warn("[KeyboardManager] Cannot update context: not initialized");
       return;
     }
     state.contextInfo = { tokensUsed, tokensLimit };
-    logger.debug(`[KeyboardManager] Context updated: ${tokensUsed}/${tokensLimit}`);
+    logger.debug(
+      `[KeyboardManager] Context updated: ${tokensUsed}/${tokensLimit}`,
+    );
   }
 
   public clearContext(chatId: number): void {
@@ -123,7 +132,11 @@ class KeyboardManager {
     const state = this.states.get(chatId);
     if (!state) {
       logger.warn("[KeyboardManager] Cannot build keyboard: not initialized");
-      return createMainKeyboard("build", { providerID: "", modelID: "" }, undefined);
+      return createMainKeyboard(
+        "build",
+        { providerID: "", modelID: "" },
+        undefined,
+      );
     }
     return createMainKeyboard(
       state.currentAgent,

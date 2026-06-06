@@ -30,7 +30,9 @@ export async function opencodeStopCommand(ctx: CommandContext<Context>) {
 
     // 2. Notify user that we're stopping the server
     const pid = processManager.getPID();
-    const statusMessage = await ctx.reply(t("opencode_stop.stopping", { pid: pid ?? "-" }));
+    const statusMessage = await ctx.reply(
+      t("opencode_stop.stopping", { pid: pid ?? "-" }),
+    );
 
     // 3. Stop the process
     const { success, error } = await processManager.stop(5000);
@@ -39,7 +41,9 @@ export async function opencodeStopCommand(ctx: CommandContext<Context>) {
       await ctx.api.editMessageText(
         ctx.chat.id,
         statusMessage.message_id,
-        t("opencode_stop.stop_error", { error: error || t("common.unknown_error") }),
+        t("opencode_stop.stop_error", {
+          error: error || t("common.unknown_error"),
+        }),
       );
       return;
     }

@@ -89,10 +89,15 @@ export function deleteDocumentsByPath(sourcePath: string): void {
   const db = getKbDb();
   const stmt = db.prepare("DELETE FROM documents WHERE source_path = ?");
   const result = stmt.run(sourcePath);
-  logger.info(`[KnowledgeBase] Deleted ${result.changes} chunks for ${sourcePath}`);
+  logger.info(
+    `[KnowledgeBase] Deleted ${result.changes} chunks for ${sourcePath}`,
+  );
 }
 
-export function insertChunk(chunk: KnowledgeBaseChunk, createdAt: string): void {
+export function insertChunk(
+  chunk: KnowledgeBaseChunk,
+  createdAt: string,
+): void {
   const db = getKbDb();
   const stmt = db.prepare(`
     INSERT INTO documents (
@@ -115,7 +120,9 @@ export function insertChunk(chunk: KnowledgeBaseChunk, createdAt: string): void 
 
 export function getDocumentCount(): number {
   const db = getKbDb();
-  const result = db.prepare("SELECT COUNT(DISTINCT source_path) as count FROM documents").get() as {
+  const result = db
+    .prepare("SELECT COUNT(DISTINCT source_path) as count FROM documents")
+    .get() as {
     count: number;
   };
   return result.count;
@@ -123,7 +130,9 @@ export function getDocumentCount(): number {
 
 export function getChunkCount(): number {
   const db = getKbDb();
-  const result = db.prepare("SELECT COUNT(*) as count FROM documents").get() as {
+  const result = db
+    .prepare("SELECT COUNT(*) as count FROM documents")
+    .get() as {
     count: number;
   };
   return result.count;
@@ -131,7 +140,9 @@ export function getChunkCount(): number {
 
 export function getAllSourcePaths(): string[] {
   const db = getKbDb();
-  const rows = db.prepare("SELECT DISTINCT source_path FROM documents ORDER BY source_path").all() as Array<{
+  const rows = db
+    .prepare("SELECT DISTINCT source_path FROM documents ORDER BY source_path")
+    .all() as Array<{
     source_path: string;
   }>;
   return rows.map((r) => r.source_path);
@@ -193,7 +204,10 @@ export function searchChunks(query: string, limit: number): SearchResult[] {
 }
 
 function generateSnippet(content: string, query: string): string {
-  const terms = query.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+  const terms = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((t) => t.length > 2);
   if (terms.length === 0) {
     return content.slice(0, 200);
   }

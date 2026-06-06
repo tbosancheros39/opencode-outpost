@@ -58,7 +58,11 @@ function pruneInlineRunCache(now: number = Date.now()): void {
   }
 }
 
-function cacheInlineRun(command: string, query: string, userId: number): string {
+function cacheInlineRun(
+  command: string,
+  query: string,
+  userId: number,
+): string {
   pruneInlineRunCache();
   const cacheId = randomUUID();
   inlineRunCache.set(cacheId, {
@@ -70,7 +74,10 @@ function cacheInlineRun(command: string, query: string, userId: number): string 
   return cacheId;
 }
 
-function isInlineRunExpired(entry: InlineRunCacheEntry, now: number = Date.now()): boolean {
+function isInlineRunExpired(
+  entry: InlineRunCacheEntry,
+  now: number = Date.now(),
+): boolean {
   return now - entry.createdAt > INLINE_RUN_CACHE_TTL_MS;
 }
 
@@ -193,7 +200,10 @@ export function detectInlineCommandWithoutColon(
   const lowerQuery = query.toLowerCase().trim();
   for (const cmd of INLINE_COMMANDS) {
     const prefixWithoutColon = cmd.prefix.replace(/:$/, "");
-    if (lowerQuery.startsWith(prefixWithoutColon + " ") || lowerQuery === prefixWithoutColon) {
+    if (
+      lowerQuery.startsWith(prefixWithoutColon + " ") ||
+      lowerQuery === prefixWithoutColon
+    ) {
       let actualQuery = query.slice(prefixWithoutColon.length).trim();
       // Strip common filler words users add between command and query
       // e.g. "deep-research skill activate it, spawn agents" → "spawn agents"
@@ -237,7 +247,9 @@ function detectInlineCommandFlexible(
     for (const alias of aliases) {
       const escapedAlias = escapeRegExp(alias);
 
-      const spacedColonMatch = trimmed.match(new RegExp(`^${escapedAlias}\\s*:\\s*(.*)$`, "i"));
+      const spacedColonMatch = trimmed.match(
+        new RegExp(`^${escapedAlias}\\s*:\\s*(.*)$`, "i"),
+      );
       if (spacedColonMatch) {
         return {
           command: cmd,
@@ -245,7 +257,9 @@ function detectInlineCommandFlexible(
         };
       }
 
-      const noColonMatch = trimmed.match(new RegExp(`^${escapedAlias}\\s+(.+)$`, "i"));
+      const noColonMatch = trimmed.match(
+        new RegExp(`^${escapedAlias}\\s+(.+)$`, "i"),
+      );
       if (noColonMatch) {
         let actualQuery = noColonMatch[1]?.trim() ?? "";
         // Strip common filler words (e.g. "deep-research skill activate it, ..." → "...")
@@ -266,7 +280,10 @@ function detectInlineCommandFlexible(
   return null;
 }
 
-export function buildCommandPrompt(command: InlineCommand, userQuery: string): string {
+export function buildCommandPrompt(
+  command: InlineCommand,
+  userQuery: string,
+): string {
   return `${command.promptTemplate}\n\n---\n\nUSER'S QUESTION/CONTENT:\n${userQuery}`;
 }
 
@@ -303,7 +320,8 @@ function buildSuggestionResult(
         [
           {
             text: `✏️ Type your question: ${switchQueryTo}`,
-            switch_inline_query_current_chat: buildSwitchInlineQuery(switchQueryTo),
+            switch_inline_query_current_chat:
+              buildSwitchInlineQuery(switchQueryTo),
           },
         ],
       ],
@@ -338,7 +356,10 @@ function buildRunCallbackResult(
         [
           {
             text: t("inline.cmd.button.edit"),
-            switch_inline_query_current_chat: buildSwitchInlineQuery(commandPrefix, query),
+            switch_inline_query_current_chat: buildSwitchInlineQuery(
+              commandPrefix,
+              query,
+            ),
           },
         ],
       ],
@@ -353,9 +374,13 @@ async function safeAnswerInlineQuery(
   label: string,
 ): Promise<void> {
   try {
-    logger.info(`[InlineQuery] Calling answerInlineQuery: label=${label}, resultCount=${results.length}, cache_time=${options.cache_time}`);
+    logger.info(
+      `[InlineQuery] Calling answerInlineQuery: label=${label}, resultCount=${results.length}, cache_time=${options.cache_time}`,
+    );
     await ctx.answerInlineQuery(results, options);
-    logger.info(`[InlineQuery] answerInlineQuery SUCCESS: label=${label}, sent ${results.length} results`);
+    logger.info(
+      `[InlineQuery] answerInlineQuery SUCCESS: label=${label}, sent ${results.length} results`,
+    );
   } catch (err) {
     logger.error(`[InlineQuery] answerInlineQuery ERROR (${label}):`, err);
   }
@@ -381,7 +406,9 @@ export async function handleInlineQuery(ctx: Context): Promise<void> {
     return;
   }
 
-  logger.info(`[InlineQuery] Received inline query: id=${inlineQuery.id}, query="${inlineQuery.query}", from=${ctx.from?.id}`);
+  logger.info(
+    `[InlineQuery] Received inline query: id=${inlineQuery.id}, query="${inlineQuery.query}", from=${ctx.from?.id}`,
+  );
 
   const userId = ctx.from?.id;
   if (!userId || !isSuperUser(userId)) {
@@ -416,7 +443,9 @@ export async function handleInlineQuery(ctx: Context): Promise<void> {
 
   // Non-empty query: support both "eli5: question" and "eli5 question"
   const commandMatch = detectInlineCommandFlexible(trimmedQuery);
-  logger.info(`[InlineQuery] Query="${trimmedQuery}", commandMatch=${commandMatch ? commandMatch.command.prefix : "null"}`);
+  logger.info(
+    `[InlineQuery] Query="${trimmedQuery}", commandMatch=${commandMatch ? commandMatch.command.prefix : "null"}`,
+  );
 
   if (commandMatch) {
     const { command, actualQuery } = commandMatch;
@@ -426,7 +455,9 @@ export async function handleInlineQuery(ctx: Context): Promise<void> {
       const errorResult = buildSuggestionResult(
         `cmd:${command.prefix}:error`,
         t(command.titleKey),
-        t("inline.cmd.error.query_too_short", { min: String(command.minQueryLength) }),
+        t("inline.cmd.error.query_too_short", {
+          min: String(command.minQueryLength),
+        }),
         command.prefix,
       );
       await safeAnswerInlineQuery(
@@ -452,8 +483,15 @@ export async function handleInlineQuery(ctx: Context): Promise<void> {
     );
 
     // DEBUG: Log the exact result being sent
-    const debugResult = result as { id: string; type: string; title?: string; input_message_content?: { message_text?: string } };
-    logger.debug(`[InlineQuery] Result detail: id=${debugResult.id}, type=${debugResult.type}, title="${debugResult.title ?? "N/A"}", message_text="${debugResult.input_message_content?.message_text ?? "N/A"}"`);
+    const debugResult = result as {
+      id: string;
+      type: string;
+      title?: string;
+      input_message_content?: { message_text?: string };
+    };
+    logger.debug(
+      `[InlineQuery] Result detail: id=${debugResult.id}, type=${debugResult.type}, title="${debugResult.title ?? "N/A"}", message_text="${debugResult.input_message_content?.message_text ?? "N/A"}"`,
+    );
 
     await safeAnswerInlineQuery(
       ctx,
@@ -469,7 +507,9 @@ export async function handleInlineQuery(ctx: Context): Promise<void> {
 
   // No recognized command prefix — return suggestions instead of an empty list
   // so the user always gets guidance in inline mode.
-  logger.debug(`[InlineQuery] No command prefix matched for query: "${trimmedQuery}", returning suggestions`);
+  logger.debug(
+    `[InlineQuery] No command prefix matched for query: "${trimmedQuery}", returning suggestions`,
+  );
   await safeAnswerInlineQuery(
     ctx,
     buildCommandSuggestions(),
@@ -489,7 +529,10 @@ export async function handleInlineRunCallback(ctx: Context): Promise<boolean> {
 
   const userId = ctx.from?.id;
   if (!userId) {
-    await ctx.answerCallbackQuery({ text: t("inline.cmd.error.callback_invalid"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("inline.cmd.error.callback_invalid"),
+      show_alert: true,
+    });
     return true;
   }
 
@@ -498,18 +541,27 @@ export async function handleInlineRunCallback(ctx: Context): Promise<boolean> {
   const cacheId = data.slice(INLINE_RUN_CALLBACK_PREFIX.length);
   const cached = inlineRunCache.get(cacheId);
   if (!cached) {
-    await ctx.answerCallbackQuery({ text: t("inline.cmd.error.callback_expired"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("inline.cmd.error.callback_expired"),
+      show_alert: true,
+    });
     return true;
   }
 
   if (cached.userId !== userId) {
-    await ctx.answerCallbackQuery({ text: t("inline.cmd.error.callback_invalid"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("inline.cmd.error.callback_invalid"),
+      show_alert: true,
+    });
     return true;
   }
 
   if (isInlineRunExpired(cached)) {
     inlineRunCache.delete(cacheId);
-    await ctx.answerCallbackQuery({ text: t("inline.cmd.error.callback_expired"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("inline.cmd.error.callback_expired"),
+      show_alert: true,
+    });
     return true;
   }
 
@@ -533,20 +585,36 @@ export async function handleInlineRunCallback(ctx: Context): Promise<boolean> {
         text: t("inline.thinking"),
       });
     } catch (err) {
-      logger.warn("[InlineQuery] Failed to edit inline message for thinking ACK:", err);
+      logger.warn(
+        "[InlineQuery] Failed to edit inline message for thinking ACK:",
+        err,
+      );
     }
     ackMessageId = 0; // not used when inlineMessageId is set
   } else if (ctx.chat?.id && callbackMessageId) {
     try {
-      await ctx.api.editMessageText(ctx.chat.id, callbackMessageId, t("inline.thinking"));
+      await ctx.api.editMessageText(
+        ctx.chat.id,
+        callbackMessageId,
+        t("inline.thinking"),
+      );
       ackMessageId = callbackMessageId;
     } catch (err) {
-      logger.warn("[InlineQuery] Failed to edit callback source message, sending fallback ACK:", err);
-      const ackMessage = await ctx.api.sendMessage(targetChatId, t("inline.thinking"));
+      logger.warn(
+        "[InlineQuery] Failed to edit callback source message, sending fallback ACK:",
+        err,
+      );
+      const ackMessage = await ctx.api.sendMessage(
+        targetChatId,
+        t("inline.thinking"),
+      );
       ackMessageId = ackMessage.message_id;
     }
   } else {
-    const ackMessage = await ctx.api.sendMessage(targetChatId, t("inline.thinking"));
+    const ackMessage = await ctx.api.sendMessage(
+      targetChatId,
+      t("inline.thinking"),
+    );
     ackMessageId = ackMessage.message_id;
   }
 
@@ -587,10 +655,17 @@ export async function handleInlineRunCallback(ctx: Context): Promise<boolean> {
           text: t("inline.cmd.error.resolution_failed"),
         });
       } else {
-        await ctx.api.editMessageText(targetChatId, ackMessageId, t("inline.cmd.error.resolution_failed"));
+        await ctx.api.editMessageText(
+          targetChatId,
+          ackMessageId,
+          t("inline.cmd.error.resolution_failed"),
+        );
       }
     } catch (editErr) {
-      logger.warn("[InlineQuery] Failed to update ACK message after queue error:", editErr);
+      logger.warn(
+        "[InlineQuery] Failed to update ACK message after queue error:",
+        editErr,
+      );
     }
   }
 

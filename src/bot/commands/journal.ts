@@ -6,7 +6,8 @@ import { getJournalErrors } from "../../monitoring/journal-monitor.js";
 
 export async function journalCommand(ctx: CommandContext<Context>) {
   const args = (ctx.match as string)?.trim() || "";
-  const isWatchMode = args.toLowerCase() === "watch" || args.toLowerCase() === "start";
+  const isWatchMode =
+    args.toLowerCase() === "watch" || args.toLowerCase() === "start";
 
   if (isWatchMode) {
     await ctx.reply(t("journal.watch_started"), { parse_mode: "HTML" });
@@ -21,23 +22,25 @@ export async function journalCommand(ctx: CommandContext<Context>) {
 
   try {
     const report = await getJournalErrors(10);
-    const safeReport = report.length > 3800 ? `${report.slice(0, 3800)}\n\n<i>…truncated</i>` : report;
+    const safeReport =
+      report.length > 3800
+        ? `${report.slice(0, 3800)}\n\n<i>…truncated</i>`
+        : report;
 
-    await ctx.api.editMessageText(
-      chatId,
-      statusMsg.message_id,
-      safeReport,
-      { parse_mode: "HTML" }
-    );
+    await ctx.api.editMessageText(chatId, statusMsg.message_id, safeReport, {
+      parse_mode: "HTML",
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     const safeMessage = escapeHtml(message);
     logger.error("[Bot] Journal command error:", error);
-    await ctx.api.editMessageText(
-      chatId,
-      statusMsg.message_id,
-      t("journal.error", { message: safeMessage }),
-      { parse_mode: "HTML" }
-    ).catch(() => {});
+    await ctx.api
+      .editMessageText(
+        chatId,
+        statusMsg.message_id,
+        t("journal.error", { message: safeMessage }),
+        { parse_mode: "HTML" },
+      )
+      .catch(() => {});
   }
 }

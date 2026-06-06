@@ -1,12 +1,20 @@
 import { CommandContext, Context } from "grammy";
 import { opencodeClient } from "../../opencode/client.js";
-import { getCurrentSession, setCurrentSession, type SessionInfo } from "../../session/manager.js";
+import {
+  getCurrentSession,
+  setCurrentSession,
+  type SessionInfo,
+} from "../../session/manager.js";
 import { getStoredAgent } from "../../agent/manager.js";
 import { getCurrentProject } from "../../settings/manager.js";
 import { logger } from "../../utils/logger.js";
 import { escapeHtml } from "../../utils/html.js";
 import { chunkOutput } from "../utils/chunk.js";
-import { quoteShellArg, validateShellPathInput, extractShellOutput } from "../utils/shell-security.js";
+import {
+  quoteShellArg,
+  validateShellPathInput,
+  extractShellOutput,
+} from "../utils/shell-security.js";
 
 export async function lsCommand(ctx: CommandContext<Context>) {
   if (!ctx.chat) {
@@ -22,9 +30,12 @@ export async function lsCommand(ctx: CommandContext<Context>) {
     return;
   }
 
-  const statusMsg = await ctx.reply(`📂 <i>Listing: ${escapeHtml(targetPath)}...</i>`, {
-    parse_mode: "HTML",
-  });
+  const statusMsg = await ctx.reply(
+    `📂 <i>Listing: ${escapeHtml(targetPath)}...</i>`,
+    {
+      parse_mode: "HTML",
+    },
+  );
 
   try {
     let session = getCurrentSession(chatId);
@@ -64,9 +75,12 @@ export async function lsCommand(ctx: CommandContext<Context>) {
     await ctx.api.deleteMessage(chatId, statusMsg.message_id);
 
     for (let i = 0; i < chunks.length; i++) {
-      await ctx.reply(`📂 <b>${escapeHtml(targetPath)}</b>\n<pre><code>${chunks[i]}</code></pre>`, {
-        parse_mode: "HTML",
-      });
+      await ctx.reply(
+        `📂 <b>${escapeHtml(targetPath)}</b>\n<pre><code>${chunks[i]}</code></pre>`,
+        {
+          parse_mode: "HTML",
+        },
+      );
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

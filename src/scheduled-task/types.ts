@@ -79,11 +79,15 @@ export function createScheduledTaskModel(model: ModelInfo): ScheduledTaskModel {
   };
 }
 
-export function cloneParsedTaskSchedule(schedule: ParsedTaskSchedule): ParsedTaskSchedule {
+export function cloneParsedTaskSchedule(
+  schedule: ParsedTaskSchedule,
+): ParsedTaskSchedule {
   return { ...schedule };
 }
 
-export function cloneScheduledTaskModel(model: ScheduledTaskModel): ScheduledTaskModel {
+export function cloneScheduledTaskModel(
+  model: ScheduledTaskModel,
+): ScheduledTaskModel {
   return { ...model };
 }
 

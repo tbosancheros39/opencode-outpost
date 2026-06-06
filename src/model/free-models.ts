@@ -15,7 +15,10 @@ export type ModelGroup = (typeof MODEL_GROUPS)[keyof typeof MODEL_GROUPS];
  * Explicit list of models to show in Telegram /models menu.
  * ONLY these models will appear in the menu.
  */
-const TELEGRAM_ALLOWED_MODELS: Array<{ providerID: string; modelPattern: string }> = [
+const TELEGRAM_ALLOWED_MODELS: Array<{
+  providerID: string;
+  modelPattern: string;
+}> = [
   // OpenCode Go Provider — open-source coding models
   { providerID: "opencode-go", modelPattern: "glm-5" },
   { providerID: "opencode-go", modelPattern: "glm-5.1" },
@@ -32,9 +35,14 @@ const TELEGRAM_ALLOWED_MODELS: Array<{ providerID: string; modelPattern: string 
   { providerID: "opencode-go", modelPattern: "qwen3.6-plus" },
 
   // OpenCode Provider — free models only (models ending in -free)
+  { providerID: "opencode", modelPattern: "deepseek-v4-flash-free" },
   { providerID: "opencode", modelPattern: "minimax-m2.5-free" },
   { providerID: "opencode", modelPattern: "ling-2.6-flash-free" },
   { providerID: "opencode", modelPattern: "nemotron-3-super-free" },
+
+  // Deepseek Provider
+  { providerID: "deepseek", modelPattern: "deepseek-v4-flash" },
+  { providerID: "deepseek", modelPattern: "deepseek-v4-pro" },
 ];
 
 /**
@@ -117,19 +125,27 @@ export function isFreeModel(
  * @returns Filtered list of free models
  */
 export function filterFreeModels(
-  providers: Array<{ id: string; models: Record<string, unknown> | Array<{ id?: string; modelID?: string }> }>,
+  providers: Array<{
+    id: string;
+    models: Record<string, unknown> | Array<{ id?: string; modelID?: string }>;
+  }>,
   customPatterns?: Array<{ providerID: string; modelPattern: string }>,
 ): Array<{ providerID: string; modelID: string }> {
   const freeModels: Array<{ providerID: string; modelID: string }> = [];
 
   for (const provider of providers) {
-    const providerID = provider.id ?? '';
+    const providerID = provider.id ?? "";
     if (!providerID || !provider.models) continue;
 
     const modelIDs = Array.isArray(provider.models)
       ? provider.models
-          .map((m) => (m as { id?: string; modelID?: string }).id ?? (m as { id?: string; modelID?: string }).modelID ?? m)
-          .filter((id): id is string => typeof id === 'string')
+          .map(
+            (m) =>
+              (m as { id?: string; modelID?: string }).id ??
+              (m as { id?: string; modelID?: string }).modelID ??
+              m,
+          )
+          .filter((id): id is string => typeof id === "string")
       : Object.keys(provider.models);
 
     for (const modelID of modelIDs) {
@@ -154,22 +170,34 @@ export function filterFreeModels(
  * @returns Models filtered to only those from GitHub Copilot and OpenCode Zen Free groups
  */
 export function filterModelsByTelegramGroups(
-  providers: Array<{ id: string; models: Record<string, unknown> | Array<{ id?: string; modelID?: string }> }>,
+  providers: Array<{
+    id: string;
+    models: Record<string, unknown> | Array<{ id?: string; modelID?: string }>;
+  }>,
 ): Array<{ providerID: string; modelID: string }> {
   const filteredModels: Array<{ providerID: string; modelID: string }> = [];
 
   for (const provider of providers) {
-    const providerID = provider.id ?? '';
+    const providerID = provider.id ?? "";
     if (!providerID || !provider.models) continue;
 
     const modelIDs = Array.isArray(provider.models)
       ? provider.models
-          .map((m) => (m as { id?: string; modelID?: string }).id ?? (m as { id?: string; modelID?: string }).modelID ?? m)
-          .filter((id): id is string => typeof id === 'string')
+          .map(
+            (m) =>
+              (m as { id?: string; modelID?: string }).id ??
+              (m as { id?: string; modelID?: string }).modelID ??
+              m,
+          )
+          .filter((id): id is string => typeof id === "string")
       : Object.keys(provider.models);
 
     for (const modelID of modelIDs) {
-      const allowed = matchesAnyPattern(providerID, modelID, TELEGRAM_ALLOWED_MODELS);
+      const allowed = matchesAnyPattern(
+        providerID,
+        modelID,
+        TELEGRAM_ALLOWED_MODELS,
+      );
 
       if (allowed) {
         filteredModels.push({

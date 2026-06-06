@@ -15,13 +15,20 @@ let redisAvailable = false;
 
 async function testRedisConnection(): Promise<boolean> {
   const redisEnabled = process.env.REDIS_ENABLED;
-  if (redisEnabled === "false" || redisEnabled === "0" || redisEnabled === "no") {
+  if (
+    redisEnabled === "false" ||
+    redisEnabled === "0" ||
+    redisEnabled === "no"
+  ) {
     logger.info("[Queue] Redis is disabled via REDIS_ENABLED env var");
     return false;
   }
   const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
   try {
-    const testClient = new Redis(redisUrl, { maxRetriesPerRequest: 1, connectTimeout: 3000 });
+    const testClient = new Redis(redisUrl, {
+      maxRetriesPerRequest: 1,
+      connectTimeout: 3000,
+    });
     await testClient.ping();
     await testClient.quit();
     logger.info("[Queue] Redis connection verified");
@@ -59,10 +66,13 @@ export function getQueue(): Queue<TaskJobData, TaskJobResult, string> | null {
       return null;
     }
     try {
-      queueInstance = new Queue<TaskJobData, TaskJobResult, string>(QUEUE_NAME, {
-        connection,
-        defaultJobOptions: JOB_OPTIONS,
-      });
+      queueInstance = new Queue<TaskJobData, TaskJobResult, string>(
+        QUEUE_NAME,
+        {
+          connection,
+          defaultJobOptions: JOB_OPTIONS,
+        },
+      );
 
       queueInstance.on("error", (error: Error) => {
         logger.warn("[Queue] Queue error:", error);
@@ -80,12 +90,18 @@ export function getQueue(): Queue<TaskJobData, TaskJobResult, string> | null {
   return queueInstance;
 }
 
-export async function addTaskJob(data: TaskJobData): Promise<Job<TaskJobData, TaskJobResult, string>> {
+export async function addTaskJob(
+  data: TaskJobData,
+): Promise<Job<TaskJobData, TaskJobResult, string>> {
   const queue = getQueue();
   if (!queue) {
     logger.warn("[Queue] BullMQ unavailable, routing job to in-memory queue");
     await memoryQueue.enqueue(data);
-    return { id: data.taskId, data } as unknown as Job<TaskJobData, TaskJobResult, string>;
+    return { id: data.taskId, data } as unknown as Job<
+      TaskJobData,
+      TaskJobResult,
+      string
+    >;
   }
   const job = await queue.add(JOB_NAME, data, {
     jobId: data.taskId,
@@ -95,13 +111,17 @@ export async function addTaskJob(data: TaskJobData): Promise<Job<TaskJobData, Ta
   return job;
 }
 
-export async function getJob(jobId: string): Promise<Job<TaskJobData, TaskJobResult, string> | undefined> {
+export async function getJob(
+  jobId: string,
+): Promise<Job<TaskJobData, TaskJobResult, string> | undefined> {
   const queue = getQueue();
   if (!queue) return undefined;
   return queue.getJob(jobId);
 }
 
-export async function getJobProgress(jobId: string): Promise<TaskJobProgress | null> {
+export async function getJobProgress(
+  jobId: string,
+): Promise<TaskJobProgress | null> {
   const job = await getJob(jobId);
   if (!job) {
     return null;

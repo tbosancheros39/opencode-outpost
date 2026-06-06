@@ -18,7 +18,7 @@ export async function healthCommand(ctx: CommandContext<Context>) {
     await ctx.api.editMessageText(
       chatId,
       statusMsg.message_id,
-      t("health.error")
+      t("health.error"),
     );
   }
 }

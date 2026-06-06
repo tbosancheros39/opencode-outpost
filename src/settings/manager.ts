@@ -1,5 +1,8 @@
 import type { ModelInfo } from "../model/types.js";
-import { cloneScheduledTask, type ScheduledTask } from "../scheduled-task/types.js";
+import {
+  cloneScheduledTask,
+  type ScheduledTask,
+} from "../scheduled-task/types.js";
 import path from "node:path";
 import { getRuntimePaths } from "../runtime/paths.js";
 import { config } from "../config.js";
@@ -58,7 +61,9 @@ export interface Settings {
 
 const DEFAULT_CHAT_ID = 0;
 
-function cloneScheduledTasks(tasks: ScheduledTask[] | undefined): ScheduledTask[] | undefined {
+function cloneScheduledTasks(
+  tasks: ScheduledTask[] | undefined,
+): ScheduledTask[] | undefined {
   return tasks?.map((task) => cloneScheduledTask(task));
 }
 
@@ -117,7 +122,10 @@ export function getCurrentProject(chatId: number): ProjectInfo | undefined {
   return getSettings(chatId).currentProject;
 }
 
-export function setCurrentProject(chatId: number, projectInfo: ProjectInfo): void {
+export function setCurrentProject(
+  chatId: number,
+  projectInfo: ProjectInfo,
+): void {
   const settings = getSettings(chatId);
   settings.currentProject = projectInfo;
   void writeSettingsFile(settings);
@@ -133,7 +141,10 @@ export function getCurrentSession(chatId: number): SessionInfo | undefined {
   return getSettings(chatId).currentSession;
 }
 
-export function setCurrentSession(chatId: number, sessionInfo: SessionInfo): void {
+export function setCurrentSession(
+  chatId: number,
+  sessionInfo: SessionInfo,
+): void {
   const settings = getSettings(chatId);
   settings.currentSession = sessionInfo;
   void writeSettingsFile(settings);
@@ -193,11 +204,16 @@ export function clearPinnedMessageId(chatId: number): void {
   void writeSettingsFile(settings);
 }
 
-export function getServerProcess(chatId: number): ServerProcessInfo | undefined {
+export function getServerProcess(
+  chatId: number,
+): ServerProcessInfo | undefined {
   return getSettings(chatId).serverProcess;
 }
 
-export function setServerProcess(chatId: number, processInfo: ServerProcessInfo): void {
+export function setServerProcess(
+  chatId: number,
+  processInfo: ServerProcessInfo,
+): void {
   const settings = getSettings(chatId);
   settings.serverProcess = processInfo;
   void writeSettingsFile(settings);
@@ -209,7 +225,9 @@ export function clearServerProcess(chatId: number): void {
   void writeSettingsFile(settings);
 }
 
-export function getSessionDirectoryCache(chatId: number): SessionDirectoryCacheInfo | undefined {
+export function getSessionDirectoryCache(
+  chatId: number,
+): SessionDirectoryCacheInfo | undefined {
   return getSettings(chatId).sessionDirectoryCache;
 }
 
@@ -232,7 +250,10 @@ export function getScheduledTasks(chatId: number): ScheduledTask[] {
   return cloneScheduledTasks(getSettings(chatId).scheduledTasks) ?? [];
 }
 
-export function setScheduledTasks(chatId: number, tasks: ScheduledTask[]): Promise<void> {
+export function setScheduledTasks(
+  chatId: number,
+  tasks: ScheduledTask[],
+): Promise<void> {
   const settings = getSettings(chatId);
   settings.scheduledTasks = cloneScheduledTasks(tasks);
   return writeSettingsFile(settings);
@@ -250,8 +271,12 @@ export function addCostEntry(chatId: number, entry: CostEntry): void {
   settings.costHistory.push(entry);
 
   // Keep only last 30 days of history
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  settings.costHistory = settings.costHistory.filter((e) => e.date >= thirtyDaysAgo);
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+  settings.costHistory = settings.costHistory.filter(
+    (e) => e.date >= thirtyDaysAgo,
+  );
 
   void writeSettingsFile(settings);
 }
@@ -262,7 +287,10 @@ export function clearCostHistory(chatId: number): void {
   void writeSettingsFile(settings);
 }
 
-export function setLastSessionForProject(projectPath: string, sessionId: string): void {
+export function setLastSessionForProject(
+  projectPath: string,
+  sessionId: string,
+): void {
   const settings = getSettings(DEFAULT_CHAT_ID);
   if (!settings.projectSessions) {
     settings.projectSessions = {};
@@ -290,7 +318,9 @@ export function setTtsEnabled(chatId: number, enabled: boolean): void {
   const settings = getSettings(chatId);
   settings[TTS_ENABLED_KEY] = enabled;
   void writeSettingsFile(settings);
-  logger.info(`[Settings] TTS ${enabled ? "enabled" : "disabled"} for chat ${chatId}`);
+  logger.info(
+    `[Settings] TTS ${enabled ? "enabled" : "disabled"} for chat ${chatId}`,
+  );
 }
 
 // Semantic Search Settings
@@ -298,11 +328,16 @@ export function isSemanticSearchEnabled(chatId: number): boolean {
   return getSettings(chatId).semanticSearch === true;
 }
 
-export function setSemanticSearchEnabled(chatId: number, enabled: boolean): void {
+export function setSemanticSearchEnabled(
+  chatId: number,
+  enabled: boolean,
+): void {
   const settings = getSettings(chatId);
   settings.semanticSearch = enabled;
   void writeSettingsFile(settings);
-  logger.info(`[Settings] Semantic search ${enabled ? "enabled" : "disabled"} for chat ${chatId}`);
+  logger.info(
+    `[Settings] Semantic search ${enabled ? "enabled" : "disabled"} for chat ${chatId}`,
+  );
 }
 
 // Pinned Files Settings
@@ -314,7 +349,9 @@ export function setPinnedFiles(chatId: number, files: string[]): void {
   const settings = getSettings(chatId);
   settings.pinnedFiles = files;
   void writeSettingsFile(settings);
-  logger.info(`[Settings] Updated pinned files for chat ${chatId}: ${files.length} files`);
+  logger.info(
+    `[Settings] Updated pinned files for chat ${chatId}: ${files.length} files`,
+  );
 }
 
 export function addPinnedFile(chatId: number, filePath: string): void {

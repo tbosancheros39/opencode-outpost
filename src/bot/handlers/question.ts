@@ -80,13 +80,19 @@ export async function handleQuestionCallback(ctx: Context): Promise<boolean> {
 
   if (!questionManager.isActive(chatId)) {
     clearQuestionInteraction(chatId, "question_inactive_callback");
-    await ctx.answerCallbackQuery({ text: t("question.inactive_callback"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("question.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
   const callbackMessageId = getCallbackMessageId(ctx);
   if (!questionManager.isActiveMessage(chatId, callbackMessageId)) {
-    await ctx.answerCallbackQuery({ text: t("question.inactive_callback"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("question.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
@@ -94,8 +100,14 @@ export async function handleQuestionCallback(ctx: Context): Promise<boolean> {
   const action = parts[1];
   const questionIndex = parseInt(parts[2], 10);
 
-  if (Number.isNaN(questionIndex) || questionIndex !== questionManager.getCurrentIndex(chatId)) {
-    await ctx.answerCallbackQuery({ text: t("question.inactive_callback"), show_alert: true });
+  if (
+    Number.isNaN(questionIndex) ||
+    questionIndex !== questionManager.getCurrentIndex(chatId)
+  ) {
+    await ctx.answerCallbackQuery({
+      text: t("question.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
@@ -160,7 +172,12 @@ async function handleSelectOption(
 
   if (questionManager.isWaitingForCustomInput(chatId, questionIndex)) {
     questionManager.clearCustomInput(chatId);
-    syncQuestionInteractionState(chatId, "callback", questionIndex, questionManager.getActiveMessageId(chatId));
+    syncQuestionInteractionState(
+      chatId,
+      "callback",
+      questionIndex,
+      questionManager.getActiveMessageId(chatId),
+    );
   }
 
   questionManager.selectOption(chatId, questionIndex, optionIndex);
@@ -170,11 +187,15 @@ async function handleSelectOption(
     await updateQuestionMessage(ctx, chatId);
     await ctx.answerCallbackQuery();
   } else {
-    logger.debug("[QuestionHandler] Single choice mode, moving to next question");
+    logger.debug(
+      "[QuestionHandler] Single choice mode, moving to next question",
+    );
     await ctx.answerCallbackQuery();
 
     const answer = questionManager.getSelectedAnswer(chatId, questionIndex);
-    logger.debug(`[QuestionHandler] Selected answer for question ${questionIndex}: ${answer}`);
+    logger.debug(
+      `[QuestionHandler] Selected answer for question ${questionIndex}: ${answer}`,
+    );
 
     await ctx.deleteMessage().catch(() => {});
 
@@ -182,10 +203,19 @@ async function handleSelectOption(
   }
 }
 
-async function handleSubmitAnswer(ctx: Context, chatId: number, questionIndex: number): Promise<void> {
+async function handleSubmitAnswer(
+  ctx: Context,
+  chatId: number,
+  questionIndex: number,
+): Promise<void> {
   if (questionManager.isWaitingForCustomInput(chatId, questionIndex)) {
     questionManager.clearCustomInput(chatId);
-    syncQuestionInteractionState(chatId, "callback", questionIndex, questionManager.getActiveMessageId(chatId));
+    syncQuestionInteractionState(
+      chatId,
+      "callback",
+      questionIndex,
+      questionManager.getActiveMessageId(chatId),
+    );
   }
 
   const answer = questionManager.getSelectedAnswer(chatId, questionIndex);
@@ -198,7 +228,9 @@ async function handleSubmitAnswer(ctx: Context, chatId: number, questionIndex: n
     return;
   }
 
-  logger.debug(`[QuestionHandler] Submit answer for question ${questionIndex}: ${answer}`);
+  logger.debug(
+    `[QuestionHandler] Submit answer for question ${questionIndex}: ${answer}`,
+  );
 
   await ctx.answerCallbackQuery();
 
@@ -207,9 +239,18 @@ async function handleSubmitAnswer(ctx: Context, chatId: number, questionIndex: n
   await showNextQuestion(ctx, chatId);
 }
 
-async function handleCustomAnswer(ctx: Context, chatId: number, questionIndex: number): Promise<void> {
+async function handleCustomAnswer(
+  ctx: Context,
+  chatId: number,
+  questionIndex: number,
+): Promise<void> {
   questionManager.startCustomInput(chatId, questionIndex);
-  syncQuestionInteractionState(chatId, "mixed", questionIndex, questionManager.getActiveMessageId(chatId));
+  syncQuestionInteractionState(
+    chatId,
+    "mixed",
+    questionIndex,
+    questionManager.getActiveMessageId(chatId),
+  );
 
   await ctx.answerCallbackQuery({
     text: t("question.enter_custom_callback"),
@@ -227,17 +268,25 @@ async function handleCancelPoll(ctx: Context, chatId: number): Promise<void> {
   questionManager.clear(chatId);
 }
 
-async function updateQuestionMessage(ctx: Context, chatId: number): Promise<void> {
+async function updateQuestionMessage(
+  ctx: Context,
+  chatId: number,
+): Promise<void> {
   const question = questionManager.getCurrentQuestion(chatId);
   if (!question) {
-    logger.debug("[QuestionHandler] updateQuestionMessage: no current question");
+    logger.debug(
+      "[QuestionHandler] updateQuestionMessage: no current question",
+    );
     return;
   }
 
   const text = formatQuestionText(question, chatId);
   const keyboard = buildQuestionKeyboard(
     question,
-    questionManager.getSelectedOptions(chatId, questionManager.getCurrentIndex(chatId)),
+    questionManager.getSelectedOptions(
+      chatId,
+      questionManager.getCurrentIndex(chatId),
+    ),
     chatId,
   );
 
@@ -252,7 +301,10 @@ async function updateQuestionMessage(ctx: Context, chatId: number): Promise<void
   }
 }
 
-export async function showCurrentQuestion(bot: Context["api"], chatId: number): Promise<void> {
+export async function showCurrentQuestion(
+  bot: Context["api"],
+  chatId: number,
+): Promise<void> {
   const question = questionManager.getCurrentQuestion(chatId);
 
   if (!question) {
@@ -260,23 +312,32 @@ export async function showCurrentQuestion(bot: Context["api"], chatId: number): 
     return;
   }
 
-  logger.debug(`[QuestionHandler] Showing question: ${question.header} - ${question.question}`);
+  logger.debug(
+    `[QuestionHandler] Showing question: ${question.header} - ${question.question}`,
+  );
 
   const text = formatQuestionText(question, chatId);
   const keyboard = buildQuestionKeyboard(
     question,
-    questionManager.getSelectedOptions(chatId, questionManager.getCurrentIndex(chatId)),
+    questionManager.getSelectedOptions(
+      chatId,
+      questionManager.getCurrentIndex(chatId),
+    ),
     chatId,
   );
 
-  logger.debug(`[QuestionHandler] Sending message with keyboard, chatId=${chatId}`);
+  logger.debug(
+    `[QuestionHandler] Sending message with keyboard, chatId=${chatId}`,
+  );
 
   try {
     const message = await bot.sendMessage(chatId, text, {
       reply_markup: keyboard,
     });
 
-    logger.debug(`[QuestionHandler] Message sent, messageId=${message.message_id}`);
+    logger.debug(
+      `[QuestionHandler] Message sent, messageId=${message.message_id}`,
+    );
 
     questionManager.addMessageId(chatId, message.message_id);
     questionManager.setActiveMessageId(chatId, message.message_id);
@@ -316,7 +377,9 @@ export async function handleQuestionTextAnswer(ctx: Context): Promise<void> {
     return;
   }
 
-  logger.debug(`[QuestionHandler] Custom text answer for question ${currentIndex}: ${text}`);
+  logger.debug(
+    `[QuestionHandler] Custom text answer for question ${currentIndex}: ${text}`,
+  );
 
   questionManager.setCustomAnswer(chatId, currentIndex, text);
   questionManager.clearCustomInput(chatId);
@@ -343,7 +406,10 @@ async function showNextQuestion(ctx: Context, chatId: number): Promise<void> {
   }
 }
 
-async function showPollSummary(bot: Context["api"], chatId: number): Promise<void> {
+async function showPollSummary(
+  bot: Context["api"],
+  chatId: number,
+): Promise<void> {
   const answers = questionManager.getAllAnswers(chatId);
   const totalQuestions = questionManager.getTotalQuestions(chatId);
 
@@ -365,7 +431,10 @@ async function showPollSummary(bot: Context["api"], chatId: number): Promise<voi
   logger.debug("[QuestionHandler] Poll completed and cleared");
 }
 
-async function sendAllAnswersToAgent(bot: Context["api"], chatId: number): Promise<void> {
+async function sendAllAnswersToAgent(
+  bot: Context["api"],
+  chatId: number,
+): Promise<void> {
   const currentProject = getCurrentProject(chatId);
   const currentSession = getCurrentSession(chatId);
   const requestID = questionManager.getRequestID(chatId);
@@ -403,7 +472,10 @@ async function sendAllAnswersToAgent(bot: Context["api"], chatId: number): Promi
   logger.info(
     `[QuestionHandler] Sending all ${totalQuestions} answers to agent via question.reply: requestID=${requestID}`,
   );
-  logger.debug(`[QuestionHandler] Answers payload:`, JSON.stringify(allAnswers, null, 2));
+  logger.debug(
+    `[QuestionHandler] Answers payload:`,
+    JSON.stringify(allAnswers, null, 2),
+  );
 
   safeBackgroundTask({
     taskName: "question.reply",
@@ -415,24 +487,35 @@ async function sendAllAnswersToAgent(bot: Context["api"], chatId: number): Promi
       }),
     onSuccess: ({ error }) => {
       if (error) {
-        logger.error("[QuestionHandler] Failed to send answers via question.reply:", error);
-        void bot.sendMessage(chatId, t("question.send_answers_error")).catch(() => {});
+        logger.error(
+          "[QuestionHandler] Failed to send answers via question.reply:",
+          error,
+        );
+        void bot
+          .sendMessage(chatId, t("question.send_answers_error"))
+          .catch(() => {});
         return;
       }
 
-      logger.info("[QuestionHandler] All answers sent to agent successfully via question.reply");
+      logger.info(
+        "[QuestionHandler] All answers sent to agent successfully via question.reply",
+      );
     },
   });
 }
 
-function formatQuestionText(question: {
-  header: string;
-  question: string;
-  multiple?: boolean;
-}, chatId: number): string {
+function formatQuestionText(
+  question: {
+    header: string;
+    question: string;
+    multiple?: boolean;
+  },
+  chatId: number,
+): string {
   const currentIndex = questionManager.getCurrentIndex(chatId);
   const totalQuestions = questionManager.getTotalQuestions(chatId);
-  const progressText = totalQuestions > 0 ? `${currentIndex + 1}/${totalQuestions}` : "";
+  const progressText =
+    totalQuestions > 0 ? `${currentIndex + 1}/${totalQuestions}` : "";
 
   const headerTitle = [progressText, question.header].filter(Boolean).join(" ");
   const header = headerTitle ? `${headerTitle}\n\n` : "";
@@ -441,7 +524,10 @@ function formatQuestionText(question: {
 }
 
 function buildQuestionKeyboard(
-  question: { options: Array<{ label: string; description: string }>; multiple?: boolean },
+  question: {
+    options: Array<{ label: string; description: string }>;
+    multiple?: boolean;
+  },
   selectedOptions: Set<number>,
   chatId: number,
 ): InlineKeyboard {
@@ -449,7 +535,9 @@ function buildQuestionKeyboard(
 
   const questionIndex = questionManager.getCurrentIndex(chatId);
 
-  logger.debug(`[QuestionHandler] Building keyboard for question ${questionIndex}`);
+  logger.debug(
+    `[QuestionHandler] Building keyboard for question ${questionIndex}`,
+  );
 
   question.options.forEach((option, index) => {
     const isSelected = selectedOptions.has(index);
@@ -457,28 +545,43 @@ function buildQuestionKeyboard(
     const buttonText = formatButtonText(option.label, option.description, icon);
     const callbackData = `question:select:${questionIndex}:${index}`;
 
-    logger.debug(`[QuestionHandler] Button ${index}: "${buttonText}" -> "${callbackData}"`);
+    logger.debug(
+      `[QuestionHandler] Button ${index}: "${buttonText}" -> "${callbackData}"`,
+    );
 
     keyboard.text(buttonText, callbackData).row();
   });
 
   if (question.multiple) {
-    keyboard.text(t("question.button.submit"), `question:submit:${questionIndex}`).row();
+    keyboard
+      .text(t("question.button.submit"), `question:submit:${questionIndex}`)
+      .row();
     logger.debug(`[QuestionHandler] Added submit button`);
   }
 
-  keyboard.text(t("question.button.custom"), `question:custom:${questionIndex}`).row();
+  keyboard
+    .text(t("question.button.custom"), `question:custom:${questionIndex}`)
+    .row();
   logger.debug(`[QuestionHandler] Added custom answer button`);
 
-  keyboard.text(t("question.button.cancel"), `question:cancel:${questionIndex}`);
+  keyboard.text(
+    t("question.button.cancel"),
+    `question:cancel:${questionIndex}`,
+  );
   logger.debug(`[QuestionHandler] Added cancel button`);
 
-  logger.debug(`[QuestionHandler] Final keyboard: ${JSON.stringify(keyboard.inline_keyboard)}`);
+  logger.debug(
+    `[QuestionHandler] Final keyboard: ${JSON.stringify(keyboard.inline_keyboard)}`,
+  );
 
   return keyboard;
 }
 
-function formatButtonText(label: string, description: string, icon: string): string {
+function formatButtonText(
+  label: string,
+  description: string,
+  icon: string,
+): string {
   let text = `${icon}${label}`;
 
   if (description && icon === "") {
@@ -492,7 +595,9 @@ function formatButtonText(label: string, description: string, icon: string): str
   return text;
 }
 
-function formatAnswersSummary(answers: Array<{ question: string; answer: string }>): string {
+function formatAnswersSummary(
+  answers: Array<{ question: string; answer: string }>,
+): string {
   let summary = t("question.summary.title");
 
   answers.forEach((item, index) => {

@@ -7,7 +7,15 @@ import { t } from "../../i18n/index.js";
 const INLINE_MENU_CANCEL_PREFIX = "inline:cancel:";
 const LEGACY_CONTEXT_CANCEL_CALLBACK = "compact:cancel";
 
-const INLINE_MENU_KINDS = ["project", "session", "model", "agent", "variant", "context", "pin"] as const;
+const INLINE_MENU_KINDS = [
+  "project",
+  "session",
+  "model",
+  "agent",
+  "variant",
+  "context",
+  "pin",
+] as const;
 
 export type InlineMenuKind = (typeof INLINE_MENU_KINDS)[number];
 
@@ -80,7 +88,10 @@ export function appendInlineMenuCancelButton(
     keyboard.row();
   }
 
-  keyboard.text(t("inline.button.cancel"), getInlineCancelCallbackData(menuKind));
+  keyboard.text(
+    t("inline.button.cancel"),
+    getInlineCancelCallbackData(menuKind),
+  );
   return keyboard;
 }
 
@@ -88,7 +99,10 @@ export async function replyWithInlineMenu(
   ctx: Context,
   options: InlineMenuReplyOptions,
 ): Promise<number> {
-  const keyboard = appendInlineMenuCancelButton(options.keyboard, options.menuKind);
+  const keyboard = appendInlineMenuCancelButton(
+    options.keyboard,
+    options.menuKind,
+  );
   const replyOptions: {
     reply_markup: InlineKeyboard;
     parse_mode?: "Markdown" | "HTML";
@@ -124,7 +138,9 @@ export async function ensureActiveInlineMenu(
   menuKind: InlineMenuKind,
 ): Promise<boolean> {
   const chatId = ctx.chat?.id ?? 0;
-  const activeMetadata = getActiveInlineMenuMetadata(interactionManager.getSnapshot(chatId));
+  const activeMetadata = getActiveInlineMenuMetadata(
+    interactionManager.getSnapshot(chatId),
+  );
   const callbackMessageId = getCallbackMessageId(ctx);
 
   const isActive =
@@ -142,7 +158,10 @@ export async function ensureActiveInlineMenu(
   );
 
   await ctx
-    .answerCallbackQuery({ text: t("inline.inactive_callback"), show_alert: true })
+    .answerCallbackQuery({
+      text: t("inline.inactive_callback"),
+      show_alert: true,
+    })
     .catch(() => {});
 
   return false;
@@ -183,7 +202,9 @@ export async function handleInlineMenuCancel(ctx: Context): Promise<boolean> {
 
   clearActiveInlineMenu(ctx.chat?.id ?? 0, `inline_menu_cancel:${menuKind}`);
 
-  await ctx.answerCallbackQuery({ text: t("inline.cancelled_callback") }).catch(() => {});
+  await ctx
+    .answerCallbackQuery({ text: t("inline.cancelled_callback") })
+    .catch(() => {});
   await ctx.deleteMessage().catch(() => {});
 
   logger.debug(`[InlineMenu] Menu cancelled: kind=${menuKind}`);

@@ -70,7 +70,9 @@ export function isTelegramMarkdownParseError(error: unknown): boolean {
     return false;
   }
 
-  return MARKDOWN_PARSE_ERROR_MARKERS.some((marker) => errorText.includes(marker));
+  return MARKDOWN_PARSE_ERROR_MARKERS.some((marker) =>
+    errorText.includes(marker),
+  );
 }
 
 export async function sendMessageWithMarkdownFallback({
@@ -92,17 +94,26 @@ export async function sendMessageWithMarkdownFallback({
 
     for (const message of rendered) {
       const messageParseMode =
-        message.parseMode === "MarkdownV2" ? ("MarkdownV2" as const) : undefined;
+        message.parseMode === "MarkdownV2"
+          ? ("MarkdownV2" as const)
+          : undefined;
       const messageOptions: TelegramSendMessageOptions = {
         ...(options || {}),
         ...(messageParseMode ? { parse_mode: messageParseMode } : {}),
       };
 
       try {
-        lastResult = await api.sendMessage(chatId, message.text, messageOptions);
+        lastResult = await api.sendMessage(
+          chatId,
+          message.text,
+          messageOptions,
+        );
       } catch (error) {
         if (messageParseMode && isTelegramMarkdownParseError(error)) {
-          logger.warn("[Bot] Rendered MarkdownV2 still failed, retrying as plain text", error);
+          logger.warn(
+            "[Bot] Rendered MarkdownV2 still failed, retrying as plain text",
+            error,
+          );
           lastResult = await api.sendMessage(chatId, message.text, options);
         } else {
           throw error;
@@ -125,7 +136,10 @@ export async function sendMessageWithMarkdownFallback({
       throw error;
     }
 
-    logger.warn("[Bot] Markdown parse failed, retrying assistant message in raw mode", error);
+    logger.warn(
+      "[Bot] Markdown parse failed, retrying assistant message in raw mode",
+      error,
+    );
     return api.sendMessage(chatId, text, options);
   }
 }
@@ -147,7 +161,8 @@ export async function editMessageWithMarkdownFallback({
   if (parseMode === "MarkdownV2") {
     const rendered = renderMarkdown(text);
     const first = rendered[0];
-    const firstParseMode = first.parseMode === "MarkdownV2" ? ("MarkdownV2" as const) : undefined;
+    const firstParseMode =
+      first.parseMode === "MarkdownV2" ? ("MarkdownV2" as const) : undefined;
     const firstOptions: TelegramEditMessageOptions = {
       ...(options || {}),
       ...(firstParseMode ? { parse_mode: firstParseMode } : {}),
@@ -156,11 +171,24 @@ export async function editMessageWithMarkdownFallback({
     let result: Awaited<ReturnType<EditMessageApi["editMessageText"]>>;
 
     try {
-      result = await api.editMessageText(chatId, messageId, first.text, firstOptions);
+      result = await api.editMessageText(
+        chatId,
+        messageId,
+        first.text,
+        firstOptions,
+      );
     } catch (error) {
       if (firstParseMode && isTelegramMarkdownParseError(error)) {
-        logger.warn("[Bot] Rendered MarkdownV2 edit still failed, retrying as plain text", error);
-        result = await api.editMessageText(chatId, messageId, first.text, options);
+        logger.warn(
+          "[Bot] Rendered MarkdownV2 edit still failed, retrying as plain text",
+          error,
+        );
+        result = await api.editMessageText(
+          chatId,
+          messageId,
+          first.text,
+          options,
+        );
       } else {
         throw error;
       }
@@ -169,7 +197,9 @@ export async function editMessageWithMarkdownFallback({
     for (let i = 1; i < rendered.length; i++) {
       const message = rendered[i];
       const messageParseMode =
-        message.parseMode === "MarkdownV2" ? ("MarkdownV2" as const) : undefined;
+        message.parseMode === "MarkdownV2"
+          ? ("MarkdownV2" as const)
+          : undefined;
       const messageOptions: TelegramSendMessageOptions = {
         ...(messageParseMode ? { parse_mode: messageParseMode } : {}),
       };
@@ -191,7 +221,10 @@ export async function editMessageWithMarkdownFallback({
       throw error;
     }
 
-    logger.warn("[Bot] Markdown parse failed, retrying edited message in raw mode", error);
+    logger.warn(
+      "[Bot] Markdown parse failed, retrying edited message in raw mode",
+      error,
+    );
     return api.editMessageText(chatId, messageId, text, options);
   }
 }

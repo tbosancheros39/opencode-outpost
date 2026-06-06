@@ -14,7 +14,8 @@ interface AbortCurrentOperationOptions {
   notifyUser?: boolean;
 }
 
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 function abortLocalStreaming(chatId: number): void {
   stopEventListening();
@@ -32,13 +33,17 @@ export async function pollSessionStatus(
 
   while (Date.now() - startedAt < maxWaitMs) {
     try {
-      const { data, error } = await opencodeClient.session.status({ directory });
+      const { data, error } = await opencodeClient.session.status({
+        directory,
+      });
 
       if (error || !data) {
         break;
       }
 
-      const sessionStatus = (data as Record<string, { type?: string }>)[sessionId];
+      const sessionStatus = (data as Record<string, { type?: string }>)[
+        sessionId
+      ];
       if (!sessionStatus) {
         return "not-found";
       }
@@ -96,27 +101,36 @@ export async function abortCurrentOperation(
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
-      const { data: abortResult, error: abortError } = await opencodeClient.session.abort(
-        {
-          sessionID: currentSession.id,
-          directory: currentSession.directory,
-        },
-        { signal: controller.signal },
-      );
+      const { data: abortResult, error: abortError } =
+        await opencodeClient.session.abort(
+          {
+            sessionID: currentSession.id,
+            directory: currentSession.directory,
+          },
+          { signal: controller.signal },
+        );
 
       clearTimeout(timeoutId);
 
       if (abortError) {
         logger.warn("[Abort] Abort request failed:", abortError);
         if (notifyUser && chatId !== null && waitingMessageId !== null) {
-          await ctx.api.editMessageText(chatId, waitingMessageId, t("stop.warn_unconfirmed"));
+          await ctx.api.editMessageText(
+            chatId,
+            waitingMessageId,
+            t("stop.warn_unconfirmed"),
+          );
         }
         return false;
       }
 
       if (abortResult !== true) {
         if (notifyUser && chatId !== null && waitingMessageId !== null) {
-          await ctx.api.editMessageText(chatId, waitingMessageId, t("stop.warn_maybe_finished"));
+          await ctx.api.editMessageText(
+            chatId,
+            waitingMessageId,
+            t("stop.warn_maybe_finished"),
+          );
         }
         return false;
       }
@@ -130,12 +144,20 @@ export async function abortCurrentOperation(
       if (finalStatus === "idle" || finalStatus === "not-found") {
         foregroundSessionState.markIdle(currentSession.id);
         if (notifyUser && chatId !== null && waitingMessageId !== null) {
-          await ctx.api.editMessageText(chatId, waitingMessageId, t("stop.success"));
+          await ctx.api.editMessageText(
+            chatId,
+            waitingMessageId,
+            t("stop.success"),
+          );
         }
         return true;
       } else {
         if (notifyUser && chatId !== null && waitingMessageId !== null) {
-          await ctx.api.editMessageText(chatId, waitingMessageId, t("stop.warn_still_busy"));
+          await ctx.api.editMessageText(
+            chatId,
+            waitingMessageId,
+            t("stop.warn_still_busy"),
+          );
         }
         return false;
       }
@@ -144,12 +166,20 @@ export async function abortCurrentOperation(
 
       if (error instanceof Error && error.name === "AbortError") {
         if (notifyUser && chatId !== null && waitingMessageId !== null) {
-          await ctx.api.editMessageText(chatId, waitingMessageId, t("stop.warn_timeout"));
+          await ctx.api.editMessageText(
+            chatId,
+            waitingMessageId,
+            t("stop.warn_timeout"),
+          );
         }
       } else {
         logger.error("[Abort] Error while aborting session:", error);
         if (notifyUser && chatId !== null && waitingMessageId !== null) {
-          await ctx.api.editMessageText(chatId, waitingMessageId, t("stop.warn_local_only"));
+          await ctx.api.editMessageText(
+            chatId,
+            waitingMessageId,
+            t("stop.warn_local_only"),
+          );
         }
       }
       return false;
@@ -161,6 +191,8 @@ export async function abortCurrentOperation(
   }
 }
 
-export async function abortCommand(ctx: CommandContext<Context>): Promise<void> {
+export async function abortCommand(
+  ctx: CommandContext<Context>,
+): Promise<void> {
   await abortCurrentOperation(ctx);
 }

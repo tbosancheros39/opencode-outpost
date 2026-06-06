@@ -15,7 +15,8 @@ let activeDirectory: string | null = null;
 let streamAbortController: AbortController | null = null;
 
 function getReconnectDelayMs(attempt: number): number {
-  const exponentialDelay = RECONNECT_BASE_DELAY_MS * Math.pow(2, Math.max(0, attempt - 1));
+  const exponentialDelay =
+    RECONNECT_BASE_DELAY_MS * Math.pow(2, Math.max(0, attempt - 1));
   return Math.min(exponentialDelay, RECONNECT_MAX_DELAY_MS);
 }
 
@@ -41,7 +42,10 @@ function waitWithAbort(ms: number, signal: AbortSignal): Promise<boolean> {
   });
 }
 
-export async function subscribeToEvents(directory: string, callback: EventCallback): Promise<void> {
+export async function subscribeToEvents(
+  directory: string,
+  callback: EventCallback,
+): Promise<void> {
   if (isListening && activeDirectory === directory) {
     eventCallback = callback;
     logger.debug(`Event listener already running for ${directory}`);
@@ -49,7 +53,9 @@ export async function subscribeToEvents(directory: string, callback: EventCallba
   }
 
   if (isListening && activeDirectory !== directory) {
-    logger.info(`Stopping event listener for ${activeDirectory}, starting for ${directory}`);
+    logger.info(
+      `Stopping event listener for ${activeDirectory}, starting for ${directory}`,
+    );
     streamAbortController?.abort();
     streamAbortController = null;
     isListening = false;
@@ -66,7 +72,11 @@ export async function subscribeToEvents(directory: string, callback: EventCallba
   try {
     let reconnectAttempt = 0;
 
-    while (isListening && activeDirectory === directory && !controller.signal.aborted) {
+    while (
+      isListening &&
+      activeDirectory === directory &&
+      !controller.signal.aborted
+    ) {
       try {
         const result = await opencodeClient.event.subscribe(
           { directory },
@@ -81,8 +91,14 @@ export async function subscribeToEvents(directory: string, callback: EventCallba
         eventStream = result.stream;
 
         for await (const event of eventStream) {
-          if (!isListening || activeDirectory !== directory || controller.signal.aborted) {
-            logger.debug(`Event listener stopped or changed directory, breaking loop`);
+          if (
+            !isListening ||
+            activeDirectory !== directory ||
+            controller.signal.aborted
+          ) {
+            logger.debug(
+              `Event listener stopped or changed directory, breaking loop`,
+            );
             break;
           }
 
@@ -100,7 +116,11 @@ export async function subscribeToEvents(directory: string, callback: EventCallba
 
         eventStream = null;
 
-        if (!isListening || activeDirectory !== directory || controller.signal.aborted) {
+        if (
+          !isListening ||
+          activeDirectory !== directory ||
+          controller.signal.aborted
+        ) {
           break;
         }
 
@@ -110,14 +130,21 @@ export async function subscribeToEvents(directory: string, callback: EventCallba
           `Event stream ended for ${directory}, reconnecting in ${reconnectDelay}ms (attempt=${reconnectAttempt})`,
         );
 
-        const shouldContinue = await waitWithAbort(reconnectDelay, controller.signal);
+        const shouldContinue = await waitWithAbort(
+          reconnectDelay,
+          controller.signal,
+        );
         if (!shouldContinue) {
           break;
         }
       } catch (error) {
         eventStream = null;
 
-        if (controller.signal.aborted || !isListening || activeDirectory !== directory) {
+        if (
+          controller.signal.aborted ||
+          !isListening ||
+          activeDirectory !== directory
+        ) {
           logger.info("Event listener aborted");
           return;
         }
@@ -134,7 +161,10 @@ export async function subscribeToEvents(directory: string, callback: EventCallba
           error,
         );
 
-        const shouldContinue = await waitWithAbort(reconnectDelay, controller.signal);
+        const shouldContinue = await waitWithAbort(
+          reconnectDelay,
+          controller.signal,
+        );
         if (!shouldContinue) {
           break;
         }
@@ -153,8 +183,14 @@ export async function subscribeToEvents(directory: string, callback: EventCallba
     throw error;
   } finally {
     if (streamAbortController === controller) {
-      if (isListening && activeDirectory === directory && !controller.signal.aborted) {
-        logger.warn(`Event stream ended for ${directory}, listener marked as disconnected`);
+      if (
+        isListening &&
+        activeDirectory === directory &&
+        !controller.signal.aborted
+      ) {
+        logger.warn(
+          `Event stream ended for ${directory}, listener marked as disconnected`,
+        );
       }
 
       streamAbortController = null;

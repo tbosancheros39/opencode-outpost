@@ -26,8 +26,15 @@ class RenameManager {
     return state;
   }
 
-  startWaiting(chatId: number, sessionId: string, directory: string, currentTitle: string): void {
-    logger.info(`[RenameManager] Starting rename flow for session: ${sessionId}`);
+  startWaiting(
+    chatId: number,
+    sessionId: string,
+    directory: string,
+    currentTitle: string,
+  ): void {
+    logger.info(
+      `[RenameManager] Starting rename flow for session: ${sessionId}`,
+    );
     const state = this.getState(chatId);
     state.isWaiting = true;
     state.sessionId = sessionId;
@@ -47,7 +54,9 @@ class RenameManager {
   isActiveMessage(chatId: number, messageId: number | null): boolean {
     const state = this.getState(chatId);
     return (
-      state.isWaiting && state.messageId !== null && state.messageId === messageId
+      state.isWaiting &&
+      state.messageId !== null &&
+      state.messageId === messageId
     );
   }
 
@@ -55,7 +64,9 @@ class RenameManager {
     return this.getState(chatId).isWaiting;
   }
 
-  getSessionInfo(chatId: number): { sessionId: string; directory: string; currentTitle: string } | null {
+  getSessionInfo(
+    chatId: number,
+  ): { sessionId: string; directory: string; currentTitle: string } | null {
     const state = this.getState(chatId);
     if (!state.isWaiting || !state.sessionId) {
       return null;

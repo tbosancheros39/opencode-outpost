@@ -34,7 +34,10 @@ function splitText(text: string, maxLength: number): string[] {
   return parts;
 }
 
-export function normalizePathForDisplay(filePath: string, chatId: number = 0): string {
+export function normalizePathForDisplay(
+  filePath: string,
+  chatId: number = 0,
+): string {
   const normalizedPath = filePath.replace(/\\/g, "/");
   const project = getCurrentProject(chatId);
 
@@ -42,15 +45,21 @@ export function normalizePathForDisplay(filePath: string, chatId: number = 0): s
     return normalizedPath;
   }
 
-  const normalizedWorktree = project.worktree.replace(/\\/g, "/").replace(/\/+$/, "");
+  const normalizedWorktree = project.worktree
+    .replace(/\\/g, "/")
+    .replace(/\/+$/, "");
   if (!normalizedWorktree) {
     return normalizedPath;
   }
 
   const pathForCompare =
-    process.platform === "win32" ? normalizedPath.toLowerCase() : normalizedPath;
+    process.platform === "win32"
+      ? normalizedPath.toLowerCase()
+      : normalizedPath;
   const worktreeForCompare =
-    process.platform === "win32" ? normalizedWorktree.toLowerCase() : normalizedWorktree;
+    process.platform === "win32"
+      ? normalizedWorktree.toLowerCase()
+      : normalizedWorktree;
 
   if (pathForCompare === worktreeForCompare) {
     return ".";
@@ -123,7 +132,10 @@ export function formatSummaryWithMode(
   return formattedParts;
 }
 
-function getToolDetails(tool: string, input?: { [key: string]: unknown }): string {
+function getToolDetails(
+  tool: string,
+  input?: { [key: string]: unknown },
+): string {
   if (!input) {
     return "";
   }
@@ -135,7 +147,8 @@ function getToolDetails(tool: string, input?: { [key: string]: unknown }): strin
     case "write":
     case "apply_patch":
       const filePath = input.path || input.filePath;
-      if (typeof filePath === "string") return normalizePathForDisplay(filePath);
+      if (typeof filePath === "string")
+        return normalizePathForDisplay(filePath);
       break;
     case "bash":
       if (typeof input.command === "string") return input.command;
@@ -157,7 +170,11 @@ function getToolDetails(tool: string, input?: { [key: string]: unknown }): strin
 
   // If nothing matched but string fields exist, take the first one (except description)
   for (const [key, value] of Object.entries(input)) {
-    if (key !== "description" && typeof value === "string" && value.length > 0) {
+    if (
+      key !== "description" &&
+      typeof value === "string" &&
+      value.length > 0
+    ) {
       return value;
     }
   }
@@ -202,7 +219,9 @@ function getToolIcon(tool: string): string {
   }
 }
 
-function formatTodos(todos: Array<{ id: string; content: string; status: string }>): string {
+function formatTodos(
+  todos: Array<{ id: string; content: string; status: string }>,
+): string {
   const MAX_TODOS = 20;
 
   const statusToMarker: Record<string, string> = {
@@ -228,14 +247,22 @@ function formatTodos(todos: Array<{ id: string; content: string; status: string 
   return result;
 }
 
-function formatDiffLineInfo(filediff: { additions?: number; deletions?: number }): string {
+function formatDiffLineInfo(filediff: {
+  additions?: number;
+  deletions?: number;
+}): string {
   const parts = [];
-  if (filediff.additions && filediff.additions > 0) parts.push(`+${filediff.additions}`);
-  if (filediff.deletions && filediff.deletions > 0) parts.push(`-${filediff.deletions}`);
+  if (filediff.additions && filediff.additions > 0)
+    parts.push(`+${filediff.additions}`);
+  if (filediff.deletions && filediff.deletions > 0)
+    parts.push(`-${filediff.deletions}`);
   return parts.length > 0 ? ` (${parts.join(" ")})` : "";
 }
 
-function countDiffChangesFromText(text: string): { additions: number; deletions: number } {
+function countDiffChangesFromText(text: string): {
+  additions: number;
+  deletions: number;
+} {
   let additions = 0;
   let deletions = 0;
 
@@ -311,7 +338,12 @@ export function formatToolInfo(toolInfo: ToolInfo): string | null {
   const detailsStr = details ? ` ${details}` : "";
   let lineInfo = "";
 
-  if (tool === "write" && input && "content" in input && typeof input.content === "string") {
+  if (
+    tool === "write" &&
+    input &&
+    "content" in input &&
+    typeof input.content === "string"
+  ) {
     const lines = countLines(input.content);
     lineInfo = ` (+${lines})`;
   }
@@ -321,8 +353,14 @@ export function formatToolInfo(toolInfo: ToolInfo): string | null {
     toolInfo.metadata &&
     "filediff" in toolInfo.metadata
   ) {
-    const filediff = toolInfo.metadata.filediff as { additions?: number; deletions?: number };
-    logger.debug("[Formatter] Diff metadata:", JSON.stringify(toolInfo.metadata, null, 2));
+    const filediff = toolInfo.metadata.filediff as {
+      additions?: number;
+      deletions?: number;
+    };
+    logger.debug(
+      "[Formatter] Diff metadata:",
+      JSON.stringify(toolInfo.metadata, null, 2),
+    );
     lineInfo = formatDiffLineInfo(filediff);
   }
 

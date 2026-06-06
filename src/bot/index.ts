@@ -25,8 +25,14 @@ import { logsCommand } from "./commands/logs.js";
 import { healthCommand } from "./commands/health.js";
 import { journalCommand } from "./commands/journal.js";
 import { handleJournalCallback } from "../monitoring/journal-monitor.js";
-import { initializeSystemMonitoring, startSystemMonitoring } from "../monitoring/system-monitor.js";
-import { initializeTaskTracking, recoverInterruptedTasks } from "../task-queue/tracker.js";
+import {
+  initializeSystemMonitoring,
+  startSystemMonitoring,
+} from "../monitoring/system-monitor.js";
+import {
+  initializeTaskTracking,
+  recoverInterruptedTasks,
+} from "../task-queue/tracker.js";
 import {
   AGENT_MODE_BUTTON_TEXT_PATTERN,
   MODEL_BUTTON_TEXT_PATTERN,
@@ -39,15 +45,29 @@ import { abortCommand } from "./commands/abort.js";
 import { steerCommand } from "./commands/steer.js";
 import { opencodeStartCommand } from "./commands/opencode-start.js";
 import { opencodeStopCommand } from "./commands/opencode-stop.js";
-import { renameCommand, handleRenameCancel, handleRenameTextAnswer } from "./commands/rename.js";
-import { handleTaskCallback, handleTaskTextInput, taskCommand } from "./commands/task.js";
-import { handleTaskListCallback, taskListCommand } from "./commands/tasklist.js";
+import {
+  renameCommand,
+  handleRenameCancel,
+  handleRenameTextAnswer,
+} from "./commands/rename.js";
+import {
+  handleTaskCallback,
+  handleTaskTextInput,
+  taskCommand,
+} from "./commands/task.js";
+import {
+  handleTaskListCallback,
+  taskListCommand,
+} from "./commands/tasklist.js";
 import {
   commandsCommand,
   handleCommandsCallback,
   handleCommandTextArguments,
 } from "./commands/commands.js";
-import { messagesCommand, handleMessagesCallback } from "./commands/messages.js";
+import {
+  messagesCommand,
+  handleMessagesCallback,
+} from "./commands/messages.js";
 import { skillsCommand, handleSkillsCallback } from "./commands/skills.js";
 import { mcpsCommand, handleMcpsCallback } from "./commands/mcps.js";
 import { modelsCommand } from "./commands/models.js";
@@ -59,7 +79,10 @@ import { diffCommand } from "./commands/diff.js";
 // New commands
 import { findCommand } from "./commands/find.js";
 import { pinCommand } from "./commands/pin.js";
-import { snapshotCommand, handleSnapshotCallback } from "./commands/snapshot.js";
+import {
+  snapshotCommand,
+  handleSnapshotCallback,
+} from "./commands/snapshot.js";
 import { resumeCommand, handleResumeCallback } from "./commands/resume.js";
 import { digestCommand } from "./commands/digest.js";
 import {
@@ -77,13 +100,22 @@ import {
 import { handlePermissionCallback } from "./handlers/permission.js";
 import { handleAgentSelect, showAgentSelectionMenu } from "./handlers/agent.js";
 import { handleModelSelect, showModelSelectionMenu } from "./handlers/model.js";
-import { handleVariantSelect, showVariantSelectionMenu } from "./handlers/variant.js";
-import { handleContextButtonPress, handleCompactConfirm } from "./handlers/context.js";
+import {
+  handleVariantSelect,
+  showVariantSelectionMenu,
+} from "./handlers/variant.js";
+import {
+  handleContextButtonPress,
+  handleCompactConfirm,
+} from "./handlers/context.js";
 import { handleInlineMenuCancel } from "./handlers/inline-menu.js";
 import { handlePinCallback } from "./handlers/pin-callback.js";
 import { questionManager } from "../question/manager.js";
 import { interactionManager } from "../interaction/manager.js";
-import { clearAllInteractionState, clearPromptInteractionState } from "../interaction/cleanup.js";
+import {
+  clearAllInteractionState,
+  clearPromptInteractionState,
+} from "../interaction/cleanup.js";
 import { keyboardManager } from "../keyboard/manager.js";
 import { subscribeToEvents } from "../opencode/events.js";
 import { summaryAggregator } from "../summary/aggregator.js";
@@ -93,7 +125,10 @@ import {
   formatToolInfo,
   getAssistantParseMode,
 } from "../summary/formatter.js";
-import { ToolMessageBatcher, shouldDisplayToolMessage } from "../summary/tool-message-batcher.js";
+import {
+  ToolMessageBatcher,
+  shouldDisplayToolMessage,
+} from "../summary/tool-message-batcher.js";
 import { getCurrentSession } from "../session/manager.js";
 import {
   setAssistantRunState,
@@ -117,11 +152,17 @@ import { t } from "../i18n/index.js";
 import { processUserPrompt } from "./handlers/prompt.js";
 import { handleVoiceMessage } from "./handlers/voice.js";
 import { handleDocumentMessage } from "./handlers/document.js";
-import { createPhotoHandler, type PhotoHandlerDeps } from "./handlers/photo-handler.js";
+import {
+  createPhotoHandler,
+  type PhotoHandlerDeps,
+} from "./handlers/photo-handler.js";
 
 import { finalizeAssistantResponse } from "./utils/finalize-assistant-response.js";
 import { deliverThinkingMessage } from "./utils/thinking-message.js";
-import { clearLoadingMessage, hasLoadingMessage } from "./utils/loading-messages.js";
+import {
+  clearLoadingMessage,
+  hasLoadingMessage,
+} from "./utils/loading-messages.js";
 import { getDraftId, clearDraftId } from "./utils/draft-messages.js";
 import { sendBotText } from "./utils/telegram-text.js";
 
@@ -185,7 +226,9 @@ const SIMPLE_USER_COMMANDS = [
   { command: "help", description: "Help" },
 ];
 
-function getCurrentReplyKeyboard(chatId: number): ReturnType<typeof keyboardManager.getKeyboard> {
+function getCurrentReplyKeyboard(
+  chatId: number,
+): ReturnType<typeof keyboardManager.getKeyboard> {
   const userId = getUserIdForChat(chatId);
   if (userId != null && isSimpleUser(userId)) {
     return undefined;
@@ -216,7 +259,9 @@ function prepareDocumentCaption(caption: string): string {
   return `${normalizedCaption.slice(0, TELEGRAM_DOCUMENT_CAPTION_MAX_LENGTH - 3)}...`;
 }
 
-function prepareStreamingPayload(messageText: string): StreamingMessagePayload | null {
+function prepareStreamingPayload(
+  messageText: string,
+): StreamingMessagePayload | null {
   const parts = formatSummaryWithMode(
     messageText,
     config.bot.messageFormatMode,
@@ -279,11 +324,15 @@ const toolMessageBatcher = new ToolMessageBatcher({
 
       const keyboard = getCurrentReplyKeyboard(chatIdInstance!);
 
-      await botInstance.api.sendDocument(chatIdInstance, new InputFile(tempFilePath), {
-        caption: fileData.caption,
-        disable_notification: true,
-        ...(keyboard ? { reply_markup: keyboard } : {}),
-      });
+      await botInstance.api.sendDocument(
+        chatIdInstance,
+        new InputFile(tempFilePath),
+        {
+          caption: fileData.caption,
+          disable_notification: true,
+          ...(keyboard ? { reply_markup: keyboard } : {}),
+        },
+      );
     } finally {
       await fs.unlink(tempFilePath).catch(() => {});
     }
@@ -338,7 +387,9 @@ const responseStreamer = new ResponseStreamer({
       );
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+        error instanceof Error
+          ? error.message.toLowerCase()
+          : String(error).toLowerCase();
       if (errorMessage.includes("message is not modified")) {
         return;
       }
@@ -351,18 +402,22 @@ const responseStreamer = new ResponseStreamer({
       throw new Error("Bot context missing for streamed delete");
     }
 
-    await botInstance.api.deleteMessage(chatIdInstance, messageId).catch((error) => {
-      const errorMessage =
-        error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-      if (
-        errorMessage.includes("message to delete not found") ||
-        errorMessage.includes("message identifier is not specified")
-      ) {
-        return;
-      }
+    await botInstance.api
+      .deleteMessage(chatIdInstance, messageId)
+      .catch((error) => {
+        const errorMessage =
+          error instanceof Error
+            ? error.message.toLowerCase()
+            : String(error).toLowerCase();
+        if (
+          errorMessage.includes("message to delete not found") ||
+          errorMessage.includes("message identifier is not specified")
+        ) {
+          return;
+        }
 
-      throw error;
-    });
+        throw error;
+      });
   },
 });
 
@@ -378,9 +433,13 @@ const toolCallStreamer = new ToolCallStreamer({
       throw new Error(`Tool stream session mismatch for send: ${sessionId}`);
     }
 
-    const sentMessage = await botInstance.api.sendMessage(chatIdInstance, text, {
-      disable_notification: true,
-    });
+    const sentMessage = await botInstance.api.sendMessage(
+      chatIdInstance,
+      text,
+      {
+        disable_notification: true,
+      },
+    );
 
     return sentMessage.message_id;
   },
@@ -398,7 +457,9 @@ const toolCallStreamer = new ToolCallStreamer({
       await botInstance.api.editMessageText(chatIdInstance, messageId, text);
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+        error instanceof Error
+          ? error.message.toLowerCase()
+          : String(error).toLowerCase();
       if (errorMessage.includes("message is not modified")) {
         return;
       }
@@ -416,24 +477,35 @@ const toolCallStreamer = new ToolCallStreamer({
       throw new Error(`Tool stream session mismatch for delete: ${sessionId}`);
     }
 
-    await botInstance.api.deleteMessage(chatIdInstance, messageId).catch((error) => {
-      const errorMessage =
-        error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-      if (
-        errorMessage.includes("message to delete not found") ||
-        errorMessage.includes("message identifier is not specified")
-      ) {
-        return;
-      }
+    await botInstance.api
+      .deleteMessage(chatIdInstance, messageId)
+      .catch((error) => {
+        const errorMessage =
+          error instanceof Error
+            ? error.message.toLowerCase()
+            : String(error).toLowerCase();
+        if (
+          errorMessage.includes("message to delete not found") ||
+          errorMessage.includes("message identifier is not specified")
+        ) {
+          return;
+        }
 
-      throw error;
-    });
+        throw error;
+      });
   },
 });
 
-async function ensureCommandsInitialized(ctx: Context, next: NextFunction): Promise<void> {
+async function ensureCommandsInitialized(
+  ctx: Context,
+  next: NextFunction,
+): Promise<void> {
   const chatId = ctx.chat?.id;
-  if (!chatId || !ctx.from || !config.telegram.allowedUserIds.includes(ctx.from.id)) {
+  if (
+    !chatId ||
+    !ctx.from ||
+    !config.telegram.allowedUserIds.includes(ctx.from.id)
+  ) {
     await next();
     return;
   }
@@ -504,10 +576,12 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       if (draftTimer) clearTimeout(draftTimer);
       draftTimer = setTimeout(() => {
         if (!botInstance || !chatIdInstance) return;
-        void botInstance.api.sendMessageDraft(chatIdInstance, draftId, messageText).catch((err) => {
-          // Non-fatal - draft is visual feedback only
-          logger.debug("[Bot] sendMessageDraft error (non-fatal):", err);
-        });
+        void botInstance.api
+          .sendMessageDraft(chatIdInstance, draftId, messageText)
+          .catch((err) => {
+            // Non-fatal - draft is visual feedback only
+            logger.debug("[Bot] sendMessageDraft error (non-fatal):", err);
+          });
       }, DRAFT_THROTTLE_MS);
     }
 
@@ -527,7 +601,9 @@ async function ensureEventSubscription(directory: string): Promise<void> {
     // (prevents re-entrant SSE events from skipping markIdle)
     const previousTask = sessionCompletionTasks.get(sessionId);
     if (previousTask) {
-      logger.debug(`[Bot] Waiting for previous completion task for session=${sessionId}`);
+      logger.debug(
+        `[Bot] Waiting for previous completion task for session=${sessionId}`,
+      );
       await previousTask;
     }
 
@@ -535,9 +611,16 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       try {
         if (!botInstance || !chatIdInstance) {
           logger.error("Bot or chat ID not available for sending message");
-          responseStreamer.clearMessage(sessionId, messageId, "bot_context_missing");
+          responseStreamer.clearMessage(
+            sessionId,
+            messageId,
+            "bot_context_missing",
+          );
           toolCallStreamer.clearSession(sessionId, "bot_context_missing");
-          clearPromptInteractionState(chatIdInstance ?? 0, "prompt_completed_no_context");
+          clearPromptInteractionState(
+            chatIdInstance ?? 0,
+            "prompt_completed_no_context",
+          );
           if (chatIdInstance) {
             clearDraftId(chatIdInstance);
           }
@@ -547,9 +630,16 @@ async function ensureEventSubscription(directory: string): Promise<void> {
 
         const currentSession = getCurrentSession(chatIdInstance!);
         if (currentSession?.id !== sessionId) {
-          responseStreamer.clearMessage(sessionId, messageId, "session_mismatch");
+          responseStreamer.clearMessage(
+            sessionId,
+            messageId,
+            "session_mismatch",
+          );
           toolCallStreamer.clearSession(sessionId, "session_mismatch");
-          clearPromptInteractionState(chatIdInstance ?? 0, "prompt_completed_session_mismatch");
+          clearPromptInteractionState(
+            chatIdInstance ?? 0,
+            "prompt_completed_session_mismatch",
+          );
           if (chatIdInstance) {
             clearDraftId(chatIdInstance);
           }
@@ -582,12 +672,19 @@ async function ensureEventSubscription(directory: string): Promise<void> {
           responseStreamer,
           flushPendingServiceMessages: () =>
             Promise.all([
-              toolMessageBatcher.flushSession(sessionId, "assistant_message_completed"),
-              toolCallStreamer.flushSession(sessionId, "assistant_message_completed"),
+              toolMessageBatcher.flushSession(
+                sessionId,
+                "assistant_message_completed",
+              ),
+              toolCallStreamer.flushSession(
+                sessionId,
+                "assistant_message_completed",
+              ),
             ]).then(() => undefined),
           prepareStreamingPayload,
           formatSummary,
-          resolveFormat: () => (getAssistantParseMode() === "MarkdownV2" ? "markdown_v2" : "raw"),
+          resolveFormat: () =>
+            getAssistantParseMode() === "MarkdownV2" ? "markdown_v2" : "raw",
           getReplyKeyboard: () => getCurrentReplyKeyboard(chatId),
           sendText: async (text, options, format) => {
             await sendBotText({
@@ -637,7 +734,9 @@ async function ensureEventSubscription(directory: string): Promise<void> {
 
   summaryAggregator.setOnTool(async (toolInfo) => {
     if (!botInstance || !chatIdInstance) {
-      logger.error("Bot or chat ID not available for sending tool notification");
+      logger.error(
+        "Bot or chat ID not available for sending tool notification",
+      );
       return;
     }
 
@@ -649,12 +748,18 @@ async function ensureEventSubscription(directory: string): Promise<void> {
     // Track recent files from tool calls (runs once, unconditionally)
     const project = getCurrentProject(chatIdInstance!);
     if (project) {
-      recentFilesTracker.processToolCall(project.worktree, toolInfo.tool, toolInfo.input);
+      recentFilesTracker.processToolCall(
+        project.worktree,
+        toolInfo.tool,
+        toolInfo.input,
+      );
     }
 
     const shouldIncludeToolInfoInFileCaption =
       toolInfo.hasFileAttachment &&
-      (toolInfo.tool === "write" || toolInfo.tool === "edit" || toolInfo.tool === "apply_patch");
+      (toolInfo.tool === "write" ||
+        toolInfo.tool === "edit" ||
+        toolInfo.tool === "apply_patch");
 
     if (config.bot.hideToolCallMessages || shouldIncludeToolInfoInFileCaption) {
       return;
@@ -682,7 +787,10 @@ async function ensureEventSubscription(directory: string): Promise<void> {
     }
 
     try {
-      await toolCallStreamer.breakSession(fileInfo.sessionId, "tool_file_boundary");
+      await toolCallStreamer.breakSession(
+        fileInfo.sessionId,
+        "tool_file_boundary",
+      );
 
       if (!shouldDisplayToolMessage(fileInfo.tool)) {
         logger.debug(
@@ -692,7 +800,9 @@ async function ensureEventSubscription(directory: string): Promise<void> {
       }
 
       const toolMessage = formatToolInfo(fileInfo);
-      const caption = prepareDocumentCaption(toolMessage || fileInfo.fileData.caption);
+      const caption = prepareDocumentCaption(
+        toolMessage || fileInfo.fileData.caption,
+      );
 
       toolMessageBatcher.enqueueFile(fileInfo.sessionId, {
         ...fileInfo.fileData,
@@ -722,27 +832,41 @@ async function ensureEventSubscription(directory: string): Promise<void> {
 
       const previousMessageIds = questionManager.getMessageIds(chatIdInstance!);
       for (const messageId of previousMessageIds) {
-        await botInstance.api.deleteMessage(chatIdInstance, messageId).catch(() => {});
+        await botInstance.api
+          .deleteMessage(chatIdInstance, messageId)
+          .catch(() => {});
       }
 
-      clearAllInteractionState(chatIdInstance!, "question_replaced_by_new_poll");
+      clearAllInteractionState(
+        chatIdInstance!,
+        "question_replaced_by_new_poll",
+      );
     }
 
-    logger.info(`[Bot] Received ${questions.length} questions from agent, requestID=${requestID}`);
+    logger.info(
+      `[Bot] Received ${questions.length} questions from agent, requestID=${requestID}`,
+    );
     questionManager.startQuestions(chatIdInstance!, questions, requestID);
     await showCurrentQuestion(botInstance.api, chatIdInstance);
   });
 
   summaryAggregator.setOnQuestionError(async () => {
-    logger.info(`[Bot] Question tool failed, clearing active poll and deleting messages`);
+    logger.info(
+      `[Bot] Question tool failed, clearing active poll and deleting messages`,
+    );
 
     // Delete all messages from the invalid poll
     const messageIds = questionManager.getMessageIds(chatIdInstance!);
     for (const messageId of messageIds) {
       if (chatIdInstance) {
-        await botInstance?.api.deleteMessage(chatIdInstance, messageId).catch((err) => {
-          logger.error(`[Bot] Failed to delete question message ${messageId}:`, err);
-        });
+        await botInstance?.api
+          .deleteMessage(chatIdInstance, messageId)
+          .catch((err) => {
+            logger.error(
+              `[Bot] Failed to delete question message ${messageId}:`,
+              err,
+            );
+          });
       }
     }
 
@@ -751,7 +875,9 @@ async function ensureEventSubscription(directory: string): Promise<void> {
 
   summaryAggregator.setOnPermission(async (request) => {
     if (!botInstance || !chatIdInstance) {
-      logger.error("Bot or chat ID not available for showing permission request");
+      logger.error(
+        "Bot or chat ID not available for showing permission request",
+      );
       return;
     }
 
@@ -879,12 +1005,20 @@ async function ensureEventSubscription(directory: string): Promise<void> {
     }
 
     try {
-      logger.debug(`[Bot] Received tokens: input=${tokens.input}, output=${tokens.output}`);
+      logger.debug(
+        `[Bot] Received tokens: input=${tokens.input}, output=${tokens.output}`,
+      );
 
       const contextSize = tokens.input + tokens.cacheRead;
-      const contextLimit = pinnedMessageManager.getContextLimit(chatIdInstance!);
+      const contextLimit = pinnedMessageManager.getContextLimit(
+        chatIdInstance!,
+      );
       if (contextLimit > 0) {
-        keyboardManager.updateContext(chatIdInstance!, contextSize, contextLimit);
+        keyboardManager.updateContext(
+          chatIdInstance!,
+          contextSize,
+          contextLimit,
+        );
       }
 
       await pinnedMessageManager.onMessageComplete(chatIdInstance!, tokens);
@@ -921,7 +1055,11 @@ async function ensureEventSubscription(directory: string): Promise<void> {
 
     try {
       logger.info(`[Bot] Session compacted, reloading context: ${sessionId}`);
-      await pinnedMessageManager.onSessionCompacted(chatIdInstance!, sessionId, directory);
+      await pinnedMessageManager.onSessionCompacted(
+        chatIdInstance!,
+        sessionId,
+        directory,
+      );
     } catch (err) {
       logger.error("[Bot] Error reloading context after compaction:", err);
     }
@@ -959,7 +1097,10 @@ async function ensureEventSubscription(directory: string): Promise<void> {
         : normalizedMessage;
 
     await botInstance.api
-      .sendMessage(chatIdInstance, t("bot.session_error", { message: truncatedMessage }))
+      .sendMessage(
+        chatIdInstance,
+        t("bot.session_error", { message: truncatedMessage }),
+      )
       .catch((err) => {
         logger.error("[Bot] Failed to send session.error message:", err);
       });
@@ -991,7 +1132,11 @@ async function ensureEventSubscription(directory: string): Promise<void> {
         : normalizedMessage;
 
     const retryMessage = t("bot.session_retry", { message: truncatedMessage });
-    toolCallStreamer.replaceByPrefix(sessionId, SESSION_RETRY_PREFIX, retryMessage);
+    toolCallStreamer.replaceByPrefix(
+      sessionId,
+      SESSION_RETRY_PREFIX,
+      retryMessage,
+    );
   });
 
   summaryAggregator.setOnSessionDiff(async (_sessionId, diffs) => {
@@ -1033,7 +1178,9 @@ async function ensureEventSubscription(directory: string): Promise<void> {
     }
 
     try {
-      logger.debug(`[Bot] Updating keyboard with context: ${tokensUsed}/${tokensLimit}`);
+      logger.debug(
+        `[Bot] Updating keyboard with context: ${tokensUsed}/${tokensLimit}`,
+      );
       keyboardManager.updateContext(chatIdInstance!, tokensUsed, tokensLimit);
       // Don't send automatic keyboard updates - keyboard will update naturally with user messages
     } catch (err) {
@@ -1045,7 +1192,9 @@ async function ensureEventSubscription(directory: string): Promise<void> {
   subscribeToEvents(directory, (event) => {
     if (event.type === "session.created" || event.type === "session.updated") {
       const info = (
-        event.properties as { info?: { directory?: string; time?: { updated?: number } } }
+        event.properties as {
+          info?: { directory?: string; time?: { updated?: number } };
+        }
       ).info;
 
       if (info?.directory) {
@@ -1097,10 +1246,14 @@ export async function createBot(): Promise<Bot<Context>> {
 
     if (proxyUrl.startsWith("socks")) {
       agent = new SocksProxyAgent(proxyUrl);
-      logger.info(`[Bot] Using SOCKS proxy: ${proxyUrl.replace(/\/\/.*@/, "//***@")}`);
+      logger.info(
+        `[Bot] Using SOCKS proxy: ${proxyUrl.replace(/\/\/.*@/, "//***@")}`,
+      );
     } else {
       agent = new HttpsProxyAgent(proxyUrl);
-      logger.info(`[Bot] Using HTTP/HTTPS proxy: ${proxyUrl.replace(/\/\/.*@/, "//***@")}`);
+      logger.info(
+        `[Bot] Using HTTP/HTTPS proxy: ${proxyUrl.replace(/\/\/.*@/, "//***@")}`,
+      );
     }
 
     botOptions.client = {
@@ -1148,10 +1301,14 @@ export async function createBot(): Promise<Bot<Context>> {
     if (method === "getUpdates") {
       const now = Date.now();
       const timeSinceLast = now - lastGetUpdatesTime;
-      logger.debug(`[Bot API] getUpdates called (${timeSinceLast}ms since last)`);
+      logger.debug(
+        `[Bot API] getUpdates called (${timeSinceLast}ms since last)`,
+      );
       lastGetUpdatesTime = now;
     } else if (method === "sendMessage") {
-      logger.debug(`[Bot API] sendMessage to chat ${(payload as { chat_id?: number }).chat_id}`);
+      logger.debug(
+        `[Bot API] sendMessage to chat ${(payload as { chat_id?: number }).chat_id}`,
+      );
     }
     return prev(method, payload, signal);
   });
@@ -1202,7 +1359,8 @@ export async function createBot(): Promise<Bot<Context>> {
         if (!isCorrectProject) {
           try {
             await ensureUserProjectDirectory(userId);
-            const { getProjectsForUser: fetchUserProjects } = await import("../project/manager.js");
+            const { getProjectsForUser: fetchUserProjects } =
+              await import("../project/manager.js");
             const projects = await fetchUserProjects(userId);
             const project = projects[0] ?? createFallbackProjectInfo(userId);
             if (project) {
@@ -1212,7 +1370,10 @@ export async function createBot(): Promise<Bot<Context>> {
               );
             }
           } catch (err) {
-            logger.warn(`[UserAccess] Could not auto-select project for userId=${userId}:`, err);
+            logger.warn(
+              `[UserAccess] Could not auto-select project for userId=${userId}:`,
+              err,
+            );
           }
         }
 
@@ -1238,7 +1399,9 @@ export async function createBot(): Promise<Bot<Context>> {
   bot.on("inline_query", handleInlineQuery);
   bot.use(interactionGuardMiddleware);
 
-  const blockMenuWhileInteractionActive = async (ctx: Context): Promise<boolean> => {
+  const blockMenuWhileInteractionActive = async (
+    ctx: Context,
+  ): Promise<boolean> => {
     const activeInteraction = interactionManager.getSnapshot(chatIdInstance!);
     if (!activeInteraction) {
       return false;
@@ -1260,7 +1423,7 @@ export async function createBot(): Promise<Bot<Context>> {
   bot.command("sessions", sessionsCommand);
   bot.command("new", newCommand);
   bot.command("abort", abortCommand);
-  
+
   bot.command("steer", async (ctx) => {
     await steerCommand(ctx, { bot, ensureEventSubscription });
   });
@@ -1309,8 +1472,12 @@ export async function createBot(): Promise<Bot<Context>> {
   bot.on("message:text", unknownCommandMiddleware);
 
   bot.on("callback_query:data", async (ctx) => {
-    logger.debug(`[Bot] Received callback_query:data: ${ctx.callbackQuery?.data}`);
-    logger.debug(`[Bot] Callback context: from=${ctx.from?.id}, chat=${ctx.chat?.id}`);
+    logger.debug(
+      `[Bot] Received callback_query:data: ${ctx.callbackQuery?.data}`,
+    );
+    logger.debug(
+      `[Bot] Callback context: from=${ctx.from?.id}, chat=${ctx.chat?.id}`,
+    );
 
     if (ctx.chat) {
       botInstance = bot;
@@ -1331,7 +1498,10 @@ export async function createBot(): Promise<Bot<Context>> {
       const handledTask = await handleTaskCallback(ctx);
       const handledTaskList = await handleTaskListCallback(ctx);
       const handledRenameCancel = await handleRenameCancel(ctx);
-      const handledCommands = await handleCommandsCallback(ctx, { bot, ensureEventSubscription });
+      const handledCommands = await handleCommandsCallback(ctx, {
+        bot,
+        ensureEventSubscription,
+      });
       const handledMessages = await handleMessagesCallback(ctx);
       const handledSkills = await handleSkillsCallback(ctx);
       const handledMcps = await handleMcpsCallback(ctx);
@@ -1377,7 +1547,9 @@ export async function createBot(): Promise<Bot<Context>> {
     } catch (err) {
       logger.error("[Bot] Error handling callback:", err);
       clearAllInteractionState(chatIdInstance!, "callback_handler_error");
-      await ctx.answerCallbackQuery({ text: t("callback.processing_error") }).catch(() => {});
+      await ctx
+        .answerCallbackQuery({ text: t("callback.processing_error") })
+        .catch(() => {});
     }
   });
 
@@ -1477,7 +1649,9 @@ export async function createBot(): Promise<Bot<Context>> {
     },
     onSuccess: (result) => {
       if (result.success) {
-        logger.debug("[Bot] Cleared global commands (default and all_private_chats scopes)");
+        logger.debug(
+          "[Bot] Cleared global commands (default and all_private_chats scopes)",
+        );
         return;
       }
 
@@ -1527,7 +1701,9 @@ export async function createBot(): Promise<Bot<Context>> {
       `[DIAGNOSTIC] Final message:text handler ENTERED: text="${text?.substring(0, 80) || "(no text)"}", chatId=${ctx.chat?.id}, chatType=${ctx.chat?.type}`,
     );
     if (!text) {
-      logger.info(`[DIAGNOSTIC] Final_message:text handler: no text, returning`);
+      logger.info(
+        `[DIAGNOSTIC] Final_message:text handler: no text, returning`,
+      );
       return;
     }
 
@@ -1535,7 +1711,9 @@ export async function createBot(): Promise<Bot<Context>> {
     chatIdInstance = ctx.chat.id;
 
     if (text.startsWith("/")) {
-      logger.info(`[DIAGNOSTIC] Final_message:text handler: starts with /, returning`);
+      logger.info(
+        `[DIAGNOSTIC] Final_message:text handler: starts with /, returning`,
+      );
       return;
     }
 
@@ -1543,7 +1721,9 @@ export async function createBot(): Promise<Bot<Context>> {
     if (await handleLlmQueryText(ctx)) return;
 
     const isPrivateChat = ctx.chat.type === "private";
-    logger.info(`[DIAGNOSTIC] Final_message:text handler: isPrivateChat=${isPrivateChat}`);
+    logger.info(
+      `[DIAGNOSTIC] Final_message:text handler: isPrivateChat=${isPrivateChat}`,
+    );
 
     // In DMs: all non-slash text is a prompt
     // In groups: only @botname or @ai prefixed text is a prompt
@@ -1554,7 +1734,10 @@ export async function createBot(): Promise<Bot<Context>> {
 
       // Strip @botname prefix if present (same as groups)
       if (botUsername && trimmed.toLowerCase().startsWith(`@${botUsername}`)) {
-        promptText = trimmed.replace(new RegExp(`^@${botUsername}\\s*`, "i"), "");
+        promptText = trimmed.replace(
+          new RegExp(`^@${botUsername}\\s*`, "i"),
+          "",
+        );
       } else {
         promptText = trimmed;
       }
@@ -1591,7 +1774,10 @@ export async function createBot(): Promise<Bot<Context>> {
 
       // Check for @botname mention (Telegram inserts actual bot username)
       if (botUsername && trimmed.toLowerCase().startsWith(`@${botUsername}`)) {
-        promptText = trimmed.replace(new RegExp(`^@${botUsername}\\s*`, "i"), "");
+        promptText = trimmed.replace(
+          new RegExp(`^@${botUsername}\\s*`, "i"),
+          "",
+        );
       } else if (trimmed.toLowerCase().startsWith("@ai")) {
         // Backward compat: also accept @ai trigger
         promptText = trimmed.replace(/^@ai\s*/i, "");
@@ -1617,20 +1803,29 @@ export async function createBot(): Promise<Bot<Context>> {
 
     const handledTask = await handleTaskTextInput(ctx);
     if (handledTask) {
-      logger.info(`[DIAGNOSTIC] Final_message:text handler: handled by handleTaskTextInput`);
+      logger.info(
+        `[DIAGNOSTIC] Final_message:text handler: handled by handleTaskTextInput`,
+      );
       return;
     }
 
     const handledRename = await handleRenameTextAnswer(ctx);
     if (handledRename) {
-      logger.info(`[DIAGNOSTIC] Final_message:text handler: handled by handleRenameTextAnswer`);
+      logger.info(
+        `[DIAGNOSTIC] Final_message:text handler: handled by handleRenameTextAnswer`,
+      );
       return;
     }
 
     const promptDeps = { bot, ensureEventSubscription };
-    const handledCommandArgs = await handleCommandTextArguments(ctx, promptDeps);
+    const handledCommandArgs = await handleCommandTextArguments(
+      ctx,
+      promptDeps,
+    );
     if (handledCommandArgs) {
-      logger.info(`[DIAGNOSTIC] Final_message:text handler: handled by handleCommandTextArguments`);
+      logger.info(
+        `[DIAGNOSTIC] Final_message:text handler: handled by handleCommandTextArguments`,
+      );
       return;
     }
 
@@ -1646,7 +1841,9 @@ export async function createBot(): Promise<Bot<Context>> {
         `[DIAGNOSTIC] Final_message:text handler: inline command matched, actualQuery length=${actualQuery.length}, minRequired=${command.minQueryLength}`,
       );
       if (actualQuery.length >= command.minQueryLength) {
-        logger.info(`[DIAGNOSTIC] Final_message:text handler: enqueuing llm_direct job`);
+        logger.info(
+          `[DIAGNOSTIC] Final_message:text handler: enqueuing llm_direct job`,
+        );
         const ackMsg = await ctx.reply(t("inline.thinking"));
         await addTaskJob({
           jobType: "llm_direct",
@@ -1669,9 +1866,13 @@ export async function createBot(): Promise<Bot<Context>> {
       }
 
       // Query too short — send user-friendly error
-      logger.info(`[DIAGNOSTIC] Final_message:text handler: query too short, sending error`);
+      logger.info(
+        `[DIAGNOSTIC] Final_message:text handler: query too short, sending error`,
+      );
       await ctx.reply(
-        t("inline.cmd.error.query_too_short", { min: String(command.minQueryLength) }),
+        t("inline.cmd.error.query_too_short", {
+          min: String(command.minQueryLength),
+        }),
       );
       return;
     }
@@ -1681,7 +1882,9 @@ export async function createBot(): Promise<Bot<Context>> {
     );
     await processUserPrompt(ctx, promptText, promptDeps);
 
-    logger.debug("[Bot] message:text handler completed (prompt sent in background)");
+    logger.debug(
+      "[Bot] message:text handler completed (prompt sent in background)",
+    );
   });
 
   bot.catch((err) => {

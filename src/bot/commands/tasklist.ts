@@ -43,7 +43,9 @@ function getCallbackMessageId(ctx: Context): number | null {
   return typeof messageId === "number" ? messageId : null;
 }
 
-function parseTaskListMetadata(state: InteractionState | null): TaskListMetadata | null {
+function parseTaskListMetadata(
+  state: InteractionState | null,
+): TaskListMetadata | null {
   if (!state || state.kind !== "custom") {
     return null;
   }
@@ -82,7 +84,9 @@ function parseTaskListMetadata(state: InteractionState | null): TaskListMetadata
 }
 
 function clearTaskListInteraction(chatId: number, reason: string): void {
-  const metadata = parseTaskListMetadata(interactionManager.getSnapshot(chatId));
+  const metadata = parseTaskListMetadata(
+    interactionManager.getSnapshot(chatId),
+  );
   if (metadata) {
     interactionManager.clear(chatId, reason);
   }
@@ -126,7 +130,9 @@ function buildTaskListKeyboard(tasks: ScheduledTask[]): InlineKeyboard {
   const keyboard = new InlineKeyboard();
 
   tasks.forEach((task) => {
-    keyboard.text(formatTaskButtonLabel(task), `${TASKLIST_OPEN_PREFIX}${task.id}`).row();
+    keyboard
+      .text(formatTaskButtonLabel(task), `${TASKLIST_OPEN_PREFIX}${task.id}`)
+      .row();
   });
 
   keyboard.text(t("tasklist.button.cancel"), TASKLIST_CANCEL_CALLBACK);
@@ -141,8 +147,12 @@ function buildTaskDetailsKeyboard(taskId: string): InlineKeyboard {
 
 function sortTasks(tasks: ScheduledTask[]): ScheduledTask[] {
   return [...tasks].sort((left, right) => {
-    const leftNextRun = left.nextRunAt ? Date.parse(left.nextRunAt) : Number.POSITIVE_INFINITY;
-    const rightNextRun = right.nextRunAt ? Date.parse(right.nextRunAt) : Number.POSITIVE_INFINITY;
+    const leftNextRun = left.nextRunAt
+      ? Date.parse(left.nextRunAt)
+      : Number.POSITIVE_INFINITY;
+    const rightNextRun = right.nextRunAt
+      ? Date.parse(right.nextRunAt)
+      : Number.POSITIVE_INFINITY;
 
     if (leftNextRun !== rightNextRun) {
       return leftNextRun - rightNextRun;
@@ -154,7 +164,9 @@ function sortTasks(tasks: ScheduledTask[]): ScheduledTask[] {
 
 function formatTaskDetails(task: ScheduledTask): string {
   const cronLine =
-    task.kind === "cron" ? `${t("tasklist.details.cron", { cron: task.cron })}\n` : "";
+    task.kind === "cron"
+      ? `${t("tasklist.details.cron", { cron: task.cron })}\n`
+      : "";
 
   return t("tasklist.details", {
     prompt: task.prompt,
@@ -168,7 +180,9 @@ function formatTaskDetails(task: ScheduledTask): string {
   });
 }
 
-export async function taskListCommand(ctx: CommandContext<Context>): Promise<void> {
+export async function taskListCommand(
+  ctx: CommandContext<Context>,
+): Promise<void> {
   try {
     const tasks = sortTasks(listScheduledTasks());
     if (tasks.length === 0) {
@@ -203,11 +217,20 @@ export async function handleTaskListCallback(ctx: Context): Promise<boolean> {
   }
 
   const chatId = ctx.chat?.id ?? 0;
-  const metadata = parseTaskListMetadata(interactionManager.getSnapshot(chatId));
+  const metadata = parseTaskListMetadata(
+    interactionManager.getSnapshot(chatId),
+  );
   const callbackMessageId = getCallbackMessageId(ctx);
 
-  if (!metadata || callbackMessageId === null || metadata.messageId !== callbackMessageId) {
-    await ctx.answerCallbackQuery({ text: t("tasklist.inactive_callback"), show_alert: true });
+  if (
+    !metadata ||
+    callbackMessageId === null ||
+    metadata.messageId !== callbackMessageId
+  ) {
+    await ctx.answerCallbackQuery({
+      text: t("tasklist.inactive_callback"),
+      show_alert: true,
+    });
     return true;
   }
 
@@ -221,7 +244,10 @@ export async function handleTaskListCallback(ctx: Context): Promise<boolean> {
 
     if (data.startsWith(TASKLIST_OPEN_PREFIX)) {
       if (metadata.stage !== "list") {
-        await ctx.answerCallbackQuery({ text: t("tasklist.inactive_callback"), show_alert: true });
+        await ctx.answerCallbackQuery({
+          text: t("tasklist.inactive_callback"),
+          show_alert: true,
+        });
         return true;
       }
 
@@ -229,7 +255,10 @@ export async function handleTaskListCallback(ctx: Context): Promise<boolean> {
       const task = getScheduledTask(taskId);
       if (!task) {
         clearTaskListInteraction(chatId, "tasklist_selected_task_missing");
-        await ctx.answerCallbackQuery({ text: t("tasklist.inactive_callback"), show_alert: true });
+        await ctx.answerCallbackQuery({
+          text: t("tasklist.inactive_callback"),
+          show_alert: true,
+        });
         await ctx.deleteMessage().catch(() => {});
         return true;
       }
@@ -254,13 +283,19 @@ export async function handleTaskListCallback(ctx: Context): Promise<boolean> {
 
     if (data.startsWith(TASKLIST_DELETE_PREFIX)) {
       if (metadata.stage !== "detail") {
-        await ctx.answerCallbackQuery({ text: t("tasklist.inactive_callback"), show_alert: true });
+        await ctx.answerCallbackQuery({
+          text: t("tasklist.inactive_callback"),
+          show_alert: true,
+        });
         return true;
       }
 
       const taskId = data.slice(TASKLIST_DELETE_PREFIX.length);
       if (taskId !== metadata.taskId) {
-        await ctx.answerCallbackQuery({ text: t("tasklist.inactive_callback"), show_alert: true });
+        await ctx.answerCallbackQuery({
+          text: t("tasklist.inactive_callback"),
+          show_alert: true,
+        });
         return true;
       }
 
@@ -272,12 +307,17 @@ export async function handleTaskListCallback(ctx: Context): Promise<boolean> {
       return true;
     }
 
-    await ctx.answerCallbackQuery({ text: t("callback.processing_error"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: t("callback.processing_error"),
+      show_alert: true,
+    });
     return true;
   } catch (error) {
     logger.error("[TaskList] Failed to handle task list callback", error);
     clearTaskListInteraction(chatId, "tasklist_callback_error");
-    await ctx.answerCallbackQuery({ text: t("callback.processing_error") }).catch(() => {});
+    await ctx
+      .answerCallbackQuery({ text: t("callback.processing_error") })
+      .catch(() => {});
     return true;
   }
 }

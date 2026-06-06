@@ -8,7 +8,9 @@ type SendMessageApi = Pick<Api<RawApi>, "sendMessage">;
 type EditMessageApi = Pick<Api<RawApi>, "editMessageText" | "sendMessage">;
 
 type TelegramSendMessageOptions = Parameters<SendMessageApi["sendMessage"]>[2];
-type TelegramEditMessageOptions = Parameters<EditMessageApi["editMessageText"]>[3];
+type TelegramEditMessageOptions = Parameters<
+  EditMessageApi["editMessageText"]
+>[3];
 
 export type TelegramTextFormat = "raw" | "markdown_v2";
 
@@ -29,7 +31,9 @@ interface EditBotTextParams {
   format?: TelegramTextFormat;
 }
 
-function resolveParseMode(format: TelegramTextFormat | undefined): "MarkdownV2" | undefined {
+function resolveParseMode(
+  format: TelegramTextFormat | undefined,
+): "MarkdownV2" | undefined {
   if (format === "markdown_v2") {
     return "MarkdownV2";
   }

@@ -5,7 +5,9 @@ type SendMessageApi = Pick<Api<RawApi>, "sendMessage">;
 type EditMessageApi = Pick<Api<RawApi>, "editMessageText">;
 
 type TelegramSendMessageOptions = Parameters<SendMessageApi["sendMessage"]>[2];
-type TelegramEditMessageOptions = Parameters<EditMessageApi["editMessageText"]>[3];
+type TelegramEditMessageOptions = Parameters<
+  EditMessageApi["editMessageText"]
+>[3];
 
 export type StreamingMessageFormat = "raw" | "markdown_v2";
 
@@ -55,7 +57,9 @@ function buildStateKey(sessionId: string, messageId: string): string {
   return `${sessionId}:${messageId}`;
 }
 
-function normalizePayload(payload: StreamingMessagePayload): StreamingMessagePayload | null {
+function normalizePayload(
+  payload: StreamingMessagePayload,
+): StreamingMessagePayload | null {
   const normalizedParts = payload.parts
     .map((part) => part.trim())
     .filter((part) => part.length > 0);
@@ -97,7 +101,11 @@ export class ResponseStreamer {
     this.deleteText = options.deleteText;
   }
 
-  enqueue(sessionId: string, messageId: string, payload: StreamingMessagePayload): void {
+  enqueue(
+    sessionId: string,
+    messageId: string,
+    payload: StreamingMessagePayload,
+  ): void {
     const normalizedPayload = normalizePayload(payload);
     if (!normalizedPayload) {
       return;
@@ -149,7 +157,9 @@ export class ResponseStreamer {
 
     let synced = true;
     if (options?.flushFinal !== false) {
-      synced = await this.enqueueTask(state, () => this.flushState(state, "complete"));
+      synced = await this.enqueueTask(state, () =>
+        this.flushState(state, "complete"),
+      );
       if (!synced && state.isBroken) {
         await this.cleanupBrokenStream(state, "final_sync_failed_cleanup");
       }
@@ -198,7 +208,9 @@ export class ResponseStreamer {
     this.states.clear();
 
     if (count > 0) {
-      logger.debug(`[ResponseStreamer] Cleared all streams: count=${count}, reason=${reason}`);
+      logger.debug(
+        `[ResponseStreamer] Cleared all streams: count=${count}, reason=${reason}`,
+      );
     }
   }
 
@@ -234,7 +246,9 @@ export class ResponseStreamer {
     }
 
     if (this.throttleMs === 0) {
-      void this.enqueueTask(state, () => this.flushState(state, "immediate")).catch((error) => {
+      void this.enqueueTask(state, () =>
+        this.flushState(state, "immediate"),
+      ).catch((error) => {
         logger.error(
           `[ResponseStreamer] Immediate stream sync failed: session=${state.sessionId}, message=${state.messageId}`,
           error,
@@ -245,14 +259,14 @@ export class ResponseStreamer {
 
     state.timer = setTimeout(() => {
       state.timer = null;
-      void this.enqueueTask(state, () => this.flushState(state, "throttle_elapsed")).catch(
-        (error) => {
-          logger.error(
-            `[ResponseStreamer] Throttled stream sync failed: session=${state.sessionId}, message=${state.messageId}`,
-            error,
-          );
-        },
-      );
+      void this.enqueueTask(state, () =>
+        this.flushState(state, "throttle_elapsed"),
+      ).catch((error) => {
+        logger.error(
+          `[ResponseStreamer] Throttled stream sync failed: session=${state.sessionId}, message=${state.messageId}`,
+          error,
+        );
+      });
     }, this.throttleMs);
   }
 
@@ -270,13 +284,19 @@ export class ResponseStreamer {
     this.clearTimer(state);
   }
 
-  private enqueueTask(state: StreamState, task: () => Promise<boolean>): Promise<boolean> {
+  private enqueueTask(
+    state: StreamState,
+    task: () => Promise<boolean>,
+  ): Promise<boolean> {
     const nextTask = state.task.catch(() => false).then(task);
     state.task = nextTask;
     return nextTask;
   }
 
-  private async flushState(state: StreamState, reason: string): Promise<boolean> {
+  private async flushState(
+    state: StreamState,
+    reason: string,
+  ): Promise<boolean> {
     if (state.cancelled) {
       return false;
     }
@@ -290,10 +310,14 @@ export class ResponseStreamer {
       return state.telegramMessageIds.length > 0;
     }
 
-    const targetSignatures = payload.parts.map((part) => createSignature(part, payload.format));
+    const targetSignatures = payload.parts.map((part) =>
+      createSignature(part, payload.format),
+    );
     const unchanged =
       targetSignatures.length === state.lastSentSignatures.length &&
-      targetSignatures.every((signature, index) => signature === state.lastSentSignatures[index]);
+      targetSignatures.every(
+        (signature, index) => signature === state.lastSentSignatures[index],
+      );
 
     if (unchanged) {
       return state.telegramMessageIds.length > 0;
@@ -311,7 +335,11 @@ export class ResponseStreamer {
     }
   }
 
-  private markStreamBroken(state: StreamState, error: unknown, reason: string): void {
+  private markStreamBroken(
+    state: StreamState,
+    error: unknown,
+    reason: string,
+  ): void {
     state.isBroken = true;
     state.fatalErrorMessage = getErrorMessage(error);
 
@@ -326,7 +354,10 @@ export class ResponseStreamer {
     );
   }
 
-  private async cleanupBrokenStream(state: StreamState, reason: string): Promise<void> {
+  private async cleanupBrokenStream(
+    state: StreamState,
+    reason: string,
+  ): Promise<void> {
     if (state.telegramMessageIds.length === 0) {
       return;
     }
@@ -369,17 +400,30 @@ export class ResponseStreamer {
           continue;
         }
 
-        await this.editText(currentMessageId, text, payload.format, payload.editOptions);
+        await this.editText(
+          currentMessageId,
+          text,
+          payload.format,
+          payload.editOptions,
+        );
         state.lastSentSignatures[index] = nextSignature;
         continue;
       }
 
-      const messageId = await this.sendText(text, payload.format, payload.sendOptions);
+      const messageId = await this.sendText(
+        text,
+        payload.format,
+        payload.sendOptions,
+      );
       state.telegramMessageIds[index] = messageId;
       state.lastSentSignatures[index] = nextSignature;
     }
 
-    for (let index = state.telegramMessageIds.length - 1; index >= payload.parts.length; index--) {
+    for (
+      let index = state.telegramMessageIds.length - 1;
+      index >= payload.parts.length;
+      index--
+    ) {
       const messageId = state.telegramMessageIds[index];
       if (messageId) {
         await this.deleteText(messageId);
@@ -395,7 +439,11 @@ export class ResponseStreamer {
 const responseCache: Map<string, string> = new Map();
 const RESPONSE_CACHE_MAX_SIZE = 50;
 
-export function cacheResponse(sessionId: string, messageId: string, text: string): void {
+export function cacheResponse(
+  sessionId: string,
+  messageId: string,
+  text: string,
+): void {
   const key = `${sessionId}:${messageId}`;
   responseCache.set(key, text);
   if (responseCache.size > RESPONSE_CACHE_MAX_SIZE) {
@@ -406,7 +454,10 @@ export function cacheResponse(sessionId: string, messageId: string, text: string
   }
 }
 
-export function getCachedResponse(sessionId: string, messageId: string): string | undefined {
+export function getCachedResponse(
+  sessionId: string,
+  messageId: string,
+): string | undefined {
   const key = `${sessionId}:${messageId}`;
   return responseCache.get(key);
 }

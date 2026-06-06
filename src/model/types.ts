@@ -29,9 +29,13 @@ export interface ModelSelectionLists {
  * @param modelID Model ID
  * @returns Formatted string "providerID/modelID"
  */
-export function formatModelForButton(providerID: string, modelID: string): string {
+export function formatModelForButton(
+  providerID: string,
+  modelID: string,
+): string {
   // If model name is too long, we only truncate the model part
-  const displayModelId = modelID.length > 20 ? `${modelID.substring(0, 17)}...` : modelID;
+  const displayModelId =
+    modelID.length > 20 ? `${modelID.substring(0, 17)}...` : modelID;
   const displayProviderId =
     providerID.length > 15 ? `${providerID.substring(0, 12)}...` : providerID;
 
@@ -44,6 +48,9 @@ export function formatModelForButton(providerID: string, modelID: string): strin
  * @param modelID Model ID
  * @returns Formatted string "providerID / modelID"
  */
-export function formatModelForDisplay(providerID: string, modelID: string): string {
+export function formatModelForDisplay(
+  providerID: string,
+  modelID: string,
+): string {
   return `${providerID} / ${modelID}`;
 }

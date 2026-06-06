@@ -25,14 +25,17 @@ const COMMAND_DEFINITIONS: BotCommandI18nDefinition[] = [
   { command: "status", descriptionKey: "cmd.description.status" },
   { command: "new", descriptionKey: "cmd.description.new" },
   { command: "abort", descriptionKey: "cmd.description.stop" },
-  
+
   { command: "sessions", descriptionKey: "cmd.description.sessions" },
   { command: "projects", descriptionKey: "cmd.description.projects" },
   { command: "task", descriptionKey: "cmd.description.task" },
   { command: "tasklist", descriptionKey: "cmd.description.tasklist" },
   { command: "rename", descriptionKey: "cmd.description.rename" },
   { command: "commands", descriptionKey: "cmd.description.commands" },
-  { command: "opencode_start", descriptionKey: "cmd.description.opencode_start" },
+  {
+    command: "opencode_start",
+    descriptionKey: "cmd.description.opencode_start",
+  },
   { command: "opencode_stop", descriptionKey: "cmd.description.opencode_stop" },
   { command: "help", descriptionKey: "cmd.description.help" },
   { command: "shell", descriptionKey: "cmd.description.shell" },

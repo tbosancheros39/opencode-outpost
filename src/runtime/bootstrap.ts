@@ -4,6 +4,10 @@ import readline from "node:readline";
 import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
+import {
+  checkRedisHealth,
+  checkOpencodeHealth,
+} from "../monitoring/health-probes.js";
 import { getRuntimePaths, type RuntimePaths } from "./paths.js";
 import {
   getLocale,
@@ -70,8 +74,13 @@ function isValidHttpUrl(value: string): boolean {
   }
 }
 
-export function validateRuntimeEnvValues(values: Record<string, string>): EnvValidationResult {
-  if (!values.TELEGRAM_BOT_TOKEN || values.TELEGRAM_BOT_TOKEN.trim().length === 0) {
+export function validateRuntimeEnvValues(
+  values: Record<string, string>,
+): EnvValidationResult {
+  if (
+    !values.TELEGRAM_BOT_TOKEN ||
+    values.TELEGRAM_BOT_TOKEN.trim().length === 0
+  ) {
     return { isValid: false, reason: "Missing TELEGRAM_BOT_TOKEN" };
   }
 
@@ -79,11 +88,17 @@ export function validateRuntimeEnvValues(values: Record<string, string>): EnvVal
     return { isValid: false, reason: "Invalid TELEGRAM_ALLOWED_USER_IDS" };
   }
 
-  if (!values.OPENCODE_MODEL_PROVIDER || values.OPENCODE_MODEL_PROVIDER.trim().length === 0) {
+  if (
+    !values.OPENCODE_MODEL_PROVIDER ||
+    values.OPENCODE_MODEL_PROVIDER.trim().length === 0
+  ) {
     return { isValid: false, reason: "Missing OPENCODE_MODEL_PROVIDER" };
   }
 
-  if (!values.OPENCODE_MODEL_ID || values.OPENCODE_MODEL_ID.trim().length === 0) {
+  if (
+    !values.OPENCODE_MODEL_ID ||
+    values.OPENCODE_MODEL_ID.trim().length === 0
+  ) {
     return { isValid: false, reason: "Missing OPENCODE_MODEL_ID" };
   }
 
@@ -118,7 +133,10 @@ function finalizeEnvContent(lines: string[]): string {
   return `${lines.join("\n")}\n`;
 }
 
-export function buildEnvFileContent(existingContent: string, values: WizardEnvValues): string {
+export function buildEnvFileContent(
+  existingContent: string,
+  values: WizardEnvValues,
+): string {
   let lines = normalizeEnvLineEndings(existingContent);
 
   const orderedUpdates: Array<[keyof WizardEnvValues, string | undefined]> = [
@@ -155,7 +173,10 @@ async function readEnvFileIfExists(filePath: string): Promise<string | null> {
   }
 }
 
-async function writeFileAtomically(filePath: string, content: string): Promise<void> {
+async function writeFileAtomically(
+  filePath: string,
+  content: string,
+): Promise<void> {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
 
   const tempFilePath = `${filePath}.${process.pid}.tmp`;
@@ -179,7 +200,12 @@ async function ensureSettingsFile(settingsFilePath: string): Promise<void> {
 
 function getEnvExamplePath(): string {
   const currentFilePath = fileURLToPath(import.meta.url);
-  return path.resolve(path.dirname(currentFilePath), "..", "..", ".env.example");
+  return path.resolve(
+    path.dirname(currentFilePath),
+    "..",
+    "..",
+    ".env.example",
+  );
 }
 
 async function loadModelDefaultsFromEnvExample(): Promise<ModelDefaults> {
@@ -286,9 +312,13 @@ async function askLocale(): Promise<Locale> {
   const localeOptions = getLocaleOptions();
   const defaultLocale = getLocale();
   const defaultLocaleOption =
-    localeOptions.find((localeOption) => localeOption.code === defaultLocale) ?? localeOptions[0];
+    localeOptions.find((localeOption) => localeOption.code === defaultLocale) ??
+    localeOptions[0];
   const optionsText = localeOptions
-    .map((localeOption, index) => `${index + 1} - ${localeOption.label} (${localeOption.code})`)
+    .map(
+      (localeOption, index) =>
+        `${index + 1} - ${localeOption.label} (${localeOption.code})`,
+    )
     .join("\n");
 
   const prompt = t("runtime.wizard.ask_language", {
@@ -333,7 +363,9 @@ async function askAllowedUserIds(): Promise<string> {
 }
 
 async function askApiUrl(): Promise<string | undefined> {
-  const prompt = t("runtime.wizard.ask_api_url", { defaultUrl: DEFAULT_API_URL });
+  const prompt = t("runtime.wizard.ask_api_url", {
+    defaultUrl: DEFAULT_API_URL,
+  });
 
   for (;;) {
     const apiUrl = await askVisible(prompt);
@@ -377,7 +409,8 @@ async function collectWizardValues(): Promise<WizardCollectedValues> {
   const locale = await askLocale();
   setRuntimeLocale(locale);
   const selectedLocaleOption =
-    getLocaleOptions().find((localeOption) => localeOption.code === locale) ?? null;
+    getLocaleOptions().find((localeOption) => localeOption.code === locale) ??
+    null;
 
   process.stdout.write("\n");
   process.stdout.write(
@@ -416,7 +449,9 @@ function ensureInteractiveTty(): void {
   }
 }
 
-async function validateExistingEnv(envFilePath: string): Promise<EnvValidationResult> {
+async function validateExistingEnv(
+  envFilePath: string,
+): Promise<EnvValidationResult> {
   const content = await readEnvFileIfExists(envFilePath);
 
   if (content === null) {
@@ -437,7 +472,8 @@ async function runWizardAndPersist(runtimePaths: RuntimePaths): Promise<void> {
   ]);
 
   const existingParsed = existingContent ? dotenv.parse(existingContent) : {};
-  const provider = existingParsed.OPENCODE_MODEL_PROVIDER || modelDefaults.provider;
+  const provider =
+    existingParsed.OPENCODE_MODEL_PROVIDER || modelDefaults.provider;
   const modelId = existingParsed.OPENCODE_MODEL_ID || modelDefaults.modelId;
 
   const envValues: WizardEnvValues = {
@@ -454,6 +490,34 @@ async function runWizardAndPersist(runtimePaths: RuntimePaths): Promise<void> {
   const envContent = buildEnvFileContent(existingContent ?? "", envValues);
   await writeFileAtomically(runtimePaths.envFilePath, envContent);
   await ensureSettingsFile(runtimePaths.settingsFilePath);
+
+  process.stdout.write("\n");
+  process.stdout.write("Running health checks...\n");
+
+  const redisHealth = await checkRedisHealth();
+  if (redisHealth.ok) {
+    const latency = redisHealth.latencyMs ?? 0;
+    process.stdout.write(`[OK] Redis: connected (${latency}ms)\n`);
+  } else if (redisHealth.skipped) {
+    process.stdout.write("[OK] Redis: skipped (disabled)\n");
+  } else {
+    process.stdout.write("[WARN] Redis: not running\n");
+  }
+
+  const opencodeHealth = await checkOpencodeHealth();
+  if (opencodeHealth.ok) {
+    process.stdout.write("[OK] OpenCode: running\n");
+  } else {
+    process.stdout.write("[WARN] OpenCode: not reachable\n");
+  }
+
+  if (!redisHealth.ok && !redisHealth.skipped && !opencodeHealth.ok) {
+    process.stdout.write(
+      "⚠️  Both checks failed — you can still continue, but verify your setup.\n",
+    );
+  }
+
+  process.stdout.write("\n");
 
   process.stdout.write(
     t("runtime.wizard.saved", {

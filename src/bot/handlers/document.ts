@@ -7,7 +7,10 @@ import {
   isTextMimeType,
   isFileSizeAllowed,
 } from "../utils/file-download.js";
-import { getModelCapabilities, supportsInput } from "../../model/capabilities.js";
+import {
+  getModelCapabilities,
+  supportsInput,
+} from "../../model/capabilities.js";
 import { getStoredModel } from "../../model/manager.js";
 import { logger } from "../../utils/logger.js";
 import { t } from "../../i18n/index.js";
@@ -56,7 +59,9 @@ export async function handleDocumentMessage(
           `[Document] Text file too large: ${filename} (${doc.file_size} bytes > ${config.files.maxFileSizeKb}KB)`,
         );
         await ctx.reply(
-          t("bot.text_file_too_large", { maxSizeKb: String(config.files.maxFileSizeKb) }),
+          t("bot.text_file_too_large", {
+            maxSizeKb: String(config.files.maxFileSizeKb),
+          }),
         );
         return;
       }
@@ -78,7 +83,10 @@ export async function handleDocumentMessage(
 
     if (mimeType === "application/pdf") {
       const storedModel = getStored();
-      const capabilities = await getCapabilities(storedModel.providerID, storedModel.modelID);
+      const capabilities = await getCapabilities(
+        storedModel.providerID,
+        storedModel.modelID,
+      );
 
       if (!supportsInput(capabilities, "pdf")) {
         logger.warn(
@@ -112,7 +120,9 @@ export async function handleDocumentMessage(
       return;
     }
 
-    logger.debug(`[Document] Unsupported document MIME type: ${mimeType}, ignoring`);
+    logger.debug(
+      `[Document] Unsupported document MIME type: ${mimeType}, ignoring`,
+    );
   } catch (err) {
     logger.error("[Document] Error handling document message:", err);
     await ctx.reply(t("bot.file_download_error"));
