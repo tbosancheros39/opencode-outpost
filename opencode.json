@@ -5,7 +5,7 @@
   "provider": {
     "opencode-go": {
       "options": {
-        "apiKey": "sk-6UAua9ydUkK8fwusgtaWT9cEOBwpSY7xlOD57YpPxz8jINGRs25hLoOs4AqXXDuf",
+        "apiKey": "[REDACTED]",
         "timeout": 300000
       },
       "models": {
@@ -49,7 +49,7 @@
       "name": "OpenRouter",
       "options": {
         "baseURL": "https://openrouter.ai/api/v1",
-        "apiKey": "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"
+        "apiKey": "[REDACTED]"
       },
       "models": {
         "inclusionai/ling-2.6-flash:free": {
