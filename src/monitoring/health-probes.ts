@@ -18,13 +18,13 @@ export async function checkRedisHealth(): Promise<HealthCheck> {
     redisEnabled === "no"
   ) {
     logger.info("[Health] Redis disabled via REDIS_ENABLED, skipping");
-    return { ok: true, skipped: true };
+    return { ok: false, skipped: true };
   }
 
   const redisUrl = config.redis.url;
   if (!redisUrl) {
     logger.info("[Health] No Redis URL configured, skipping");
-    return { ok: true, skipped: true };
+    return { ok: false, skipped: true };
   }
 
   const client = new Redis(redisUrl, {

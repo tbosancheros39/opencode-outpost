@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.16.1 (2026-06-06)
+
+### Tests
+- Added health probe tests (8 tests for Redis/OpenCode health checks)
+- Added /status health display tests (3 tests)
+- Added wizard health step failure tests (5 tests)
+- Added /help grouped output tests (5 tests)
+
+### Bug Fixes
+- Fixed health-probes.ts: skipped path was unreachable (ok:true should be ok:false when skipped)
+
+### CI/CD
+- Added GitHub Actions CI workflow with npm dependency caching
+
 ## v0.16.0 (2026-06-06)
 
 ### Features
