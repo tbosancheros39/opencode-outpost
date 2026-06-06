@@ -1,6 +1,6 @@
 {
   "name": "@tbosancheros39/opencode-outpost",
-  "version": "0.15.1",
+  "version": "0.15.2",
   "description": "Telegram bot client for OpenCode to run and monitor coding tasks from chat.",
   "type": "module",
   "sideEffects": false,
@@ -67,7 +67,7 @@
     "glob": "^10.5.0",
     "grammy": "^1.42.0",
     "https-proxy-agent": "^9.0.0",
-    "ioredis": "^5.10.1",
+    "ioredis": "^5.11.1",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "socks-proxy-agent": "^10.0.0",
@@ -79,12 +79,12 @@
     "@types/node": "^25.0.8",
     "@typescript-eslint/eslint-plugin": "^8.58.1",
     "@typescript-eslint/parser": "^8.58.1",
-    "@vitest/coverage-v8": "^4.1.4",
+    "@vitest/coverage-v8": "^4.1.8",
     "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.8.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.8"
   }
 }
