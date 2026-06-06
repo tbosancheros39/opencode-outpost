@@ -92,7 +92,7 @@
       "type": "remote",
       "url": "https://mcp.exa.ai/mcp?tools=web_search_exa,deep_search_exa,crawling_exa",
       "headers": {
-        "EXA_API_KEY": "8f613f4b-f469-403a-ca6-526819dd2aa2"
+        "EXA_API_KEY": "[REDACTED]"
       },
       "enabled": true
     },
@@ -100,7 +100,7 @@
       "type": "local",
       "command": [
         "env",
-        "FIRECRAWL_API_KEY=fc-0038b741d3e44dd39b1034275adb063c",
+        "FIRECRAWL_API_KEY=[REDACTED]",
         "npx",
         "-y",
         "firecrawl-mcp"
@@ -111,7 +111,7 @@
       "type": "remote",
       "url": "https://mcp.context7.com/mcp",
       "headers": {
-        "CONTEXT7_API_KEY": "ctx7sk-614c3c18-1c4b-42eb-aadf-93d5bf67b6d2"
+        "CONTEXT7_API_KEY": "[REDACTED]"
       },
       "enabled": false
     },
