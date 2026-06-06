@@ -83,7 +83,7 @@ function formatHelpText(): string {
 
     if (catCommands.length === 0) continue;
 
-    const count = cat.commands.length;
+    const count = catCommands.length;
     lines.push(
       `${t(cat.header)} (${count} ${count === 1 ? "command" : "commands"})`,
     );

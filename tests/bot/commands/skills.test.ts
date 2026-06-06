@@ -26,8 +26,10 @@ vi.mock("../../../src/session/manager.js", () => ({
 
 vi.mock("../../../src/opencode/client.js", () => ({
   opencodeClient: {
-    command: {
-      list: mocked.commandListMock,
+    v2: {
+      skill: {
+        list: mocked.commandListMock,
+      },
     },
   },
 }));
@@ -94,8 +96,8 @@ describe("bot/commands/skills", () => {
 
   it("shows empty skills when no skills available", async () => {
     mocked.commandListMock.mockResolvedValue({
-      data: [],
-      error: null,
+      data: { location: "D:\\Projects\\Repo", data: [] },
+      error: undefined,
     });
 
     const ctx = createCommandContext();
@@ -106,26 +108,27 @@ describe("bot/commands/skills", () => {
 
   it("displays skills filtered from command list", async () => {
     mocked.commandListMock.mockResolvedValue({
-      data: [
-        { name: "code-review", description: "Review code changes", source: "skill" },
-        { name: "init", description: "Initialize project", source: "command" },
-        { name: "debug-helper", description: "Help with debugging", source: "skill" },
-      ],
-      error: null,
+      data: {
+        location: "D:\\Projects\\Repo",
+        data: [
+          { name: "code-review", description: "Review code changes" },
+          { name: "debug-helper", description: "Help with debugging" },
+        ],
+      },
+      error: undefined,
     });
 
     const ctx = createCommandContext();
     await skillsCommand(ctx as never);
 
     expect(mocked.commandListMock).toHaveBeenCalledWith({
-      directory: "D:\\Projects\\Repo",
+      location: { directory: "D:\\Projects\\Repo" },
     });
 
     expect(ctx.reply).toHaveBeenCalledTimes(1);
     const replyCall = (ctx.reply as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(replyCall[0]).toContain("code-review");
     expect(replyCall[0]).toContain("debug-helper");
-    expect(replyCall[0]).not.toContain("init");
   });
 
   it("handles cancel callback", async () => {

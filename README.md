@@ -61,7 +61,12 @@ If you're happy with a simple, personal remote, the original is still fantastic.
 | **Task queue (BullMQ + Redis)** | I got tired of waiting. Give the bot a long-running task and it goes into a queue. You can close Telegram, go to sleep — the bot will process it and tell you when it's done. |
 | **Bubblewrap sandboxing** | Shell commands run in a sandbox. By default, it blocks access to `~/.ssh`, `~/.aws`, and the network. It's not bulletproof, but it's better than nothing. |
 | **Knowledge base** | Pin files to context, search across them, save snapshots of sessions, and resume later. Your context survives restarts. |
-| **More commands (40 total)** | Things like a file explorer (`/fe`), git operations (`/branch`, `/commit`, `/diff`), model switching (`/models`), and a handful of inline prompts (`@bot eli5: ...`) that I actually use. |
+| **Health probes** | Because "it's probably fine" is not a monitoring strategy. The bot checks if Redis and OpenCode are actually alive. `/status` shows a live health dashboard, and the setup wizard verifies both are reachable before it lets you through. |
+| **Setup wizard** | The first-run wizard now checks Redis and OpenCode connectivity before finishing. If something's broken, it tells you what and how to fix it, instead of letting you discover it five minutes later. |
+| **Smarter /help** | Commands are grouped by category (Session, Tasks, Git, Browse, Bot Control) instead of one flat wall of text. You'll still need `/help` every three minutes, but at least it's readable now. |
+| **Graceful queue fallback** | If Redis goes down, the task queue switches to an in-memory FIFO queue instead of crashing. You get a warning at startup, tasks keep processing. Nothing survives a restart, but you won't lose the session you're in. |
+| **Automated testing** | Every push to the repo runs lint, build, and the full test suite through GitHub Actions. 724 tests across 93 files. I push with slightly less dread now. |
+| **More commands (45 total)** | Things like a file explorer (`/fe`), git operations (`/branch`, `/commit`, `/diff`), model switching (`/models`), and a handful of inline prompts (`@bot eli5: ...`) that I actually use. |
 | **Proxy support everywhere** | The original routes Telegram through a proxy. Outpost does that *and* lets you proxy the OpenCode server connection and any external API calls the AI makes. Useful if you're bouncing through a tunnel. |
 
 ---
@@ -95,7 +100,7 @@ If you're happy with a simple, personal remote, the original is still fantastic.
 - **7 languages** — English, German, Spanish, French, Russian, Chinese, Bosnian.
 - **Proxy support** — SOCKS5, HTTP/HTTPS for Telegram, OpenCode, and external API calls.
 - **MarkdownV2 rendering** — Code blocks, tables, syntax highlighting.
-- **40 commands** — A lot, but you'll probably only use 15 of them regularly.
+- **45 commands** — A lot, but you'll probably only use 15 of them regularly.
 - **Auto-restart watchdog** — If the OpenCode server crashes, the bot notices and tries to bring it back up.
 - **Health probes** — Redis and OpenCode server health monitoring. /status shows live status of all services, the setup wizard verifies connectivity before finishing.
 

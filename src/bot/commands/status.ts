@@ -37,24 +37,28 @@ export async function statusCommand(ctx: CommandContext<Context>) {
 
     // Add Redis health information
     const redisHealth = await checkRedisHealth();
-    if (redisHealth.ok && !redisHealth.skipped) {
-      message += `${t("status.redis.connected", { latencyMs: redisHealth.latencyMs ?? 0 })}\n`;
-    } else if (!redisHealth.ok) {
-      message += `${t("status.redis.down")}\n`;
-    } else {
+    if (redisHealth.skipped) {
       message += `${t("status.redis.skipped")}\n`;
+    } else if (redisHealth.ok) {
+      message += `${t("status.redis.connected", { latencyMs: redisHealth.latencyMs ?? 0 })}\n`;
+    } else {
+      message += `${t("status.redis.down")}\n`;
     }
 
     // Add queue statistics
-    const queue = getQueue();
-    if (queue) {
-      const [waiting, active] = await Promise.all([
-        queue.getWaiting(),
-        queue.getActive(),
-      ]);
-      message += `${t("status.queue.stats", { pending: waiting.length, active: active.length })}\n`;
-    } else if (memoryQueue.getPendingCount() > 0) {
-      message += `${t("status.queue.stats", { pending: memoryQueue.getPendingCount(), active: 0 })}\n`;
+    try {
+      const queue = getQueue();
+      if (queue) {
+        const [waiting, active] = await Promise.all([
+          queue.getWaiting(),
+          queue.getActive(),
+        ]);
+        message += `${t("status.queue.stats", { pending: waiting.length, active: active.length })}\n`;
+      } else if (memoryQueue.getPendingCount() > 0) {
+        message += `${t("status.queue.stats", { pending: memoryQueue.getPendingCount(), active: 0 })}\n`;
+      }
+    } catch {
+      logger.warn("[Status] Could not fetch queue stats");
     }
 
     // Add process management information

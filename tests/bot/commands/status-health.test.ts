@@ -184,7 +184,7 @@ describe("bot/commands/status health display", () => {
 
   it("shows Redis skipped when Redis health returns skipped", async () => {
     mocked.checkRedisHealthMock.mockResolvedValue({
-      ok: true,
+      ok: false,
       skipped: true,
     });
 

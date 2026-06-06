@@ -59,23 +59,20 @@ async function loadSkillsPage(
   directory: string,
   page: number,
 ): Promise<SkillsPage> {
-  const { data: allCommands, error } = await opencodeClient.command.list({
-    directory,
+  const result = await opencodeClient.v2.skill.list({
+    location: { directory },
   });
 
-  if (error || !allCommands) {
-    throw error || new Error("Failed to fetch skills");
+  if (result.error) {
+    throw new Error("Failed to fetch skills");
   }
 
-  // TODO: The `source` field is not in the SDK Command type but is returned by the server.
-  // Verify that OpenCode server returns source="skill" for skill-based commands.
-  // If not, this filter will return an empty list. See existing commands.ts:309 for same pattern.
-  const skills = allCommands
-    .filter((cmd: Record<string, unknown>) => cmd.source === "skill")
-    .map((cmd: Record<string, unknown>) => ({
-      name: cmd.name as string,
-      description: cmd.description as string | undefined,
-    }));
+  const skills: SkillItem[] = (result.data.data ?? []).map(
+    (s: { name: string; description?: string }) => ({
+      name: s.name,
+      description: s.description,
+    }),
+  );
 
   const totalSkills = skills.length;
   const startIndex = page * SKILLS_PER_PAGE;
