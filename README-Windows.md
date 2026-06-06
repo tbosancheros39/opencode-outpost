@@ -238,7 +238,7 @@ Uses `tsx watch` for automatic recompilation and restart on file changes. Works 
 npm test
 ```
 
-All 703 tests run in Node.js (no browser required). Works on Windows, WSL2, and Docker.
+All 724 tests run in Node.js (no browser required). Works on Windows, WSL2, and Docker.
 
 ### Docker Compose for development
 

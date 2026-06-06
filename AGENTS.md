@@ -40,7 +40,7 @@ The `--mode` flag overrides: `opencode-outpost start --mode sources|installed`.
 
 | Directory | Purpose |
 |-----------|---------|
-| `src/bot/commands/` | 40 Telegram command handlers |
+| `src/bot/commands/` | 40 Telegram command handlers (with health probes, grouped /help, enhanced /status) |
 | `src/bot/handlers/` | Message routing (agent, voice, document, inline query, permission) |
 | `src/bot/middleware/` | Auth, rate-limit, chat-concurrency, interaction-guard |
 | `src/bot/streaming/` | Response + tool-call streaming to Telegram |
@@ -52,10 +52,14 @@ The `--mode` flag overrides: `opencode-outpost start --mode sources|installed`.
 | `src/safety/` | Bubblewrap sandbox, env sanitizer, command classifier, path validator |
 | `src/runtime/` | Mode resolution, path resolution, config wizard bootstrap |
 | `src/i18n/` | 7 locales (en, de, es, fr, ru, zh, bs) |
-| `src/monitoring/` | OpenCode watchdog (auto-restart), journal monitor, system monitor |
+| `src/monitoring/` | OpenCode watchdog (auto-restart), journal monitor, system monitor, health probes (Redis + OpenCode) |
 | `src/telegram/render/` | MarkdownV2 rendering pipeline (remark-gfm → chunker → Telegram) |
 | `src/session/` | Session cache manager, auto-resume last session |
 | `src/summary/` | Response aggregation (streaming partial → complete → Telegram message) |
+
+### CI/CD
+
+GitHub Actions workflow at `.github/workflows/ci.yml` — runs on push/PR to main. Steps: checkout, setup-node (Node 20 + npm cache), npm ci, lint, format check, build, test.
 
 ### Singleton managers
 
@@ -73,7 +77,7 @@ If Redis is unavailable (`REDIS_ENABLED=false` or connection fails), the app fal
 - Setup: `tests/setup.ts` — sets required env vars and resets singletons
 - Test env defaults are in `tests/helpers/test-environment.ts` (sets `TELEGRAM_BOT_TOKEN`, `OPENCODE_MODEL_PROVIDER`, etc.)
 - Tests live in `tests/` mirroring `src/` structure
-- 85 test files, no test files in `src/` (tsconfig excludes `**/*.test.ts`)
+- 93 test files (724 tests), no test files in `src/` (tsconfig excludes `**/*.test.ts`)
 - Run a single test: `npx vitest run tests/bot/commands/start.test.ts`
 - Run a directory: `npx vitest run tests/bot/commands/`
 - Coverage includes `src/**/*.ts`, excludes test files

@@ -97,6 +97,7 @@ If you're happy with a simple, personal remote, the original is still fantastic.
 - **MarkdownV2 rendering** — Code blocks, tables, syntax highlighting.
 - **40 commands** — A lot, but you'll probably only use 15 of them regularly.
 - **Auto-restart watchdog** — If the OpenCode server crashes, the bot notices and tries to bring it back up.
+- **Health probes** — Redis and OpenCode server health monitoring. /status shows live status of all services, the setup wizard verifies connectivity before finishing.
 
 ---
 
@@ -110,7 +111,7 @@ Here's the full list, organised by what they do. Don't panic — you don't need 
 | `/new` | Start a new session (fresh context) |
 | `/sessions` | See previous sessions |
 | `/projects` | List your projects |
-| `/status` | Show current session and server info |
+| `/status` | Show session, server health, Redis status, and queue stats |
 | `/abort` | Kill the current task |
 | `/rename` | Rename the session |
 | `/messages` | Show conversation history |
@@ -370,10 +371,12 @@ Now you can talk to the bot in each group, and it'll keep the context completely
 ### "OpenCode not available"
 - Run `opencode serve` or try `/opencode_start` from Telegram.
 - Check `OPENCODE_API_URL` (default: `http://localhost:4097`).
+- Run `/status` from Telegram — it'll tell you exactly which service (OpenCode or Redis) is down and how to fix it.
 
 ### Redis errors
 - Make sure Redis is running: `redis-server` or `systemctl start redis`.
 - Test with `redis-cli ping` → should say `PONG`.
+- Run `/status` to check Redis health from the bot. If Redis is down, the queue falls back to in-memory mode and you'll see a warning.
 
 ### No models showing
 - Add models to OpenCode's favourites: open the OpenCode TUI, choose a model, press `Ctrl+F` / `Cmd+F`.
